@@ -1,12 +1,17 @@
 const superSecret = require('../configure/config').secret;
 const jwt = require('jsonwebtoken');
 
-const messageData = require('../../data/data').messageData;
-const editData = require('../../data/data').editData;
-const rateData = require('../../data/data').rateData;
-const loginData = require('../../data/data').loginData;
-const notRequired = require('../../data/data').notRequired;
-const messages = require('../../data/data').messages;
+const data = require('../../data/data');
+const messageData = data.messageData;
+const editData = data.editData;
+const galleryData = data.galleryData;
+const localGuideData = data.localGuideData;
+const loginData = data.loginData;
+const signUpData = data.signUpData;
+const addressData = data.addressData;
+const paymentData = data.paymentData;
+const notRequired = data.notRequired;
+const messages = data.messages;
 
 
 //============input functions==========================
@@ -23,12 +28,14 @@ const checkSize = (obj, form) => {
   }, true);
 }
 
-
-const checkPhone = (num) => {
-  const newNum = num.split('').filter((n) => {
+const formatNum = (num) => {
+  return num.split('').filter((n) => {
     const digit = parseInt(n);
     if(n !== NaN) return digit;
   }).join('');
+};
+
+const checkPhone = (newNum) => {
   //make sure num has <= 11 digits but >= 10 digits
   //10^9 = 100 000 0000
   //2 * 10^10 - 1 = 1 999 999 9999
@@ -40,6 +47,31 @@ const checkEmail = (mail) => {
   return re.test(mail);
 };
 
+const checkDate = (month, year) => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const m = month.split(' ');
+  const thisM = new Date().getMonth();
+  const thisMonth = months[thisM];
+  const thisYear = new Date().getFullYear().toString();
+  // console.log(m, thisMonth, thisYear);
+
+  //is expiration date later than this month;
+  const minDate = new Date(thisMonth + " " + thisYear).getTime();
+  const expDate = new Date(m[0] + " " + year).getTime();
+
+  // console.log(minDate, expDate);
+  return expDate > minDate;
+}
+
+const checkCVV = (cvv) => {
+  return true;
+}
+
+const checkCredit = (num) => {
+  return true;
+}
+
 //==========output========================================
 const checkMessageInput = (req, res, next) => {
 
@@ -49,7 +81,8 @@ const checkMessageInput = (req, res, next) => {
     res.json({message: messages.inputError})
   }
   else {
-    const cPhone = checkPhone(req.body.phone);
+    const phone = formatNum(req.body.phone)
+    const cPhone = checkPhone(phone);
     const cEmail = checkEmail(req.body.email);
     const cSize = checkSize(req.body, messageData);
 
@@ -73,8 +106,8 @@ const checkMessageInput = (req, res, next) => {
 
 const checkRateInput = (req, res, next) => {
 
-  const cForm = checkForm(req.body, rateData);
-  const cSize = checkSize(req.body, rateData);
+  const cForm = (req.params.section === "gallery") ? checkForm(req.body, galleryData) : checkForm(req.body, localGuideData);
+  const cSize = (req.params.section === "gallery") ? checkSize(req.body, galleryData) : checkSize(req.body, localGuideData);
 
   if(!cForm){
     res.json({message: messages.inputError})
@@ -109,16 +142,106 @@ const checkEditInput = (req, res, next) => {
 
 
 const checkLoginInput = (req, res, next) => {
-
   const cForm = checkForm(req.body, loginData);
+  const cSize = checkSize(req.body, loginData);
 
   if(!cForm){
     res.json({message: messages.inputError})
+  }
+  else if(!cSize){
+    let err = new Error("Invalid entry");
+    err.status = 400;
+    return next(err);
   }
   else {
     return next();
   }
 };
+
+const checkSignUpInput = (req, res, next) => {
+  const cForm = checkForm(req.body, signUpData);
+  const cSize = checkSize(req.body, signUpData);
+
+  if(!cForm){
+    res.json({message: messages.inputError})
+  }
+  else if(!cSize){
+    let err = new Error("Invalid entry");
+    err.status = 400;
+    return next(err);
+  }
+  else {
+    const cPass = req.body.password === req.body["Verify Password"];
+    const cEmail = checkEmail(req.body.email);
+    if(!cPass){
+      res.json({message: messages.passwordError})
+    }
+    else if(!cEmail){
+      res.json({message: messages.emailError});
+    }
+    else {
+      return next();
+    }
+  }
+}
+
+const checkUserInput = (req, res, next) => {
+  let cForm;
+  let cSize;
+  if(req.params.userInfo === "billing"){
+    cForm = checkForm(req.body, addressData);
+    cSize = checkSize(req.body, addressData);
+  }
+  else if(req.params.userInfo === "credit"){
+    cForm = checkForm(req.body, paymentData);
+    cSize = checkSize(req.body, paymentData);
+  }
+  else {
+    req.newOutput = req.body[req.params.userInfo];
+    next();
+  }
+
+  if(!cForm){
+    res.json({message: messages.inputError})
+  }
+  else if(!cSize){
+    let err = new Error("Invalid entry");
+    err.status = 400;
+    return next(err);
+  }
+  else {
+    let message = '';
+    if(req.body.phone){
+      const phone = formatNum(req.body.phone);
+      const cPhone = checkPhone(phone);
+      if(!cPhone) message = messages.phoneError;
+    }
+    if(req.body["Expiration Month"]){
+      const cDate = checkDate(req.body["Expiration Month"], req.body["Expiration Year"]);
+      if(!cDate) message = messages.creditExpError;
+    }
+    if(req.body.CVV){
+      const cvv = formatNum(req.body.CVV);
+      const ccvv = checkCVV(cvv);
+      if(!ccvv) message = messages.cvvError;
+    }
+    if(req.body.number){
+      const num = formatNum(req.body.number);
+      const cCredit = checkCredit(num);
+      if(!cCredit) message = messages.creditNumError;
+    }
+
+    if(message){
+      res.json({message: message})
+    }
+    else {
+      let keys = Object.keys(req.body);
+      keys.splice(keys.indexOf("token"), 1);
+      req.newOutput = keys.map((k) => req.body[k]).join('/');
+      next();
+    }
+  }
+}
 
 // verifies token after login
 const authorizeUser = (req, res, next) => {
@@ -130,7 +253,8 @@ const authorizeUser = (req, res, next) => {
         res.json({message: messages.expError})
       }
       else { // if everything is good, save to request for use in other routes
-        if(decoded.userID !== req.page.userID){
+        const userID = (req.page) ? req.page.userID : req.user.userID;
+        if(decoded.userID !== userID){
           let err = new Error(messages.authError);
           err.status = 401;
           return next(err);
@@ -151,7 +275,9 @@ const authorizeUser = (req, res, next) => {
 module.exports = {
   checkLoginInput,
   checkMessageInput,
+  checkSignUpInput,
   checkRateInput,
+  checkUserInput,
   checkEditInput,
   authorizeUser
 };

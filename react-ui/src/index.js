@@ -14,7 +14,7 @@ import './stylesheets/buttons.css';
 import {initialUser, initialEdit, initialMessage, links } from '../../data/data';
 //=============================================================\
 let initialData = {};
-links.forEach((d) => initialData[d] = {});
+links.splice(-1, 1).forEach((d) => initialData[d] = {});
 
 const initialState = {
   edit: initialEdit,

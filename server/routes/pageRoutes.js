@@ -5,12 +5,12 @@ const mid = require('../middleware/middleware');
 
 const configure = require('../configure/config');
 const bcrypt = require('bcrypt');
-const data = require('../../data/data').data;
+const links = require('../../data/data').links;
 const initialEdit = require('../../data/data').initialEdit;
 const initialMessage = require('../../data/data').initialMessage;
 
-const keys = Object.keys(data);
-// const jwt = require('jsonwebtoken');
+const end = links.length;
+const keys = links.slice(0, end - 1);
 
 
 pageRoutes.param("pageID", (req, res, next, id) => {
@@ -38,9 +38,11 @@ pageRoutes.param("section", (req, res, next, id) => {
 })
 
 pageRoutes.param("sectionID", (req, res, next, id) => {
-  const result = req.page.rates.rate.id(id);
+  const result = (req.params.section === "gallery") ?
+    req.page.gallery.rooms.id(id) : req.page["local-guide"].guide.id(id);
+
   if(!result){
-    let err = new Error("Rate not Found");
+    let err = new Error("Not Found");
     err.status = 404;
     return next(err);
   }
@@ -50,15 +52,16 @@ pageRoutes.param("sectionID", (req, res, next, id) => {
 
 const formatOutput = (obj) => {
   let newObj = {};
+
   keys.forEach((k) => {
     newObj[k] = obj[k]
   });
-  return {rate: newObj, edit: initialEdit, message: initialMessage};
+  return {data: newObj, edit: initialEdit, message: initialMessage};
 }
 
 
 //===================GET SECTIONS================================
-// pageRoutes.post('/', (req, res, next) => {
+pageRoutes.post('/', (req, res, next) => {
   let page = new Page(req.body);
 
   bcrypt.hash(page.password, 10, (err, hash) => {
@@ -85,16 +88,19 @@ const formatOutput = (obj) => {
 pageRoutes.get('/:pageID', (req, res, next) => {
   res.status(200);
   let newObj = {};
+
   keys.forEach((k) => {
     newObj[k] = req.page[k]
   });
-  res.json({rate: newObj});
+  res.json({data: newObj});
 });
 
 
 //add rate
 pageRoutes.post('/:pageID/:section', mid.authorizeUser, mid.checkRateInput, (req, res, next) => {
-  req.section.rate.push(req.body);
+  if(req.params.section === "gallery") req.section.rooms.push(req.body);
+  else req.section.guide.push(req.body);
+
   req.page.save((err, page) => {
     if(err){
       let err = new Error("Unable to add new rate. Contact Sarah.")

@@ -18,6 +18,7 @@ const refreshRoutes = express.Router();
 const pageRoutes = require("./routes/pageRoutes");
 const loginRoutes = require("./routes/loginRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 
 
@@ -54,15 +55,13 @@ refreshRoutes.get('*', function(request, response) {
 
 
 //upload file
-
-//login user
-//create/edit user
 //get upcoming/availability
 //create/edit upcoming
 
 app.use('/sayHello', messageRoutes); //sayHello
-app.use('/login', loginRoutes); //login admin
+app.use('/login', loginRoutes); //login admin and user
 app.use('/page', pageRoutes); //create/edit page
+app.use('/user', userRoutes); //create/edit user
 app.use(refreshRoutes);
 
 //===========================================================

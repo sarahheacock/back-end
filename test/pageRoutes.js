@@ -23,7 +23,7 @@ describe('Pages', () => {
 
   describe('/POST page', () => {
     const page = {
-      username: "test",
+      name: "test",
       password: "password"
     };
 
@@ -35,30 +35,12 @@ describe('Pages', () => {
         res.should.have.status(201);
         res.body.should.be.a('object');
 
-        res.body.should.have.property('username').eql(page.username);
+        res.body.should.have.property('name').eql(page.name);
         res.body.should.have.property('password');
 
-        res.body.should.have.property('services').eql({
-          "Areas Serviced": [
-            "Norwest Columbus including zip codes:",
-            "43235, 43017, 43016, 43002, 43220, 43085, 43221, 43214"
-          ],
-          "Other Services if on Vacation": {
-            "Alter lights & shades": "fa fa-lightbulb-o",
-            "Water plants": "fa fa-leaf",
-            "Collect mail": "fa fa-envelope-o"
-          },
-          "Pet Services Provided": {
-            "House sitting": "fa fa-home",
-            "Transportation": "fa fa-car",
-            "Brushing & Bathing": "fa fa-bath",
-            "Medication administration": "fa fa-medkit",
-            "Waste pick up & disposal": "fi-trash",
-            "Care & feeding": "fa fa-heart",
-            "Dog Walking": "fi-guide-dog large-icon",
-            "Pet Sitting": "fa fa-paw"
-          }
-        })
+        res.body.should.have.property('home').eql({"p1": "We are excited to have you!",
+          "title": "Welcome to our bed and breakfast...",
+          "image": "pexels-photo_orp8gu"})
         done();
       });
     });
@@ -76,7 +58,7 @@ describe('Pages', () => {
     });
 
     it('it should GET a page by the given id but only return needed info', (done) => {
-      const page = new Page({username: "test", password: "password"});
+      const page = new Page({name: "test", password: "password"});
 
       page.save((err, page) => {
         chai.request(server)
@@ -85,23 +67,21 @@ describe('Pages', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.rate.should.have.property('home');
-          res.body.rate.should.have.property('rates');
-          res.body.rate.should.have.property('services');
-          res.body.rate.should.have.property('footer');
-          res.body.rate.should.have.property('contact');
+          res.body.data.should.have.property('home');
+          res.body.data.should.have.property('gallery');
+          res.body.data.should.have.property('local-guide');
           done();
         });
       });
     });
   });
 
-  describe('/POST rate to pageID', () => {
+  describe('/POST local-guide or room to pageID', () => {
     let page;
     let token;
     beforeEach((done) => { //Before each test we empty the database
       page = new Page({
-        "username": "test",
+        "name": "test",
         "password": "password"
       });
 
@@ -113,27 +93,56 @@ describe('Pages', () => {
     });
 
 
-    it('add rate when all form items are filled', (done) => {
+    it('add room to gallery when all form items are filled', (done) => {
 
-      const rate = {
-        "description": "Good for...",
-        "title": "Pampered Paws",
-        "time": "10 minutes",
-        "cost": "10",
+      const room = {
+        "cost": 150,
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Title",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
         "token": token
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/rates")
-      .send(rate)
+      .post('/page/' + page.id + "/gallery")
+      .send(room)
       .end((err, res) => {
         res.should.have.status(201);
         res.body.should.be.a('object');
         res.body.should.have.property('edit');
-        res.body.should.have.property('rate');
+        res.body.should.have.property('data');
         res.body.should.have.property('message');
 
-        res.body.rate.rates.rate[1].should.have.property('cost').eql("10");
+        res.body.data.gallery.rooms[1].should.have.property('cost').eql(150);
+        done();
+      });
+    });
+
+    it('add LocalGuide to guide when all form items are filled', (done) => {
+
+      const guide = {
+        "title": "Title",
+        "category": "shopping",
+        "address": "fghj",
+        "image": "ghjk",
+        "token": token
+      };
+
+      chai.request(server)
+      .post('/page/' + page.id + "/local-guide")
+      .send(guide)
+      .end((err, res) => {
+        res.should.have.status(201);
+        res.body.should.be.a('object');
+        res.body.should.have.property('edit');
+        res.body.should.have.property('data');
+        res.body.should.have.property('message');
+
+        res.body.data["local-guide"]["guide"][1].should.have.property('category').eql('shopping');
         done();
       });
     });
@@ -141,15 +150,43 @@ describe('Pages', () => {
     it('should return an error if required not included', (done) => {
 
       const invalid = {
-        "description": "Good for...",
-        "title": "Pampered Paws",
+        "available": 1,
+        "title": "Title",
+        "b": "It's a really nice room.",
+        "p1": "Hi",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
         "token": token
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/rates")
+      .post('/page/' + page.id + "/gallery")
       .send(invalid)
       .end((err, res) => {
+        console.log(res.body);
+        res.body.should.be.a('object');
+        res.body.should.have.property('message').eql(messages.inputError);
+        done();
+      });
+    });
+
+    it('should return an error if required not included', (done) => {
+
+      const invalid = {
+        "title": "Title",
+        "category": "shopping",
+        "someKey": "fghj",
+        "image": "ghjk",
+        "token": token
+      };
+
+      chai.request(server)
+      .post('/page/' + page.id + "/local-guide")
+      .send(invalid)
+      .end((err, res) => {
+        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql(messages.inputError);
         done();
@@ -159,15 +196,19 @@ describe('Pages', () => {
     it('should return an expired session if token is wrong', (done) => {
 
       const rate = {
-        "description": "Good for...",
-        "title": "Pampered Paws",
-        "time": "10 minutes",
-        "cost": "10",
-        token: "vbnm"
+        "cost": 150,
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Title",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
+        "token": "vbm"
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/rates")
+      .post('/page/' + page.id + "/gallery")
       .send(rate)
       .end((err, res) => {
         res.body.should.be.a('object');
@@ -178,14 +219,18 @@ describe('Pages', () => {
 
     it('should return unauthorized if no token provided', (done) => {
       const rate = {
-        "description": "Good for...",
-        "title": "Pampered Paws",
-        "time": "10 minutes",
-        "cost": "10"
+        "cost": 150,
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Title",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/rates")
+      .post('/page/' + page.id + "/gallery")
       .send(rate)
       .end((err, res) => {
         res.should.have.status(401);
@@ -202,7 +247,7 @@ describe('Pages', () => {
     let token;
     beforeEach((done) => { //Before each test we empty the database
       page = new Page({
-        "username": "test",
+        "name": "test",
         "password": "password"
       });
 
@@ -213,20 +258,20 @@ describe('Pages', () => {
       page.save((err, newPage) => { done(); });
     });
 
-    it('edit rates.p1 when all form items are filled', (done) => {
+    it('edit gallery.title when all form items are filled', (done) => {
 
       const p1 = {
-        "p1": "Hello!",
+        "title": "Hello!",
         "token": token
       };
 
       chai.request(server)
-      .put('/page/' + page.id + "/home/")
+      .put('/page/' + page.id + "/gallery/")
       .send(p1)
       .end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.rate.home.should.have.property('p1').eql(p1.p1);
+        res.body.data.gallery.should.have.property('title').eql(p1.title);
         done();
       });
     });
@@ -234,7 +279,7 @@ describe('Pages', () => {
     it('should return an error if editing content not on form', (done) => {
 
       const invalid = {
-        "p1": "hello",
+        "title": "hello",
         "image": "abc",
         "token": token
       };
@@ -257,7 +302,7 @@ describe('Pages', () => {
     let token;
     beforeEach((done) => { //Before each test we empty the database
       page = new Page({
-        "username": "test",
+        "name": "test",
         "password": "password"
       });
 
@@ -268,25 +313,31 @@ describe('Pages', () => {
       page.save((err, newPage) => { done(); });
     });
 
-    it('edit rate when all form items are filled', (done) => {
+    it('edit room when all form items are filled', (done) => {
 
-      const rate = {
-        "title": "Pampered Paws",
-        "time": "10 minutes",
-        "cost": "10",
+      const room = {
+        "cost": 200,
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Title",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
         "token": token
       };
 
       chai.request(server)
-      .put('/page/' + page.id + "/rates/" + page.rates.rate[0].id)
-      .send(rate)
+      .put('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id)
+      .send(room)
       .end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('rate');
+        res.body.should.have.property('data');
         res.body.should.have.property('edit');
         res.body.should.have.property('message');
-        res.body.rate.rates.rate[0].should.have.property('cost').eql("10");
+        res.body.data.gallery.rooms[0].should.have.property('cost').eql(200);
+        res.body.data.gallery.rooms[0].should.have.property('p1').eql("Semiotics pinterest DIY beard, cold-pressed kombucha vape meh flexitarian YOLO cronut subway tile gastropub. Trust fund 90's small batch, skateboard cornhole deep v actually before they sold out thundercats XOXO celiac meditation lomo hexagon tofu. Skateboard air plant narwhal, everyday carry waistcoat pop-up pinterest kitsch. Man bun vape banh mi, palo santo kinfolk sustainable selfies pug meditation kale chips organic PBR&B vegan pok pok. Lomo flexitarian viral yr man braid vexillologist. Bushwick williamsburg bicycle rights, sriracha succulents godard single-origin coffee fam activated charcoal.");
         done();
       });
     });
@@ -294,15 +345,21 @@ describe('Pages', () => {
     it('should return an error if required not included', (done) => {
 
       const invalid = {
-        "description": "Good for...",
-        "title": "Pampered Paws",
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Title",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
         "token": token
       };
 
       chai.request(server)
-      .put('/page/' + page.id + "/rates/" + page.rates.rate[0].id)
+      .put('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id)
       .send(invalid)
       .end((err, res) => {
+        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql(messages.inputError);
         done();
@@ -316,7 +373,7 @@ describe('Pages', () => {
     let token;
     beforeEach((done) => { //Before each test we empty the database
       page = new Page({
-        "username": "test",
+        "name": "test",
         "password": "password"
       });
 
@@ -330,12 +387,12 @@ describe('Pages', () => {
     it('should delete rates', (done) => {
 
       chai.request(server)
-      .delete('/page/' + page.id + "/rates/" + page.rates.rate[0].id + "?token=" + token)
+      .delete('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id + "?token=" + token)
       .end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('rate')
-        res.body.rate.rates.rate.should.be.a('array').length(0);
+        res.body.should.have.property('data')
+        res.body.data.gallery.rooms.should.be.a('array').length(0);
         done();
       });
     });

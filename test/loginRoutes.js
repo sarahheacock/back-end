@@ -21,40 +21,46 @@ describe('Admin Login', () => {
   describe('/POST login', () => {
     const login = {
       "username": "test",
-      "password": "password"
+      "password": "password",
+      "admin": true
     };
 
     const invalidForm = {
-      "username": "test"
+      "username": "test",
     };
 
     const invalidpage = {
       "username": "t",
-      "password": "password"
+      "password": "password",
+      "admin": true
     };
 
     const invalidPassword = {
       "username": "test",
-      "password": "pass"
+      "password": "pass",
+      "admin": true
     };
 
     let page;
     beforeEach((done) => { //Before each test we empty the database
-      page = new Page(login);
+      page = new Page({
+        "name": "test",
+        "password": "password"
+      });
       done();
     });
 
-    // HAVE TO POST IN ORDER TO BCRYPT
-    // it('it should return token', (done) => {
+    // it('it should return message, edit, and user', (done) => {
     //   page.save((err, page) => {
     //     chai.request(server)
     //     .post('/login')
-    //     .send(login)
+    //     .send(invalidForm)
     //     .end((err, res) => {
-    //       console.log(res.body, page);
-    //       res.should.have.status(200);
     //       res.body.should.be.a('object');
     //       res.body.should.have.property('user');
+    //       res.body.should.have.property('message').eql('');
+    //       res.body.should.have.property('edit');
+    //       res.body.user.should.have.property('token');
     //       done();
     //     });
     //   });
@@ -79,6 +85,7 @@ describe('Admin Login', () => {
         .post('/login')
         .send(invalidpage)
         .end((err, res) => {
+          console.log(res.body);
           res.body.should.be.a('object');
           res.body.should.have.property('message').eql(messages.usernameError);
           done();
