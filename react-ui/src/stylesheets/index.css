@@ -9,8 +9,8 @@ coffee #b38867
 body {
   padding: 0;
   margin: 0;
-  font-family: Verdana, Geneva, sans-serif;
-  /*font-family: 'Raleway', sans-serif;*/
+  /*font-family: Verdana, Geneva, sans-serif;*/
+  font-family: 'Raleway', sans-serif;
   background-color: WhiteSmoke;
   position: relative;
   color: #3C3C3C;
@@ -70,8 +70,8 @@ charcoal #3C3C3C
   border-radius: 2%;
   /*border-style: solid;
   border-color: #626E60;
-  border-width: medium;
-  padding-bottom: 5%;*/
+  border-width: medium;*/
+  padding-bottom: 5%;
 }
 
 .content{

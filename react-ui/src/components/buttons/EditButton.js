@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavItem } from 'react-bootstrap';
 
-import { loginData, initialEdit } from '../../../../data/data';
+import { loginData, initialEdit, signUpData } from '../../../../data/data';
 
 
 const newDataObj = (formData, dataObj) => {
@@ -23,7 +23,7 @@ const newEdit = (title, dataObj) => {
       }
     }
   }
-  if(title.includes("Send Message")){
+  else if(title.includes("Send Message")){
     return {
       message: "",
       edit: {
@@ -33,12 +33,26 @@ const newEdit = (title, dataObj) => {
       }
     }
   }
+  else if(title.includes("Sign Up")){
+    return {
+      message: "",
+      edit: {
+        modalTitle: title,
+        url: "/signUp",
+        dataObj: newDataObj(signUpData, dataObj)
+      }
+    }
+  }
   else {
-    return initialEdit;
+    return {
+      message: "",
+      edit: initialEdit
+    };
   }
 };
 
 const EditButton = (props) => {
+
 
   //=====STYLE OF BUTTON DEPENDING ON BUTTON TITLE====================================================
   const style = (props.title.includes("Edit")) ?
@@ -57,6 +71,7 @@ const EditButton = (props) => {
   //====THE ACTUAL BUTTON=====================================================
 
   const content = newEdit(props.title, props.dataObj);
+  console.log("content", content);
 
 
   //page editing buttons are hidden

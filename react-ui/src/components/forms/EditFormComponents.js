@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { ControlLabel, FormGroup, FormControl, Checkbox } from 'react-bootstrap';
-import { loginData, notRequired, messages } from '../../../../data/data';
-const formObj = {...loginData};
+import { loginData, notRequired, messages, signUpData } from '../../../../data/data';
+const formObj = {...loginData, ...signUpData};
 
 const upper = (label) => {
   const required = notRequired.reduce((c, d) => { return c || label === d }, false);

@@ -71,9 +71,14 @@ class SubmitButtonSet extends React.Component {
                   <span></span>
                 }
               </button>
-              <button className="button" onClick={this.pop}>
-                {(this.props.message === messages.messageSent) ? "Close" : "Cancel"}
-              </button>
+              {(edit.modalTitle.includes("Login"))?
+                <EditButton
+                  user={this.props.user}
+                  updateState={this.props.updateState}
+                  dataObj={{}}
+                  title="Sign Up"
+                />:
+                <div></div>}
             </div> :
             <div>
               <EditButton

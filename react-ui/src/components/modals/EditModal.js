@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
 
 import EditForm from '../forms/EditForm';
+import { initialMessage, initialEdit, messages } from '../../../../data/data';
+
 
 class EditModal extends React.Component {
   static propTypes = {
@@ -17,6 +19,13 @@ class EditModal extends React.Component {
     updateState: PropTypes.func.isRequired,
   }
 
+  pop = (e) => {
+    e.preventDefault();
+    this.props.updateState({
+      edit: initialEdit,
+      message: initialMessage
+    });
+  }
 
   onFormChange = (e) => {
 
@@ -73,6 +82,11 @@ class EditModal extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
+            <div className="text-center">
+              <button className="button" onClick={this.pop}>
+                {(this.props.message === messages.messageSent) ? "Close" : "Cancel"}
+              </button>
+            </div>
             *Fill out required fields
           </Modal.Footer>
         </Modal>

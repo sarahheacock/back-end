@@ -6,7 +6,6 @@ import { LinkContainer } from 'react-router-bootstrap';
 import EditButton from './buttons/EditButton';
 import { blogID, initialEdit, initialUser, initialMessage } from '../../../data/data';
 
-
 class Header extends React.Component {
   static propTypes = {
     user: PropTypes.object.isRequired,
@@ -52,7 +51,7 @@ class Header extends React.Component {
         <Navbar className="navigation" id="navigation" inverse>
           <Navbar.Header>
             <Navbar.Brand>
-              <div><span className="brand">{"B&B"}</span></div>
+              <div><i className="fa fa-coffee"></i><span className="brand">{" B&B"}</span></div>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>

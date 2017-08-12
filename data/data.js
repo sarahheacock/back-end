@@ -48,6 +48,33 @@ var loginData = {
   }
 };
 
+var signUpData = {
+  name: {
+    type: 'text',
+    placeholder: 'Full Name',
+    componentClass: 'input',
+    default: ''
+  },
+  email: {
+    type: 'text',
+    placeholder: 'Email',
+    componentClass: 'input',
+    default: ''
+  },
+  password: {
+    type: 'password',
+    placeholder: 'Password',
+    componentClass: 'input',
+    default: ''
+  },
+  "Verify Password": {
+    type: 'password',
+    placeholder: 'Verify Password',
+    componentClass: 'input',
+    default: ''
+  }
+};
+
 
 // var messageData = {
 //   name: {
@@ -129,6 +156,7 @@ module.exports = {
 
   notRequired: notRequired,
   loginData: loginData,
+  signUpData: signUpData,
 
   messages: messages
 }
