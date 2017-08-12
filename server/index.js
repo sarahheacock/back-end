@@ -2,22 +2,88 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Priority serve any static files.
-app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
-// Answer API requests.
-app.get('/api', function (req, res) {
-  res.set('Content-Type', 'application/json');
-  res.send('{"message":"Hello from the custom server!"}');
+const testConfig = require('config'); //we load the db location from the JSON files
+// const testConfig = require('./configure/config');
+const options = {
+  server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } },
+  replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } }
+};
+
+
+const refreshRoutes = express.Router();
+// const pageRoutes = require("./routes/pageRoutes");
+
+
+//=====CONFIGURATION=============================
+mongoose.connect(testConfig.DBHost, options); //connect to database
+// app.set('superSecret', config.secret); //set secret variable
+
+
+const db = mongoose.connection;
+db.on("error", function(err){
+  console.error("connection error:", err);
+});
+db.once("open", function(){
+  console.log("db connection successful");
 });
 
-// All remaining requests return the React app, so it can handle routing.
-app.get('*', function(request, response) {
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.text());
+app.use(bodyParser.json({ type: 'application/json'}));
+
+refreshRoutes.use(express.static(path.resolve(__dirname, '../react-ui/build')));
+
+// Answer API requests.
+//===============================================================
+refreshRoutes.get('*', function(request, response) {
   response.sendFile(path.resolve(__dirname, '../react-ui/build', 'index.html'));
 });
 
-app.listen(PORT, function () {
-  console.log(`Listening on port ${PORT}`);
+//=================ROUTES=======================================
+
+// apply the routes to our application with the prefix /api
+//login admin
+//create/edit page
+//upload file
+//sayHello
+//login user
+//create/edit user
+//get upcoming/availability
+//create/edit upcoming
+
+// app.use('/page', pageRoutes);
+app.use(refreshRoutes);
+
+//===========================================================
+//==========================================================
+//catch 404 and forward to error handler
+app.use((req, res, next) => {
+  const err = new Error("Not Found");
+  err.status = 404;
+  next(err);
 });
+
+//Error Handler
+app.use((err, req, res, next) => {
+  res.status(err.status || 500);
+  res.json({
+    error: {
+      message: err.message
+    }
+  });
+});
+
+//=======START SERVER========================================
+const port = process.env.PORT || 5000;
+
+app.listen(port, function(){
+  console.log("Express server is listening on port ", port);
+});
+
+module.exports = app;

@@ -1,0 +1,53 @@
+/* ==COLOR SCHEME===
+grain #D7CEC7
+blackboard #565656
+oxblood #76323F
+tan #C09F80
+*/
+
+.button {
+  border-radius: 5%;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  width: 80px;
+  margin: 1%;
+  border-width: 0px;
+}
+
+.blueButton {
+  color: white;
+  background-color: #57a89b;
+}
+
+.blueButton:hover {
+  background-color: #45877c;
+}
+
+.redButton {
+  color: white;
+  background-color: #874C62;
+}
+
+.redButton:hover {
+  background-color: #623747;
+}
+
+.orangeButton {
+  color: white;
+  background-color: #C98474;
+}
+
+.orangeButton:hover {
+  background-color: #bf6c5a;
+}
+
+.yellowButton {
+  color: white;
+  background-color: #edc25e;
+}
+
+.yellowButton:hover {
+  background-color: #e6a819;
+}
