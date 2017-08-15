@@ -165,7 +165,6 @@ describe('Pages', () => {
       .post('/page/' + page.id + "/gallery")
       .send(invalid)
       .end((err, res) => {
-        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql(messages.inputError);
         done();
@@ -186,7 +185,6 @@ describe('Pages', () => {
       .post('/page/' + page.id + "/local-guide")
       .send(invalid)
       .end((err, res) => {
-        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql(messages.inputError);
         done();
@@ -359,7 +357,6 @@ describe('Pages', () => {
       .put('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id)
       .send(invalid)
       .end((err, res) => {
-        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql(messages.inputError);
         done();

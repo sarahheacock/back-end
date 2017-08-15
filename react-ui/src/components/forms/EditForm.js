@@ -32,6 +32,7 @@ const EditForm = (props) => {
         <SubmitButtonSet
           editData={props.editData}
           updateState={props.updateState}
+          getData={props.getData}
 
           message={props.message}
           user={props.user}
@@ -49,6 +50,7 @@ EditForm.propTypes = {
   formChange: PropTypes.func.isRequired,
   editData: PropTypes.func.isRequired,
   updateState: PropTypes.func.isRequired,
+  getData: PropTypes.func.isRequired,
 
   message: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired,

@@ -29,17 +29,12 @@ const checkSize = (obj, form) => {
 }
 
 const formatNum = (num) => {
-  return num.split('').filter((n) => {
-    const digit = parseInt(n);
-    if(n !== NaN) return digit;
-  }).join('');
+  return num.replace(/[^0-9]/gi, '');
 };
 
 const checkPhone = (newNum) => {
   //make sure num has <= 11 digits but >= 10 digits
-  //10^9 = 100 000 0000
-  //2 * 10^10 - 1 = 1 999 999 9999
-  return newNum <= (2 * Math.pow(10, 10) - 1) && newNum >= Math.pow(10, 9);
+  return /^([0-9]{10}|(1|0)[0-9]{10})$/.test(newNum);
 };
 
 const checkEmail = (mail) => {
@@ -54,22 +49,31 @@ const checkDate = (month, year) => {
   const thisM = new Date().getMonth();
   const thisMonth = months[thisM];
   const thisYear = new Date().getFullYear().toString();
-  // console.log(m, thisMonth, thisYear);
 
   //is expiration date later than this month;
   const minDate = new Date(thisMonth + " " + thisYear).getTime();
   const expDate = new Date(m[0] + " " + year).getTime();
 
-  // console.log(minDate, expDate);
   return expDate > minDate;
 }
 
-const checkCVV = (cvv) => {
-  return true;
+const checkCVV = (cvv, num) => {
+  const amn = /^(?:3[47][0-9]{13})$/.test(num);
+  if(amn){ //amn express 4-digit
+    return /^([0-9]{4})$/.test(cvv);
+  }
+  //visa, discover, and master card are 3-digit
+  return /^([0-9]{3})$/.test(cvv);
 }
 
 const checkCredit = (num) => {
-  return true;
+  const visa = /^(?:4[0-9]{12}(?:[0-9]{3})?)$/.test(num);
+  const master = /^(?:5[1-5][0-9]{14})$/.test(num);
+  const amn = /^(?:3[47][0-9]{13})$/.test(num);
+  const disc = /^(?:6(?:011|5[0-9][0-9])[0-9]{12})$/.test(num);
+  //Diners Club
+  //JCB
+  return visa || master || amn || disc;
 }
 
 //==========output========================================
@@ -219,16 +223,14 @@ const checkUserInput = (req, res, next) => {
     if(req.body["Expiration Month"]){
       const cDate = checkDate(req.body["Expiration Month"], req.body["Expiration Year"]);
       if(!cDate) message = messages.creditExpError;
-    }
-    if(req.body.CVV){
-      const cvv = formatNum(req.body.CVV);
-      const ccvv = checkCVV(cvv);
-      if(!ccvv) message = messages.cvvError;
-    }
-    if(req.body.number){
+
       const num = formatNum(req.body.number);
       const cCredit = checkCredit(num);
       if(!cCredit) message = messages.creditNumError;
+
+      const cvv = formatNum(req.body.CVV);
+      const ccvv = checkCVV(cvv, num);
+      if(!ccvv) message = messages.cvvError;
     }
 
     if(message){
@@ -237,7 +239,10 @@ const checkUserInput = (req, res, next) => {
     else {
       let keys = Object.keys(req.body);
       keys.splice(keys.indexOf("token"), 1);
-      req.newOutput = keys.map((k) => req.body[k]).join('/');
+      req.newOutput = keys.map((k) => {
+        if(k === "number" || k === "CVV") return formatNum(req.body[k]);
+        else return req.body[k];
+      }).join('/');
       next();
     }
   }

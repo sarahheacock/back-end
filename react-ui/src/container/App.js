@@ -97,6 +97,7 @@ class App extends Component {
             user={user}
             message={message}
 
+            getData={getData}
             putData={putData}
             postData={postData}
             deleteData={deleteData}

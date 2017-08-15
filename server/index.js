@@ -41,6 +41,29 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.text());
 app.use(bodyParser.json({ type: 'application/json'}));
 
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  if ('OPTIONS' === req.method) {
+    res.send(200);
+  }
+  else {
+    next();
+  }
+});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   if(req.method === "OPTIONS"){
+//     res.header("Access-Control-Allow-Methods", "PUT,POST,DELETE");
+//     return res.status(200).json({});
+//   }
+//   next();
+// });
+
 refreshRoutes.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
 // Answer API requests.

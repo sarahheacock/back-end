@@ -15,6 +15,7 @@ const Footer = (props) => {
         edit={props.edit}
         message={props.message}
 
+        getData={props.getData}
         putData={props.putData}
         postData={props.postData}
         deleteData={props.deleteData}
@@ -63,6 +64,7 @@ Footer.propTypes = {
   edit: PropTypes.object.isRequired,
   message: PropTypes.string.isRequired,
 
+  getData: PropTypes.func.isRequired,
   putData: PropTypes.func.isRequired,
   postData: PropTypes.func.isRequired,
   deleteData: PropTypes.func.isRequired,

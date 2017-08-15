@@ -6,8 +6,8 @@ module.exports = {
   "cloud_name": "dhd1eov8v",
   "api_key": "654875658944285",
   "api_secret": "CtIeF1oIrKwdMEWZ7ToMgdAAzB0",
-  
+
   'FACEBOOK_APP_ID': '108067029894668',
   'FACEBOOK_APP_SECRET': 'bb6a3db7dfa5bcefd376695fda4e17c8',
-  'FACEBOOK_CALLBACKURL': 'http://localhost:8080/user/login/facebook/callback'
+  'FACEBOOK_CALLBACKURL': 'http://localhost:3000/page/598ce0f116ae3456118d1ca1'
 }

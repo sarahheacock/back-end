@@ -1,5 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+// const FBSDK = require('react-native-fbsdk');
+// const {
+//   LoginButton,
+// } = FBSDK;
 
 import { initialMessage, initialEdit, initialUser, messages } from '../../../../data/data';
 
@@ -12,6 +16,7 @@ class SubmitButtonSet extends React.Component {
   static propTypes = {
     editData: PropTypes.func.isRequired,
     updateState: PropTypes.func.isRequired,
+    getData: PropTypes.func.isRequired,
 
     message: PropTypes.string.isRequired,
     user: PropTypes.object.isRequired,
@@ -72,12 +77,18 @@ class SubmitButtonSet extends React.Component {
                 }
               </button>
               {(edit.modalTitle.includes("Login"))?
-                <EditButton
-                  user={this.props.user}
-                  updateState={this.props.updateState}
-                  dataObj={{}}
-                  title="Sign Up"
-                />:
+                <div>
+                  <EditButton
+                    user={this.props.user}
+                    updateState={this.props.updateState}
+                    dataObj={{}}
+                    title="Sign Up"
+                  />
+                  <button className="btn btn-primary" onClick={(e) => {
+                    e.preventDefault();
+                    this.props.getData("/login/facebook");
+                  }}>Facebook</button>
+                </div>:
                 <div></div>}
             </div> :
             <div>
@@ -99,3 +110,5 @@ class SubmitButtonSet extends React.Component {
 
 
 export default SubmitButtonSet;
+
+// <a href="/login/facebook/" className="btn btn-primary"><span className="fa fa-facebook" onClick={(e) => e.preventDefault()}></span> Login with Facebook</a>

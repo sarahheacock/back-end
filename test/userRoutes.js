@@ -197,12 +197,11 @@ describe('User', () => {
         phone: "555-555-5555",
         token: token
       };
-      // console.log(user.id);
+
       chai.request(server)
       .put('/user/' + user.id + "/billing")
       .send(billing)
       .end((err, res) => {
-        // console.log(res.body);
         res.should.have.status(200);
         res.body.should.be.a('object');
 
@@ -215,12 +214,13 @@ describe('User', () => {
     });
 
     it('should edit credit', (done) => {
+      // "6011 0000 0000 0000",
       const credit = {
         "name": "test",
-        "number": "6011 0000 0000 0000",
+        "number": "370 0000 0000 0000",
         "Expiration Month": "Jan 01",
         "Expiration Year": "2050",
-        "CVV": "000",
+        "CVV": "0000",
         "token": token
       };
 
@@ -234,7 +234,7 @@ describe('User', () => {
         res.body.user.should.have.property('email').eql(user.email);
         res.body.user.should.have.property('name').eql(user.name);
         res.body.user.should.have.property('token');
-        res.body.user.should.have.property('credit').eql("test/6011 0000 0000 0000/Jan 01/2050/000");
+        res.body.user.should.have.property('credit').eql("test/370000000000000/Jan 01/2050/0000");
         done();
       });
     });
@@ -245,7 +245,8 @@ describe('User', () => {
         "number": "6011 0000 0000 000",
         "Expiration Month": "Jan 01",
         "Expiration Year": "2050",
-        "CVV": "000"
+        "CVV": "000",
+        "token": token
       };
 
       chai.request(server)
@@ -264,7 +265,8 @@ describe('User', () => {
         "number": "6011 0000 0000 0000",
         "Expiration Month": "Jan 01",
         "Expiration Year": "2050",
-        "CVV": "00"
+        "CVV": "00",
+        "token": token
       };
 
       chai.request(server)
@@ -291,7 +293,6 @@ describe('User', () => {
       .put('/user/' + user.id + "/credit")
       .send(credit)
       .end((err, res) => {
-        // console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql(messages.creditExpError);
         done();

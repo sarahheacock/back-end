@@ -12,6 +12,7 @@ class EditModal extends React.Component {
     edit: PropTypes.object.isRequired,
     message: PropTypes.string.isRequired,
 
+    getData: PropTypes.func.isRequired,
     putData: PropTypes.func.isRequired,
     postData: PropTypes.func.isRequired,
     deleteData: PropTypes.func.isRequired,
@@ -73,6 +74,7 @@ class EditModal extends React.Component {
             <EditForm
               formChange={this.onFormChange}
               editData={editFunc}
+              getData={this.props.getData}
               updateState={this.props.updateState}
 
               message={this.props.message}

@@ -85,7 +85,6 @@ describe('Admin Login', () => {
         .post('/login')
         .send(invalidpage)
         .end((err, res) => {
-          console.log(res.body);
           res.body.should.be.a('object');
           res.body.should.have.property('message').eql(messages.usernameError);
           done();
