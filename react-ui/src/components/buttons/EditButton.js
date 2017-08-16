@@ -71,7 +71,7 @@ const EditButton = (props) => {
   //====THE ACTUAL BUTTON=====================================================
 
   const content = newEdit(props.title, props.dataObj);
-  console.log("content", content);
+  // console.log("content", content);
 
 
   //page editing buttons are hidden

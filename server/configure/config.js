@@ -9,5 +9,5 @@ module.exports = {
 
   'FACEBOOK_APP_ID': '108067029894668',
   'FACEBOOK_APP_SECRET': 'bb6a3db7dfa5bcefd376695fda4e17c8',
-  'FACEBOOK_CALLBACKURL': 'http://localhost:3000/page/598ce0f116ae3456118d1ca1'
+  'FACEBOOK_CALLBACKURL': 'http://localhost:5000/auth/facebook/callback'
 }

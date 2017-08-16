@@ -77,17 +77,17 @@ class SubmitButtonSet extends React.Component {
                 }
               </button>
               {(edit.modalTitle.includes("Login"))?
-                <div>
                   <EditButton
                     user={this.props.user}
                     updateState={this.props.updateState}
                     dataObj={{}}
                     title="Sign Up"
-                  />
-                  <button className="btn btn-primary" onClick={(e) => {
-                    e.preventDefault();
-                    this.props.getData("/login/facebook");
-                  }}>Facebook</button>
+                  />:
+                <div></div>}
+              {(edit.modalTitle.includes("Login"))?
+                <div>
+                  <br />
+                  <a className="btn btn-primary" href="http://localhost:5000/auth/facebook"><i className="fa fa-facebook"></i> Login with Facebook</a>
                 </div>:
                 <div></div>}
             </div> :
@@ -111,4 +111,7 @@ class SubmitButtonSet extends React.Component {
 
 export default SubmitButtonSet;
 
-// <a href="/login/facebook/" className="btn btn-primary"><span className="fa fa-facebook" onClick={(e) => e.preventDefault()}></span> Login with Facebook</a>
+// <button className="btn btn-primary" onClick={(e) => {
+//   e.preventDefault();
+//   this.props.getData("/login/facebook");
+// }}>Facebook</button>

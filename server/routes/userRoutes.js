@@ -25,17 +25,6 @@ userRoutes.param("userID", (req, res, next, id) => {
   });
 });
 
-// userRoutes.param("userInfo", (req, res, next, id) => {
-//   const section = req.user[id];
-//   if(!section){
-//     err = new Error("User Billing or Credit Not Found");
-//     err.status = 404;
-//     return next(err);
-//   }
-//   req.userInfo = section;
-//   return next();
-// })
-
 //=============================================================
 const formatOutput = (obj) => {
   const token = jwt.sign({userID: obj.userID}, configure.secret, {
@@ -50,7 +39,10 @@ const formatOutput = (obj) => {
   user.token = token;
   return {user: user, edit: initialEdit, message: initialMessage};
 }
+
+
 //===================USER SECTIONS================================
+
 userRoutes.post('/', mid.checkSignUpInput, (req, res, next) => {
   let user = new User(req.body);
 
@@ -69,12 +61,14 @@ userRoutes.post('/', mid.checkSignUpInput, (req, res, next) => {
       res.json(formatOutput(user));
     });
   });
-})
+});
 
+userRoutes.get('/:userID', mid.authorizeUser, (req, res, next) => {
+  res.json(formatOutput(req.user));
+});
 
 //update page content
 userRoutes.put('/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
-  console.log(req.newOutput)
   req.user[req.params.userInfo] = req.newOutput;
 
   req.user.save((err,user) => {

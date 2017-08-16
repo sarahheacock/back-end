@@ -16,6 +16,14 @@ class Header extends React.Component {
 
   componentDidMount(){
     // this.props.getData(`/page/${blogID}`);
+    if(window.location.hash.includes('register')){
+      const arr = window.location.hash.split('/');
+      const token = arr[1].replace('?token=', '');
+      const id = arr[2].replace('?id=', '');
+
+      window.location.hash = '';
+      this.props.getData(`/user/${id}?token=${token}`);
+    }
   }
 
   logout = (e) => {
@@ -24,7 +32,8 @@ class Header extends React.Component {
       message: initialMessage,
       user: initialUser
     };
-    this.props.updateState(content);
+    // this.props.updateState(content);
+    this.props.getData('/auth/logout');
   }
 
   render(){

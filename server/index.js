@@ -16,9 +16,11 @@ const options = {
 
 const refreshRoutes = express.Router();
 const pageRoutes = require("./routes/pageRoutes");
+const authRoutes = require("./routes/authRoutes");
 const loginRoutes = require("./routes/loginRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const userRoutes = require("./routes/userRoutes");
+const reservationRoutes = require("./routes/reservationRoutes");
 
 
 
@@ -42,18 +44,6 @@ app.use(bodyParser.text());
 app.use(bodyParser.json({ type: 'application/json'}));
 
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-
-  if ('OPTIONS' === req.method) {
-    res.send(200);
-  }
-  else {
-    next();
-  }
-});
 // app.use((req, res, next) => {
 //   res.header("Access-Control-Allow-Origin", "*");
 //   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -63,13 +53,18 @@ app.use((req, res, next) => {
 //   }
 //   next();
 // });
-
-refreshRoutes.use(express.static(path.resolve(__dirname, '../react-ui/build')));
+// if (process.env.NODE_ENV === "dev") {
+//    const proxy = require('express-http-proxy')
+//    refreshRoutes.use('/*', proxy('http://localhost:3000'))
+//  } else {
+   // probably serve up build version in production
+   refreshRoutes.use(express.static(path.resolve(__dirname, '../react-ui/public')));
+ // }
 
 // Answer API requests.
 //===============================================================
 refreshRoutes.get('*', function(request, response) {
-  response.sendFile(path.resolve(__dirname, '../react-ui/build', 'index.html'));
+  response.sendFile(path.resolve(__dirname, '../react-ui/public', 'index.html'));
 });
 
 //=================ROUTES=======================================
@@ -83,8 +78,10 @@ refreshRoutes.get('*', function(request, response) {
 
 app.use('/sayHello', messageRoutes); //sayHello
 app.use('/login', loginRoutes); //login admin and user
+app.use('/auth', authRoutes); //facebook login
 app.use('/page', pageRoutes); //create/edit page
 app.use('/user', userRoutes); //create/edit user
+app.use('/res', reservationRoutes); 
 app.use(refreshRoutes);
 
 //===========================================================
