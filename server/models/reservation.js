@@ -3,11 +3,6 @@ const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 
 
-// const newArr = () => {
-//   const b = new Array(10)
-//   return b.map((a) => null);
-// }
-
 const ReservationSchema = new Schema({
   start: Number,
   end: Number,
@@ -23,26 +18,27 @@ const ReservationSchema = new Schema({
   },
 });
 
-const UpcomingSchema = new Schema({
-  reservation: {
-    ref: 'Reservation',
-    type: [ReservationSchema]
-  },
+const NodeSchema = new Schema({
+  reservation: [{
+    type: Object,
+    default: {}
+	},
   parent: {
-    type: String,
-    default: ''
-  },
-  children: [{
-    type: String,
-    default: ''
-	}],
+    type: Object,
+    default: {}
+	},
+  children: {
+    type: Object,
+    default: {}
+	}
 });
 
 
 // UpcomingSchema.method("insertReservation", )
-
-const Upcoming = mongoose.model("Upcoming", UpcomingSchema);
+const Reservation = mongoose.model("Reservation", ReservationSchema);
+const Node = mongoose.model("Node", NodeSchema);
 
 module.exports = {
-  Upcoming: Upcoming
+  Reservation: Reservation,
+  Node: Node
 };
