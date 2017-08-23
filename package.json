@@ -15,6 +15,7 @@
     "react-ui/node_modules"
   ],
   "dependencies": {
+    "async": "^2.5.0",
     "bcrypt": "^1.0.2",
     "body-parser": "^1.17.2",
     "config": "^1.26.1",

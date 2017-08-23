@@ -1,7 +1,11 @@
 const express = require("express");
 const reservationRoutes = express.Router();
-const Upcoming = require("../models/reservation").Upcoming;
+
+const Node = require("../models/reservation").Node;
+const Reservation = require("../models/reservation").Reservation;
+
 const mid = require('../middleware/upcomingMiddleware');
+
 
 // reservationRoutes.param("upcomingID", (req, res, next, id) => {
 //   Upcoming.findById(id, (err, doc) => {
@@ -22,48 +26,62 @@ const mid = require('../middleware/upcomingMiddleware');
 //it should return reservation based on month
 //it should get reservation based on userID
 //it should create reservation with token
-reservationRoutes.get('/', (req, res, next) => {
-  const upcoming = new Upcoming({name: 'a'});
-  upcoming.children = new Array(16);
+reservationRoutes.get('/', (req, res, next) => { //create root
+  const root = new Node();
 
-  upcoming.save((err, up) => {
+  root.save((err, start) => {
     if(err) next(err);
-    res.json(up);
+    res.json(start);
   });
 });
 
 //get reservation
-reservationRoutes.get('/:upcomingID', (req, res, next) => {
-  const newRes = {
-    userID: "598f"
-  };
-
-  let node = req.root;
-  const arr = newRes.userID.split('')
-
-  for(let i = 0; i < arr.length; ) {
-
-    const letter = newRes.userID.charAt(i);
-    let num = (letter > '9') ? letter - ('a' - 10) : letter - '0';
-    if(node.children[num] === null){
-      res.json({message: "No reservation"});
-    }
-    else {
-      Upcoming.findById(node.children[num], (err, u) => {
-        if(err) return next(err);
-        node = u;
-        i++;
-      });
-    }
-
-  }
-
-  res.json(node.reservation);
-});
+// reservationRoutes.get('/:upcomingID', (req, res, next) => {
+//   const newRes = {
+//     userID: "598f"
+//   };
+//
+//   let node = req.root;
+//   const arr = newRes.userID.split('')
+//
+//   for(let i = 0; i < arr.length; ) {
+//
+//     const letter = newRes.userID.charAt(i);
+//     let num = (letter > '9') ? letter - ('a' - 10) : letter - '0';
+//     if(node.children[num] === null){
+//       res.json({message: "No reservation"});
+//     }
+//     else {
+//       Upcoming.findById(node.children[num], (err, u) => {
+//         if(err) return next(err);
+//         node = u;
+//         i++;
+//       });
+//     }
+//
+//   }
+//
+//   res.json(node.reservation);
+// });
 
 //get reservation
-reservationRoutes.post('/:upcomingID', mid.create, (req, res, next) => {
-  res.json(req.result);
+reservationRoutes.post('/', (req, res, next) => {
+  const date = new Date("Aug 22, 2017").getTime();
+  let reservation = new Reservation({
+    start: date,
+    end: date + (2*24*60*60*1000),
+    event: {
+      userID: "abcd"
+    },
+  });
+
+  // console.log("reservation", reservation);
+
+  reservation.save((err, reserve) => {
+    if(err) next(err);
+    // else next();
+    else res.json(reserve);
+  });
 });
 
 

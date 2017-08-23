@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const messages = require('../../data/data').messages;
+const root = require('../configure/config').root;
 
 
 const sortRooms = function(a, b){
@@ -61,6 +62,10 @@ const PageSchema = new Schema({
   userID: {
     type: String,
     default: makeid()
+  },
+  root: {
+    type: String,
+    default: root
   },
   home: {
     type: Object,

@@ -69,7 +69,6 @@ refreshRoutes.get('*', function(request, response) {
 
 //=================ROUTES=======================================
 
-// apply the routes to our application with the prefix /api
 
 
 //upload file
@@ -81,7 +80,7 @@ app.use('/login', loginRoutes); //login admin and user
 app.use('/auth', authRoutes); //facebook login
 app.use('/page', pageRoutes); //create/edit page
 app.use('/user', userRoutes); //create/edit user
-app.use('/res', reservationRoutes); 
+app.use('/res', reservationRoutes);
 app.use(refreshRoutes);
 
 //===========================================================
