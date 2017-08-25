@@ -3,12 +3,12 @@ const reservationRoutes = express.Router();
 
 const Node = require("../models/reservation").Node;
 const Reservation = require("../models/reservation").Reservation;
-
+const root = require('../configure/config').root;
 const mid = require('../middleware/upcomingMiddleware');
 
 
-// reservationRoutes.param("upcomingID", (req, res, next, id) => {
-//   Upcoming.findById(id, (err, doc) => {
+// reservationRoutes.param("userID", (req, res, next, id) => {
+//   Node.findById(id, (err, doc) => {
 //     if(err) return next(err);
 //     if(!doc){
 //       err = new Error("Root Not Found");
@@ -19,6 +19,7 @@ const mid = require('../middleware/upcomingMiddleware');
 //     return next();
 //   });
 // });
+
 
 
 //===================UPCOMING================================
@@ -35,54 +36,32 @@ reservationRoutes.get('/', (req, res, next) => { //create root
   });
 });
 
-//get reservation
-// reservationRoutes.get('/:upcomingID', (req, res, next) => {
-//   const newRes = {
-//     userID: "598f"
-//   };
-//
-//   let node = req.root;
-//   const arr = newRes.userID.split('')
-//
-//   for(let i = 0; i < arr.length; ) {
-//
-//     const letter = newRes.userID.charAt(i);
-//     let num = (letter > '9') ? letter - ('a' - 10) : letter - '0';
-//     if(node.children[num] === null){
-//       res.json({message: "No reservation"});
-//     }
-//     else {
-//       Upcoming.findById(node.children[num], (err, u) => {
-//         if(err) return next(err);
-//         node = u;
-//         i++;
-//       });
-//     }
-//
-//   }
-//
-//   res.json(node.reservation);
-// });
+
 
 //get reservation
 reservationRoutes.post('/', (req, res, next) => {
-  const date = new Date("Aug 22, 2017").getTime();
+  const date = new Date("May 22, 2021").getTime();
   let reservation = new Reservation({
     start: date,
-    end: date + (2*24*60*60*1000),
+    end: date + (10*24*60*60*1000),
     event: {
       userID: "abcd"
     },
   });
-
   // console.log("reservation", reservation);
 
   reservation.save((err, reserve) => {
     if(err) next(err);
-    // else next();
     else res.json(reserve);
   });
 });
+
+//get reservation
+reservationRoutes.get('/:userID', mid.find, (req, res, next) => {
+  res.json(req.reservation);
+});
+
+
 
 
 module.exports = reservationRoutes;

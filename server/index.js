@@ -5,6 +5,7 @@ const app = express();
 
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const morgan = require("morgan");
 
 const testConfig = require('config'); //we load the db location from the JSON files
 // const testConfig = require('./configure/config');
@@ -37,7 +38,7 @@ db.once("open", function(){
   console.log("db connection successful");
 });
 
-
+app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.text());
