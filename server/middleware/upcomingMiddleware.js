@@ -1,69 +1,41 @@
-const Node = require("../models/reservation").Node;
-const Reservation = require("../models/reservation").Reservation;
-const root = require('../configure/config').root;
-const async = require("async");
-const each = require("async/each");
-const parallel = require("async/parallel");
+const TreeOne = require("../models/reservation").TreeOne;
+// const Reservation = require("../models/reservation").Reservation;
+const rootOne = require('../configure/config').rootOne;
+// const async = require("async");
+// const each = require("async/each");
+// const parallel = require("async/parallel");
 // const data = require('../../data/data');
 
-const look = (nodeID, i, next, req) => {
-  Node.findById(nodeID, (err, doc) => {
-    if(err || !doc) next(err);
-    if(i !== req.params.userID.length - 1){
-      return look(doc.children[req.params.userID.charAt(i)], i + 1, next, req);
-    }
-    else {
-      const arrID = doc.reservation[req.params.userID.charAt(i)];
-      let arr = [];
-      async.each(arrID, (n) => {
-        Reservation.findById(n, (err, doc) => {
-          if(err || !doc) next(err);
-          arr.push(doc);
-          if(arr.length === arrID.length){
-            req.reservation = arr;
-            next();
-          }
-        });
-      });
-      // async.parallel([
-      //   () => {
-      //     Reservation.findById(arrID[0], (err, doc) => {
-      //       if(err || !doc) next(err);
-      //       arr.push(doc);
-      //       if(arr.length === arrID.length){
-      //         req.reservation = arr;
-      //         next();
-      //       }
-      //     });
-      //   },
-      //   () => {
-      //     Reservation.findById(arrID[1], (err, doc) => {
-      //       if(err || !doc) next(err);
-      //       arr.push(doc);
-      //       if(arr.length === arrID.length){
-      //         req.reservation = arr;
-      //         next();
-      //       }
-      //     });
-      //   }
-      // ]);
-    }
-  });
-}
+const init = (req, res, next) => {
+  let root = new TreeOne();
+  root.date['2017'] = {};
 
-const create = (req, res, next) => {
-  next();
+  ('0123456789abcdef').split('').forEach((key) => {
+    if(key >= '0' && key <= '9') root.date['2017'][key] = {};
+    else if(key === 'a') root.date['2017']['10'] = {};
+    else if(key === 'b') root.date['2017']['11'] = {};
+    root.user[key] = {};
+  });
+
+  root.save((err, start) => {
+    if(err) next(err);
+    req.root = start;
+    next();
+    // res.json(start);
+  });
 };
 
 const find = (req, res, next) => {
-  look(root, 0, next, req);
-  // Reservation.find({'start': req.params.userID}, (err, doc) => {
-  //   req.reservation = doc;
-  //   next();
-  // })
+  TreeOne.findById(rootOne).exec((err, root) => {
+    if(err) next(err);
+
+    const last = req.params.userID.charAt(req.params.userID.length - 1);
+    req.reservation = (root.user[last][req.params.userID]) ? root.user[last][req.params.userID] : {message: "User has no reservations"};
+    next();
+  })
 };
 
 module.exports = {
-  create: create,
-  find: find
+  find: find,
+  init: init
 };

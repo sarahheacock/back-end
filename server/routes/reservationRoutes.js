@@ -1,25 +1,12 @@
 const express = require("express");
 const reservationRoutes = express.Router();
 
-const Node = require("../models/reservation").Node;
 const Reservation = require("../models/reservation").Reservation;
 const root = require('../configure/config').root;
 const mid = require('../middleware/upcomingMiddleware');
 
-
-// reservationRoutes.param("userID", (req, res, next, id) => {
-//   Node.findById(id, (err, doc) => {
-//     if(err) return next(err);
-//     if(!doc){
-//       err = new Error("Root Not Found");
-//       err.status = 404;
-//       return next(err);
-//     }
-//     req.root = doc;
-//     return next();
-//   });
-// });
-
+const async = require("async");
+const each = require("async/each");
 
 
 //===================UPCOMING================================
@@ -27,25 +14,20 @@ const mid = require('../middleware/upcomingMiddleware');
 //it should return reservation based on month
 //it should get reservation based on userID
 //it should create reservation with token
-reservationRoutes.get('/', (req, res, next) => { //create root
-  const root = new Node();
-
-  root.save((err, start) => {
-    if(err) next(err);
-    res.json(start);
-  });
+reservationRoutes.get('/', mid.init, (req, res, next) => { //create root
+  res.json(req.root);
 });
 
 
 
 //get reservation
 reservationRoutes.post('/', (req, res, next) => {
-  const date = new Date("May 22, 2021").getTime();
+  const date = new Date("May 22, 2019").getTime();
   let reservation = new Reservation({
     start: date,
-    end: date + (10*24*60*60*1000),
+    end: date + (2*24*60*60*1000),
     event: {
-      userID: "abcd"
+      userID: "df2345678"
     },
   });
   // console.log("reservation", reservation);
@@ -58,7 +40,17 @@ reservationRoutes.post('/', (req, res, next) => {
 
 //get reservation
 reservationRoutes.get('/:userID', mid.find, (req, res, next) => {
-  res.json(req.reservation);
+  if(!Array.isArray(req.reservation)) res.json(req.reservation);
+
+  let result = [];
+  async.each(req.reservation, (stay) => {
+    Reservation.findById(stay, (err, doc) => {
+      if(err || !doc) next(err);
+      result.push(doc);
+      if(result.length === req.reservation.length) res.json(result);
+    });
+  });
+
 });
 
 

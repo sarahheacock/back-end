@@ -44,23 +44,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.text());
 app.use(bodyParser.json({ type: 'application/json'}));
 
+refreshRoutes.use(express.static(path.resolve(__dirname, '../react-ui/public')));
 
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   if(req.method === "OPTIONS"){
-//     res.header("Access-Control-Allow-Methods", "PUT,POST,DELETE");
-//     return res.status(200).json({});
-//   }
-//   next();
-// });
-// if (process.env.NODE_ENV === "dev") {
-//    const proxy = require('express-http-proxy')
-//    refreshRoutes.use('/*', proxy('http://localhost:3000'))
-//  } else {
-   // probably serve up build version in production
-   refreshRoutes.use(express.static(path.resolve(__dirname, '../react-ui/public')));
- // }
 
 // Answer API requests.
 //===============================================================
