@@ -22,7 +22,7 @@ reservationRoutes.get('/', mid.init, (req, res, next) => { //create root
 
 //get reservation
 reservationRoutes.post('/', (req, res, next) => {
-  const date = new Date("May 22, 2019").getTime();
+  const date = new Date("May 22, 2017").getTime();
   let reservation = new Reservation({
     start: date,
     end: date + (2*24*60*60*1000),

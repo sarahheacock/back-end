@@ -7,43 +7,7 @@ const rootOne = require('../configure/config').rootOne;
 
 
 const clean = (branch) => {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  let obj = {};
 
-  (Object.keys(branch.date)).forEach((year) => {
-    // console.log("year", year);
-    const thisYear = parseInt(year);
-    if(thisYear <= currentYear){
-      (Object.keys(branch.date[year])).forEach((month) => { //iterate through months for year
-        const thisMonth = parseInt(month);
-        // console.log("month", year, month);
-        if(thisYear < currentYear || thisMonth < currentMonth){
-          console.log(year, month);
-          (Object.keys(branch.date[year][month])).forEach((date) => { //iterate through dates for month
-            // console.log("date", year, month, date);
-            (branch.date[year][month][date]).forEach((id) => { //iterate through each id
-              // console.log("date", year, month, date, id);
-              Reservation.findById(id, (err, doc) => {
-                // console.log("res", year, month, date, id, doc);
-                doc.remove((err) => {
-                  if(err) console.log(err);
-                  
-                });
-
-              });
-            });
-          });
-        }
-        // else {
-        //   if(!obj[year]) obj[year] = {};
-        //   if(!obj[year][month]) obj[year][month] = {};
-        //   obj[year][month] = branch.date[year][month];
-        //   console.log("obj", obj);
-        // }
-      });
-    }
-  });
 }
 
 const ReservationSchema = new Schema({
@@ -73,6 +37,64 @@ const TreeOneSchema = new Schema({ //super straight forward hash
   }
 }, { minimize: false });
 
+TreeOneSchema.method("clean", (branch, callback) => {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+
+  (Object.keys(branch.date)).forEach((year) => {
+    if(Object.keys(branch.date[year]).length === 0) delete branch.date[year];
+    // console.log("year", year);
+    const thisYear = parseInt(year);
+    if(thisYear <= currentYear){
+      (Object.keys(branch.date[year])).forEach((month) => { //iterate through months for year
+        const thisMonth = parseInt(month);
+        // console.log("month", year, month);
+        if(thisYear < currentYear || thisMonth < currentMonth){
+          console.log(year, month);
+
+          (Object.keys(branch.date[year][month])).forEach((date) => { //iterate through dates for month
+            (branch.date[year][month][date]).forEach((id, i) => { //iterate through each id
+              Reservation.findById(id, (err, doc) => {
+                console.log("id", id);
+                const user = (doc.event.userID) ? doc.event.userID : '';
+
+                doc.remove((err) => {
+                  if(err) console.log(err);
+
+                  const start = branch.date[year][month][date].indexOf(id);
+                  console.log("start", start);
+                  branch.date[year][month][date].splice(start, 1);
+
+                  if(branch.date[year][month][date].length === 0) delete branch.date[year][month][date];
+                  if(Object.keys(branch.date[year][month]).length === 0) delete branch.date[year][month];
+                  if(Object.keys(branch.date[year]).length === 0) delete branch.date[year];
+
+
+                  if(user){
+                    const last = user.charAt(user.length - 1).toString();
+                    console.log("last", last);
+                    console.log("user", branch.user[last]);
+
+                    const startIndex = branch.user[last][user].indexOf(id);
+                    // console.log("startIndex", startIndex);
+                    branch.user[last][user].splice(startIndex, 1);
+                    if(branch.user[last][user].length === 0) delete branch.user[last][user];
+                  }
+
+                  console.log("branch", branch)
+
+                });
+
+              });
+            });
+          });
+        }
+      });
+    }
+  });
+
+  branch.save(callback);
+});
 
 ReservationSchema.post("save", (doc) => {
   let arr = [];
@@ -87,39 +109,41 @@ ReservationSchema.post("save", (doc) => {
     start += (24*60*60*1000);
   }
 
-  TreeOne.findById(rootOne, (err, branch) => {
+  TreeOne.findById(rootOne, (err, leaf) => {
     let i = 0;
 
     //get rid of old reservations
-    clean(branch);
+    // clean(branch);
+    leaf.clean(leaf, (err, branch) => {
+      async.each(arr, (id) => {
+        const month = new Date(parseInt(id)).getMonth().toString();
+        const year = new Date(parseInt(id)).getFullYear().toString();
 
-    async.each(arr, (id) => {
-      const month = new Date(parseInt(id)).getMonth().toString();
-      const year = new Date(parseInt(id)).getFullYear().toString();
+        if(!branch.date[year]){ //if year exists
+          branch.date[year] = {};
+          for(let i = 0; i < 12; i++) branch.date[year][i.toString()] = {};
+        }
 
-      if(!branch.date[year]){ //if year exists
-        branch.date[year] = {};
-        for(let i = 0; i < 12; i++) branch.date[year][i.toString()] = {};
-      }
+        branch.date[year][month][id] = (branch.date[year][month][id]) ? branch.date[year][month][id].concat([doc._id]) : [doc._id];
+        i++;
 
-      branch.date[year][month][id] = (branch.date[year][month][id]) ? branch.date[year][month][id].concat([doc._id]) : [doc._id];
-      i++;
+        if(i === arr.length){
+          branch.markModified('date');
+          // branch.markModified('user');
+          branch.save((err, newBranch) => {
+            if(user){
+              const last = user.charAt(user.length - 1).toString();
+              newBranch.user[last][user] = (newBranch.user[last][user]) ? newBranch.user[last][user].concat([doc._id]) : [doc._id];
 
-      if(i === arr.length){
-        branch.markModified('date');
-        branch.save((err, newBranch) => {
-          if(user){
-            const last = user.charAt(user.length - 1);
-            newBranch.user[last][user] = (newBranch.user[last][user]) ? newBranch.user[last][user].concat([doc._id]) : [doc._id];
-
-            newBranch.markModified('user');
-            newBranch.save((err, b) => {
-              return;
-            });
-          }
-          return;
-        });
-      }
+              newBranch.markModified('user');
+              newBranch.save((err, b) => {
+                return;
+              });
+            }
+            return;
+          });
+        }
+      });
     });
   });
 
