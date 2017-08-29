@@ -3,7 +3,80 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const messages = require('../../data/data').messages;
-const root = require('../configure/config').root;
+// const root = require('../configure/config').root;
+
+const addressData = require('../../data/data').addressData;
+const defaultBilling = (Object.keys(addressData)).map((k) => addressData[k]["default"]).join('/');
+
+const paymentData = require('../../data/data').paymentData;
+const defaultPayment = (Object.keys(paymentData)).map((k) => paymentData[k]["default"]).join('/');
+
+
+
+const makeid = () => {
+    let text = "";
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( let i=0; i < 16; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+
+const UserSchema = new Schema({
+  name: {
+    type: String,
+    trim: true
+  },
+  email: {
+    type: String,
+    unique: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    trim: true
+  },
+  billing: {
+    type: String,
+    trim: true,
+    default: defaultBilling
+  },
+  credit: {
+    type: String,
+    trim: true,
+    default: defaultPayment
+  },
+  userID: {
+    type: String,
+    default: makeid
+  },
+  pageID: Schema.Types.ObjectId
+});
+
+
+
+// authenticate input against database documents
+UserSchema.statics.authenticate = (username, password, callback) => {
+  User.findOne({ email: username })
+    .exec((error, user) => {
+      if (error) {
+        return callback(error);
+      }
+      else if (!user) {
+        return callback(messages.usernameError);
+      }
+      bcrypt.compare(password, user.password , (error, result) => {
+        if (result === true){
+          return callback(null, user);
+        }
+        else {
+          return callback(messages.passError);
+        }
+      })
+    });
+}
 
 
 const sortRooms = function(a, b){
@@ -13,16 +86,6 @@ const sortRooms = function(a, b){
 const sortLocalGuide = function(a, b){
   if(b.categorty === a.category) return a.title - b.title;
   return b.category - a.category;
-};
-
-const makeid = () => {
-  let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for( let i=0; i < 16; i++ )
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
 };
 
 
@@ -63,10 +126,6 @@ const PageSchema = new Schema({
     type: String,
     default: makeid()
   },
-  root: {
-    type: String,
-    default: root
-  },
   home: {
     type: Object,
     default: {
@@ -79,7 +138,7 @@ const PageSchema = new Schema({
     title: {type: String, default: "Welcome to our bed and breakfast..."},
     b: {type: String, default: "We are excited to have you!"},
     p1: {type: String, default: "We are excited to have you!"},
-    rooms: {type: [RoomSchema], default: [RoomSchema]}
+    rooms: [{ type: Schema.Types.ObjectId, ref: 'Room' }],
   },
   "local-guide": {
     title: {type: String, default: "Welcome to our bed and breakfast..."},
@@ -110,12 +169,87 @@ PageSchema.statics.authenticate = (username, password, callback) => {
     });
 }
 
-PageSchema.pre('save', function(next) {
+PageSchema.pre('save', (next) => {
   let page = this;
-  if(page.rooms !== undefined) page.rooms.sort(sortRooms);
-  if(page.localGuide !== undefined) page.localGuide.sort(sortLocalGuide);
+  if(page.gallery !== undefined){
+    if(page.gallery.rooms !== undefined) page.gallery.rooms.sort(sortRooms);
+    if(page.localGuide.guide !== undefined) page.localGuide.guide.sort(sortLocalGuide);
+  }
   next();
 });
 
+// PageSchema.post('update', (err, res, next) => {
+//   if(err) next(err);
+//   Room.find({}).exec((err, rooms) => {
+//
+//   });
+// });
+
+PageSchema.methods.updateRooms = function(callback){
+  Room.find({}).exec((err, rooms) => {
+
+    if(err) callback(err, null);
+    if(!this.gallery) this.gallery = {
+      "rooms": [],
+      "p1": "Hello!",
+      "b": "We are excited to have you!",
+      "title": "Welcome to our bed and breakfast..."
+    };
+    // if(!this.gallery.rooms) this.gallery.rooms = [];
+
+    this.gallery.rooms = rooms.map((room) => { return room._id; });
+    this.save(callback);
+    // this.markModified('gallery');
+    // console.log(this);
+    // next();
+  });
+};
+
+// RoomSchema.pre('save', (doc) => {
+//   Page.find({}).exec((err, pages) => {
+//     pages.forEach((page) => {
+//       page.gallery.rooms.push(doc);
+//
+//     });
+//   });
+// });
+// RoomSchema.post('remove', (doc) => {
+//   Page.find({}).exec((err, page) => {
+//     if(err) console.log(err);
+//     const index = page.gallery.rooms.indexOf(doc._id);
+//     page.gallery.rooms.splice(index, 1);
+//
+//     page.save((err, newPage) => {
+//
+//     });
+//   })
+// });
+//
+// RoomSchema.post('init', (doc) => {
+//
+// });
+
+const ReservationSchema = new Schema({
+  start: Number,
+  end: Number,
+  guests: Number,
+  roomID: { type: Schema.Types.ObjectId, ref: 'Room' },
+  userID: { type: Schema.Types.ObjectId, ref: 'User' },
+  paid: {type:String, default:''},
+  checkedIn: Date,
+  notes: '',
+  cost: Number,
+  createdAt: {type:Date, default:Date.now},
+});
+
 const Page = mongoose.model("Page", PageSchema);
-module.exports.Page = Page;
+const Room = mongoose.model("Room", RoomSchema);
+const User = mongoose.model("User", UserSchema);
+const Reservation = mongoose.model("Reservation", ReservationSchema);
+
+module.exports = {
+  Page: Page,
+  User: User,
+  Room: Room,
+  Reservation: Reservation
+};

@@ -1,4 +1,4 @@
-const TreeOne = require("../models/reservation").TreeOne;
+// const TreeOne = require("../models/reservation").TreeOne;
 // const Reservation = require("../models/reservation").Reservation;
 const rootOne = require('../configure/config').rootOne;
 // const async = require("async");
@@ -26,13 +26,14 @@ const init = (req, res, next) => {
 };
 
 const find = (req, res, next) => {
-  TreeOne.findById(rootOne).exec((err, root) => {
-    if(err) next(err);
-
-    const last = req.params.userID.charAt(req.params.userID.length - 1);
-    req.reservation = (root.user[last][req.params.userID]) ? root.user[last][req.params.userID] : {message: "User has no reservations"};
-    next();
-  })
+  next();
+  // TreeOne.findById(rootOne).exec((err, root) => {
+  //   if(err) next(err);
+  //
+  //   const last = req.params.userID.charAt(req.params.userID.length - 1);
+  //   req.reservation = (root.user[last][req.params.userID]) ? root.user[last][req.params.userID] : {message: "User has no reservations"};
+  //   next();
+  // })
 };
 
 module.exports = {

@@ -1,6 +1,7 @@
 const express = require("express");
 const pageRoutes = express.Router();
 const Page = require("../models/page").Page;
+const Room = require("../models/page").Room;
 const mid = require('../middleware/middleware');
 
 const configure = require('../configure/config');
@@ -14,7 +15,14 @@ const keys = links.slice(0, end - 1);
 
 
 pageRoutes.param("pageID", (req, res, next, id) => {
-  Page.findById(id, (err, doc) => {
+  Page.findById(id).populate({
+    path: 'gallery.rooms',
+    model: 'Room'
+    // populate: {
+    //   path: 'rooms',
+    //   model: 'Room'
+    // }
+  }).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
       err = new Error("Page Not Found");
@@ -38,16 +46,43 @@ pageRoutes.param("section", (req, res, next, id) => {
 })
 
 pageRoutes.param("sectionID", (req, res, next, id) => {
-  const result = (req.params.section === "gallery") ?
-    req.page.gallery.rooms.id(id) : req.page["local-guide"].guide.id(id);
-
-  if(!result){
-    let err = new Error("Not Found");
-    err.status = 404;
-    return next(err);
+  if(req.params.section === "local-guide"){
+    const result = req.page["local-guide"].guide.id(id);
+    if(!result){
+      let err = new Error("Room Not Found");
+      err.status = 404;
+      return next(err);
+    }
+    req.sectionID = result;
+    next();
   }
-  req.sectionID = result;
-  return next();
+  else if(req.params.section === "gallery"){
+    // console.log(req.page.gallery.rooms);
+    // const result = JSON.parse(req.page.gallery.rooms).id(id);
+    // if(!result){
+    //   let err = new Error("Room Not Found");
+    //   err.status = 404;
+    //   return next(err);
+    // }
+    // req.sectionID = result;
+    // next();
+    Room.findById(id).exec((err, doc) => {
+      if(err) next(err);
+      if(!doc){
+        let err = new Error("Room Not Found");
+        err.status = 404;
+        return next(err);
+      }
+      req.sectionID = doc;
+      next();
+    });
+  }
+  else {
+    let err = new Error("Invalid Request");
+    err.status = 404;
+    next(err);
+  }
+
 });
 
 const formatOutput = (obj) => {
@@ -62,26 +97,31 @@ const formatOutput = (obj) => {
 
 //===================GET SECTIONS================================
 pageRoutes.post('/', (req, res, next) => {
-  let page = new Page(req.body);
-
-  bcrypt.hash(page.password, 10, (err, hash) => {
-    if (err) {
-      return next(err);
-    }
-    page.password = hash;
-
-    page.save((err, page) => {
-      if(err){
-        err = new Error("Page not created");
-        err.status = 404;
-        return next(err);
-      }
-      res.status(201);
-      res.json(page)
-    });
-
+  // let page = new Page(req.body);
+  let page = new Page({
+    "name": "test",
+    "password": "password"
   });
-})
+  let room = new Room();
+
+  room.save((err, rooms) => {
+    bcrypt.hash(page.password, 10, (err, hash) => {
+      if (err) return next(err);
+      page.password = hash;
+
+      page.updateRooms((err, page) => {
+        if(err){
+          err = new Error("Page not created");
+          err.status = 404;
+          return next(err);
+        }
+        res.status(201);
+        res.json(page);
+      });
+
+    });
+  });
+});
 
 
 //get page

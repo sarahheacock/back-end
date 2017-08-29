@@ -5,7 +5,7 @@ const configure = require('../configure/config');
 // const initialEdit = require('../../data/data').initialEdit;
 const initialUser = require('../../data/data').initialUser;
 // const initialMessage = require('../../data/data').initialMessage;
-const User = require("../models/user").User;
+const User = require("../models/page").User;
 const jwt = require('jsonwebtoken');
 
 const passport = require('passport');

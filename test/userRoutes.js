@@ -3,7 +3,7 @@ process.env.NODE_ENV = 'test';
 
 const mongoose = require("mongoose");
 const messages = require("../data/data").messages;
-const User = require('../server/models/user').User;
+const User = require('../server/models/page').User;
 const jwt = require('jsonwebtoken');
 const configure = require('../server/configure/config');
 

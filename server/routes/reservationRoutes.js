@@ -1,7 +1,7 @@
 const express = require("express");
 const reservationRoutes = express.Router();
 
-const Reservation = require("../models/reservation").Reservation;
+const Reservation = require("../models/page").Reservation;
 const root = require('../configure/config').root;
 const mid = require('../middleware/upcomingMiddleware');
 
@@ -22,7 +22,7 @@ reservationRoutes.get('/', mid.init, (req, res, next) => { //create root
 
 //get reservation
 reservationRoutes.post('/', (req, res, next) => {
-  const date = new Date("May 22, 2017").getTime();
+  const date = new Date("Dec 22, 2017").getTime();
   let reservation = new Reservation({
     start: date,
     end: date + (2*24*60*60*1000),

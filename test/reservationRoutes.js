@@ -4,9 +4,9 @@ process.env.NODE_ENV = 'test';
 const mongoose = require("mongoose");
 const messages = require("../data/data").messages;
 
-const Reservation = require('../server/models/reservation').Reservation;
-const Node = require('../server/models/reservation').Node;
-const User = require('../server/models/user').User;
+const Reservation = require('../server/models/page').Reservation;
+// const Node = require('../server/models/reservation').Node;
+const User = require('../server/models/page').User;
 const Page = require('../server/models/page').Page;
 
 //Require the dev-dependencies
