@@ -14,14 +14,11 @@ const end = links.length;
 const keys = links.slice(0, end - 1);
 
 
+
 pageRoutes.param("pageID", (req, res, next, id) => {
   Page.findById(id).populate({
     path: 'gallery.rooms',
     model: 'Room'
-    // populate: {
-    //   path: 'rooms',
-    //   model: 'Room'
-    // }
   }).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
@@ -29,73 +26,26 @@ pageRoutes.param("pageID", (req, res, next, id) => {
       err.status = 404;
       return next(err);
     }
+
     req.page = doc;
     return next();
   });
 });
 
-pageRoutes.param("section", (req, res, next, id) => {
-  const section = req.page[id];
-  if(!section){
-    err = new Error("Page Route Found");
-    err.status = 404;
-    return next(err);
-  }
-  req.section = section;
-  return next();
-})
-
-pageRoutes.param("sectionID", (req, res, next, id) => {
-  if(req.params.section === "local-guide"){
-    const result = req.page["local-guide"].guide.id(id);
-    if(!result){
-      let err = new Error("Room Not Found");
-      err.status = 404;
-      return next(err);
-    }
-    req.sectionID = result;
-    next();
-  }
-  else if(req.params.section === "gallery"){
-    // console.log(req.page.gallery.rooms);
-    // const result = JSON.parse(req.page.gallery.rooms).id(id);
-    // if(!result){
-    //   let err = new Error("Room Not Found");
-    //   err.status = 404;
-    //   return next(err);
-    // }
-    // req.sectionID = result;
-    // next();
-    Room.findById(id).exec((err, doc) => {
-      if(err) next(err);
-      if(!doc){
-        let err = new Error("Room Not Found");
-        err.status = 404;
-        return next(err);
-      }
-      req.sectionID = doc;
-      next();
-    });
-  }
-  else {
-    let err = new Error("Invalid Request");
-    err.status = 404;
-    next(err);
-  }
-
-});
-
-const formatOutput = (obj) => {
+const formatOutput = (obj, get) => {
   let newObj = {};
 
   keys.forEach((k) => {
     newObj[k] = obj[k]
   });
-  return {data: newObj, edit: initialEdit, message: initialMessage};
+
+  if(get) return {data: obj};
+  return {data: obj, edit: initialEdit, message: initialMessage};
 }
 
 
-//===================GET SECTIONS================================
+//===================PAGE ROUTES================================
+//create page
 pageRoutes.post('/', (req, res, next) => {
   // let page = new Page(req.body);
   let page = new Page({
@@ -108,13 +58,10 @@ pageRoutes.post('/', (req, res, next) => {
     bcrypt.hash(page.password, 10, (err, hash) => {
       if (err) return next(err);
       page.password = hash;
+      page.gallery.rooms.push(rooms._id);
 
-      page.updateRooms((err, page) => {
-        if(err){
-          err = new Error("Page not created");
-          err.status = 404;
-          return next(err);
-        }
+      page.save((err, page) => {
+        if(err) return next(err);
         res.status(201);
         res.json(page);
       });
@@ -127,23 +74,35 @@ pageRoutes.post('/', (req, res, next) => {
 //get page
 pageRoutes.get('/:pageID', (req, res, next) => {
   res.status(200);
-  let newObj = {};
 
-  keys.forEach((k) => {
-    newObj[k] = req.page[k]
-  });
-  res.json({data: newObj});
+  res.json(formatOutput(req.page, true));
 });
 
 
-//add rate
-pageRoutes.post('/:pageID/:section', mid.authorizeUser, mid.checkRateInput, (req, res, next) => {
-  if(req.params.section === "gallery") req.section.rooms.push(req.body);
-  else req.section.guide.push(req.body);
+//add room
+pageRoutes.post('/:pageID/room', mid.authorizeUser, mid.checkRoomInput, (req, res, next) => {
+  let room = new Room(req.body);
+
+  room.save((err, rooms) => {
+    req.page.updateRooms((err, page) => {
+      if(err){
+        err = new Error("Rooms not updated");
+        err.status = 404;
+        return next(err);
+      }
+      res.status(201);
+      res.json({data: page, edit: initialEdit, message: initialMessage});
+    });
+  });
+});
+
+//add guide
+pageRoutes.post('/:pageID/guide', mid.authorizeUser, mid.checkGuideInput, (req, res, next) => {
+  req.page["local-guide"]["guide"].push(req.body);
 
   req.page.save((err, page) => {
     if(err){
-      let err = new Error("Unable to add new rate. Contact Sarah.")
+      let err = new Error("Unable to add guide")
       err.status = 500;
       next(err)
     }
@@ -156,12 +115,17 @@ pageRoutes.post('/:pageID/:section', mid.authorizeUser, mid.checkRateInput, (req
 //update page content
 pageRoutes.put('/:pageID/:section/', mid.authorizeUser, mid.checkEditInput, (req, res, next) => {
   // Object.assign(req.section, req.body);
-  req.page[req.params.section] = Object.assign({}, req.section, req.body);
+  let result = req.page[req.params.section];
+  if(!result){
+    err = new Error("Not found");
+    next(err);
+  }
+  req.page[req.params.section] = Object.assign({}, result, req.body);
 
   req.page.save((err,page) => {
     if(err){
-      err = new Error("Unable to edit rate. Contact Sarah.");
-      err.status = 500;
+      // err = new Error("Unable to edit rate. Contact Sarah.");
+      // err.status = 500;
       return next(err);
     }
     res.status(200);
@@ -169,14 +133,44 @@ pageRoutes.put('/:pageID/:section/', mid.authorizeUser, mid.checkEditInput, (req
   });
 })
 
-//update rate
-pageRoutes.put('/:pageID/:section/:sectionID', mid.authorizeUser, mid.checkRateInput, (req, res, next) => {
-  Object.assign(req.sectionID, req.body);
+//update room
+pageRoutes.put('/:pageID/room/:roomID', mid.authorizeUser, mid.checkRoomInput, (req, res, next) => {
+  Room.findById(req.params.roomID, (err, room) => {
+    if(err) next(err);
+    if(!room){
+      err = new Error("Room not found");
+      next(err);
+    }
 
-  req.page.save((err,page) => {
+    Object.assign(room, req.body);
+    room.save((err, doc) => {
+      req.page.updateRooms((err, page) => {
+        if(err){
+          err = new Error("Rooms not updated");
+          err.status = 404;
+          return next(err);
+        }
+        res.status(200);
+        res.json({data: page, edit: initialEdit, message: initialMessage});
+      });
+    });
+
+  });
+});
+
+//update guide
+pageRoutes.put('/:pageID/guide/:guideID', mid.authorizeUser, mid.checkGuideInput, (req, res, next) => {
+  let result = req.page["local-guide"].guide.id(req.params.guideID);
+  if(!result){
+    err = new Error("Guide not found");
+    next(err);
+  }
+  Object.assign(result, req.body);
+
+  req.page.save((err, page) => {
     if(err){
-      err = new Error("Unable to edit rate. Contact Sarah.");
-      err.status = 500;
+      // err = new Error("Guide not updated");
+      // err.status = 404;
       return next(err);
     }
     res.status(200);
@@ -184,13 +178,40 @@ pageRoutes.put('/:pageID/:section/:sectionID', mid.authorizeUser, mid.checkRateI
   });
 })
 
-//delete rate
-pageRoutes.delete("/:pageID/:section/:sectionID", mid.authorizeUser, (req, res) => {
-  req.sectionID.remove((err) => {
+//delete room
+pageRoutes.delete("/:pageID/room/:roomID", mid.authorizeUser, (req, res) => {
+  Room.findById(req.params.roomID, (err, room) => {
+    if(err) next(err);
+    if(!room){
+      err = new Error("Room not found");
+      next(err);
+    }
+
+    room.remove((err, doc) => {
+      req.page.updateRooms((err, page) => {
+        if(err){
+          err = new Error("Rooms not updated");
+          err.status = 404;
+          return next(err);
+        }
+        res.json({data: page, edit: initialEdit, message: initialMessage});
+      });
+    });
+
+  });
+});
+
+//delete guide
+pageRoutes.delete("/:pageID/:guide/:guideID", mid.authorizeUser, (req, res) => {
+  let result = req.page["local-guide"].guide.id(req.params.guideID);
+  if(!result){
+    err = new Error("Guide not found");
+    next(err);
+  }
+
+  result.remove((err) => {
     req.page.save((err, page) => {
       if(err){
-        err = new Error("Unable to delete rate. Contact Sarah.");
-        err.status = 500;
         return next(err);
       }
       res.json(formatOutput(page));

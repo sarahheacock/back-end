@@ -108,10 +108,28 @@ const checkMessageInput = (req, res, next) => {
 
 };
 
-const checkRateInput = (req, res, next) => {
+const checkRoomInput = (req, res, next) => {
 
-  const cForm = (req.params.section === "gallery") ? checkForm(req.body, galleryData) : checkForm(req.body, localGuideData);
-  const cSize = (req.params.section === "gallery") ? checkSize(req.body, galleryData) : checkSize(req.body, localGuideData);
+  const cForm = checkForm(req.body, galleryData);
+  const cSize = checkSize(req.body, galleryData);
+
+  if(!cForm){
+    res.json({message: messages.inputError})
+  }
+  else if(!cSize){
+    let err = new Error("Invalid entry");
+    err.status = 400;
+    return next(err);
+  }
+  else {
+    return next();
+  }
+};
+
+const checkGuideInput = (req, res, next) => {
+
+  const cForm = checkForm(req.body, localGuideData);
+  const cSize = checkSize(req.body, localGuideData);
 
   if(!cForm){
     res.json({message: messages.inputError})
@@ -281,7 +299,8 @@ module.exports = {
   checkLoginInput,
   checkMessageInput,
   checkSignUpInput,
-  checkRateInput,
+  checkRoomInput,
+  checkGuideInput,
   checkUserInput,
   checkEditInput,
   authorizeUser

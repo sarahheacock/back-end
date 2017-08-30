@@ -4,6 +4,7 @@ process.env.NODE_ENV = 'test';
 const mongoose = require("mongoose");
 const messages = require("../data/data").messages;
 const Page = require('../server/models/page').Page;
+const Room = require('../server/models/page').Room;
 const jwt = require('jsonwebtoken');
 const configure = require('../server/configure/config');
 
@@ -18,7 +19,11 @@ chai.use(chaiHttp);
 describe('Pages', () => {
 
   beforeEach((done) => { //Before each test we empty the database
-    Page.remove({}, (err) => { done(); });
+    Page.remove({}, (err) => {
+      Room.remove({}, (err) => {
+        done();
+      });
+    });
   });
 
   describe('/POST page', () => {
@@ -76,7 +81,7 @@ describe('Pages', () => {
     });
   });
 
-  describe('/POST local-guide or room to pageID', () => {
+  describe('/POST guide or room to pageID', () => {
     let page;
     let token;
     beforeEach((done) => { //Before each test we empty the database
@@ -108,7 +113,7 @@ describe('Pages', () => {
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/gallery")
+      .post('/page/' + page.id + "/room")
       .send(room)
       .end((err, res) => {
         res.should.have.status(201);
@@ -117,7 +122,7 @@ describe('Pages', () => {
         res.body.should.have.property('data');
         res.body.should.have.property('message');
 
-        res.body.data.gallery.rooms[1].should.have.property('cost').eql(150);
+        res.body.data.gallery.rooms[0].should.have.property('cost').eql(150);
         done();
       });
     });
@@ -133,7 +138,7 @@ describe('Pages', () => {
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/local-guide")
+      .post('/page/' + page.id + "/guide")
       .send(guide)
       .end((err, res) => {
         res.should.have.status(201);
@@ -147,11 +152,10 @@ describe('Pages', () => {
       });
     });
 
-    it('should return an error if required not included', (done) => {
+    it('should return an error if required room input not included', (done) => {
 
       const invalid = {
         "available": 1,
-        "title": "Title",
         "b": "It's a really nice room.",
         "p1": "Hi",
         "carousel": [
@@ -162,7 +166,7 @@ describe('Pages', () => {
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/gallery")
+      .post('/page/' + page.id + "/room")
       .send(invalid)
       .end((err, res) => {
         res.body.should.be.a('object');
@@ -171,7 +175,7 @@ describe('Pages', () => {
       });
     });
 
-    it('should return an error if required not included', (done) => {
+    it('should return an error if required guide input not included', (done) => {
 
       const invalid = {
         "title": "Title",
@@ -182,7 +186,7 @@ describe('Pages', () => {
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/local-guide")
+      .post('/page/' + page.id + "/guide")
       .send(invalid)
       .end((err, res) => {
         res.body.should.be.a('object');
@@ -206,7 +210,7 @@ describe('Pages', () => {
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/gallery")
+      .post('/page/' + page.id + "/room")
       .send(rate)
       .end((err, res) => {
         res.body.should.be.a('object');
@@ -228,7 +232,7 @@ describe('Pages', () => {
       };
 
       chai.request(server)
-      .post('/page/' + page.id + "/gallery")
+      .post('/page/' + page.id + "/room")
       .send(rate)
       .end((err, res) => {
         res.should.have.status(401);
@@ -294,7 +298,7 @@ describe('Pages', () => {
     });
   });
 
-  describe('/PUT editing rate', () => {
+  describe('/PUT editing guide', () => {
     //AUTHENTICATION WAS NOT INCLUDED SINCE TESTED IN POST
     let page;
     let token;
@@ -311,50 +315,45 @@ describe('Pages', () => {
       page.save((err, newPage) => { done(); });
     });
 
-    it('edit room when all form items are filled', (done) => {
+    it('edit guide when all form items are filled', (done) => {
 
-      const room = {
-        "cost": 200,
-        "maximum-occupancy": 2,
-        "available": 1,
-        "title": "Title",
-        "carousel": [
-          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
-        ],
+      const guide = {
+        "category": "Restaurants & Coffee Shops",
         "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
+        "link": "#",
+        "address": "1640 Gateway Road, Portland, Oregon 97232",
+        "p1": "Plaid live-edge yr, meh put a bird on it enamel pin godard cornhole drinking vinegar banh mi flannel pug. Art party fixie lo-fi shabby chic forage. Meh craft beer blog, chicharrones small batch knausgaard flexitarian ugh banh mi. Occupy tattooed franzen, actually unicorn umami synth. Tacos godard kickstarter shaman cred pour-over. Offal pickled trust fund beard letterpress asymmetrical post-ironic jean shorts. Ethical shabby chic vape deep v vice woke af.",
+        "title": "Coffee",
         "token": token
       };
 
       chai.request(server)
-      .put('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id)
-      .send(room)
+      .put('/page/' + page.id + "/guide/" + page["local-guide"].guide[0].id)
+      .send(guide)
       .end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('data');
         res.body.should.have.property('edit');
         res.body.should.have.property('message');
-        res.body.data.gallery.rooms[0].should.have.property('cost').eql(200);
-        res.body.data.gallery.rooms[0].should.have.property('p1').eql("Semiotics pinterest DIY beard, cold-pressed kombucha vape meh flexitarian YOLO cronut subway tile gastropub. Trust fund 90's small batch, skateboard cornhole deep v actually before they sold out thundercats XOXO celiac meditation lomo hexagon tofu. Skateboard air plant narwhal, everyday carry waistcoat pop-up pinterest kitsch. Man bun vape banh mi, palo santo kinfolk sustainable selfies pug meditation kale chips organic PBR&B vegan pok pok. Lomo flexitarian viral yr man braid vexillologist. Bushwick williamsburg bicycle rights, sriracha succulents godard single-origin coffee fam activated charcoal.");
+        res.body.data["local-guide"]["guide"][0].should.have.property('title').eql("Coffee");
         done();
       });
     });
 
-    it('should return an error if required not included', (done) => {
+    it('should return an error if room required not included', (done) => {
 
       const invalid = {
-        "maximum-occupancy": 2,
-        "available": 1,
-        "title": "Title",
-        "carousel": [
-          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
-        ],
+        "category": "Restaurants & Coffee Shops",
         "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
+        "link": "#",
+        "address": "1640 Gateway Road, Portland, Oregon 97232",
+        "p1": "Plaid live-edge yr, meh put a bird on it enamel pin godard cornhole drinking vinegar banh mi flannel pug. Art party fixie lo-fi shabby chic forage. Meh craft beer blog, chicharrones small batch knausgaard flexitarian ugh banh mi. Occupy tattooed franzen, actually unicorn umami synth. Tacos godard kickstarter shaman cred pour-over. Offal pickled trust fund beard letterpress asymmetrical post-ironic jean shorts. Ethical shabby chic vape deep v vice woke af.",
         "token": token
       };
 
       chai.request(server)
-      .put('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id)
+      .put('/page/' + page.id + "/guide/" + page["local-guide"].guide[0].id)
       .send(invalid)
       .end((err, res) => {
         res.body.should.be.a('object');
@@ -362,9 +361,87 @@ describe('Pages', () => {
         done();
       });
     });
+
   });
 
-  describe('/DELETE rate to rateID', () => {
+  describe('/PUT editing room', () => {
+    //AUTHENTICATION WAS NOT INCLUDED SINCE TESTED IN POST
+    let page;
+    let room;
+    let token;
+    beforeEach((done) => { //Before each test we empty the database
+      page = new Page({
+        "name": "test",
+        "password": "password"
+      });
+      room = new Room();
+
+      token = jwt.sign({userID: page.userID}, configure.secret, {
+        expiresIn: '1d' //expires in one day
+      });
+
+      room.save((err, newRoom) => {
+        page.gallery.rooms.push(newRoom._id);
+        page.save((err, newPage) => { done(); });
+      });
+
+    });
+
+    it('edit room when all form items are filled', (done) => {
+
+      const input = {
+        "cost": 200,
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Swan",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
+        "token": token
+      };
+
+      chai.request(server)
+      .put('/page/' + page.id + "/room/" + room._id)
+      .send(input)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('data');
+        res.body.should.have.property('edit');
+        res.body.should.have.property('message');
+        res.body.data.gallery.rooms[0].should.have.property('cost').eql(200);
+        res.body.data.gallery.rooms[0].should.have.property('title').eql("Swan");
+        done();
+      });
+    });
+
+    it('should return an error if room required not included', (done) => {
+
+      const invalid = {
+        "maximum-occupancy": 2,
+        "available": 1,
+        "title": "Swan",
+        "carousel": [
+          "Tile-Dark-Grey-Smaller-White-97_pxf5ux"
+        ],
+        "image": "Tile-Dark-Grey-Smaller-White-97_pxf5ux",
+        "token": token
+      };
+
+      chai.request(server)
+      .put('/page/' + page.id + "/room/" + room.id)
+      .send(invalid)
+      .end((err, res) => {
+        res.body.should.be.a('object');
+        res.body.should.have.property('message').eql(messages.inputError);
+        done();
+      });
+    });
+
+  });
+
+  describe('/DELETE guide to guideID', () => {
     //AUTHENTICATION WAS NOT INCLUDED SINCE TESTED IN POST
     let page;
     let token;
@@ -381,10 +458,46 @@ describe('Pages', () => {
     });
 
 
-    it('should delete rates', (done) => {
+    it('should delete guide', (done) => {
 
       chai.request(server)
-      .delete('/page/' + page.id + "/gallery/" + page.gallery.rooms[0].id + "?token=" + token)
+      .delete('/page/' + page.id + "/guide/" + page["local-guide"].guide[0].id + "?token=" + token)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('data')
+        res.body.data.gallery.rooms.should.be.a('array').length(0);
+        done();
+      });
+    });
+  });
+
+  describe('/DELETE room to roomID', () => {
+    //AUTHENTICATION WAS NOT INCLUDED SINCE TESTED IN POST
+    let page;
+    let token;
+    beforeEach((done) => { //Before each test we empty the database
+      page = new Page({
+        "name": "test",
+        "password": "password"
+      });
+      room = new Room();
+
+      token = jwt.sign({userID: page.userID}, configure.secret, {
+        expiresIn: '1d' //expires in one day
+      });
+
+      room.save((err, newRoom) => {
+        page.gallery.rooms.push(newRoom._id);
+        page.save((err, newPage) => { done(); });
+      });
+    });
+
+
+    it('should delete guide', (done) => {
+
+      chai.request(server)
+      .delete('/page/' + page.id + "/room/" + room.id + "?token=" + token)
       .end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');

@@ -2,34 +2,18 @@ const express = require("express");
 const reservationRoutes = express.Router();
 
 const Reservation = require("../models/page").Reservation;
-const root = require('../configure/config').root;
 const mid = require('../middleware/upcomingMiddleware');
+const auth = require('../middleware/middleware').authorizeUser;
 
 const async = require("async");
 const each = require("async/each");
 
 
-//===================UPCOMING================================
+//===================RESERVATIONS================================
 
-//it should return reservation based on month
-//it should get reservation based on userID
-//it should create reservation with token
-reservationRoutes.get('/', mid.init, (req, res, next) => { //create root
-  res.json(req.root);
-});
-
-
-
-//get reservation
+//create reservation
 reservationRoutes.post('/', (req, res, next) => {
-  const date = new Date("Dec 22, 2017").getTime();
-  let reservation = new Reservation({
-    start: date,
-    end: date + (2*24*60*60*1000),
-    event: {
-      userID: "df2345678"
-    },
-  });
+  let reservation = new Reservation(req.body);
   // console.log("reservation", reservation);
 
   reservation.save((err, reserve) => {
@@ -38,18 +22,8 @@ reservationRoutes.post('/', (req, res, next) => {
   });
 });
 
-//get reservation
-reservationRoutes.get('/:userID', mid.find, (req, res, next) => {
-  if(!Array.isArray(req.reservation)) res.json(req.reservation);
-
-  let result = [];
-  async.each(req.reservation, (stay) => {
-    Reservation.findById(stay, (err, doc) => {
-      if(err || !doc) next(err);
-      result.push(doc);
-      if(result.length === req.reservation.length) res.json(result);
-    });
-  });
+//get reservations
+reservationRoutes.get('/user/:userID', (req, res, next) => {
 
 });
 

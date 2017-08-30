@@ -186,22 +186,25 @@ PageSchema.pre('save', (next) => {
 // });
 
 PageSchema.methods.updateRooms = function(callback){
+  let page = this;
   Room.find({}).exec((err, rooms) => {
 
     if(err) callback(err, null);
-    if(!this.gallery) this.gallery = {
+    if(!page.gallery) page.gallery = {
       "rooms": [],
       "p1": "Hello!",
       "b": "We are excited to have you!",
       "title": "Welcome to our bed and breakfast..."
     };
-    // if(!this.gallery.rooms) this.gallery.rooms = [];
 
-    this.gallery.rooms = rooms.map((room) => { return room._id; });
-    this.save(callback);
-    // this.markModified('gallery');
-    // console.log(this);
-    // next();
+    page.gallery.rooms = rooms.map((room) => { return room._id; });
+
+    page.save((err, doc) => {
+      Page.findById(doc._id, {"_id": 0, userID: 0, password: 0, name: 0}).populate({
+        path: 'gallery.rooms',
+        model: 'Room'
+      }).exec(callback);
+    });
   });
 };
 

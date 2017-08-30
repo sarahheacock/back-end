@@ -290,6 +290,14 @@ var editData = {
   }
 };
 
+// var required = {
+//   message: Object.keys(message),
+//   edit: Object.keys(editData),
+//   gallery: Object.keys(galleryData),
+//   "local-guide": Object.keys(localGuideData),
+//
+// }
+
 
 var messages = {
   inputError: "*Fill out required fields.",
