@@ -177,13 +177,14 @@ describe('User', () => {
         name: "test",
         email: "test@gmail.com",
         password: "password"
-      });
+      });    
 
-      token = jwt.sign({userID: user.userID}, configure.secret, {
-        expiresIn: '1d' //expires in one day
+      user.save((err, newPage) => {
+        token = jwt.sign({userID: user.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+        done();
       });
-
-      user.save((err, newPage) => { done(); });
     });
 
     it('should edit billing', (done) => {
@@ -202,6 +203,7 @@ describe('User', () => {
       .put('/user/' + user.id + "/billing")
       .send(billing)
       .end((err, res) => {
+        console.log(res.body);
         res.should.have.status(200);
         res.body.should.be.a('object');
 

@@ -1,8 +1,59 @@
+const data = require('../../data/data');
+const configure = require('../configure/config');
+const Room = require("../models/page").Room;
+const CryptoJS = require('crypto-js');
 
+const stripe = require('stripe')(configure.SecretKey)
 
+// const getRoom = (req, res, next) => {
+//   Room.findById("59a6f1f732325214ae43741d", {"maximum-occupancy": 1, "cost": 1}).exec((err, room) => {
+//     if(err || !room) next(err);
+//     req.room = room;
+//   });
+// };
+
+const getRooms = (req, res, next) => {
+  Room.find({"maximum-occupancy": {$gt: req.params.guests-1}}, {"maximum-occupancy": 1, "cost": 1, "available": 1, "image": 1, "title": 1}).exec((err, rooms) => {
+    if(err) next(err);
+    req.rooms = rooms;
+    next();
+  });
+};
+
+const chargeClient = (req, res, next) => {
+  let source = {object: 'card'};
+
+  const creditArr = CryptoJS.AES.decrypt(req.user.credit.toString(), configure.cryptKey).toString(CryptoJS.enc.Utf8).split('/');
+  source.number = creditArr[0];
+  source.exp_year = parseInt(creditArr[2]);
+  source.cvc = parseInt(creditArr[3])
+
+  const months = creditArr[1].split(' ');
+  source.exp_month = parseInt(months[1]) - 1;
+
+  stripe.customers.create({
+    email: req.user.email
+  }).then((customer) => {
+    return stripe.customers.createSource(customer.id, {
+      source: source
+    });
+  }).then((charge) => {
+    return stripe.charges.create({
+      amount: req.body.cost,
+      currency: 'usd',
+      customer: source.customer
+    });
+  }).then((source) => {
+    console.log("yay!", source);
+    next();
+  }).catch((err) => {
+    next(err);
+  })
+};
 
 module.exports = {
-
+  chargeClient: chargeClient,
+  getRooms: getRooms
 };
 
 // const TreeOne = require("../models/reservation").TreeOne;

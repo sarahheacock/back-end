@@ -7,6 +7,9 @@ const configure = require('../configure/config');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+const CryptoJS = require('crypto-js');
+
+
 const initialUser = require('../../data/data').initialUser;
 const initialMessage = require('../../data/data').initialMessage;
 const initialEdit = require('../../data/data').initialEdit;
@@ -33,8 +36,9 @@ const formatOutput = (obj) => {
 
   let user = {};
   Object.keys(initialUser).forEach((k) => {
-    if(obj[k]) user[k] = obj[k];
-    else user[k] = initialUser[k]
+    if(k === 'credit' && obj[k] !== '') user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
+    else if(obj[k]) user[k] = obj[k];
+    else user[k] = initialUser[k];
   });
   user.token = token;
   return {user: user, edit: initialEdit, message: initialMessage};
@@ -69,7 +73,11 @@ userRoutes.get('/:userID', mid.authorizeUser, (req, res, next) => {
 
 //update page content
 userRoutes.put('/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
+  // const input = (req.params.userInfo === "credit") ? CryptoJS.AES.encrypt(req.newOutput, req.user.userID) : req.newOutput;
   req.user[req.params.userInfo] = req.newOutput;
+
+  // const userID = req.user.userID
+  // req.user.userID = userID;
 
   req.user.save((err,user) => {
     if(err) return next(err);

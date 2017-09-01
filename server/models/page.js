@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const messages = require('../../data/data').messages;
+const CryptoJS = require('crypto-js');
 // const root = require('../configure/config').root;
 
 const addressData = require('../../data/data').addressData;
@@ -49,13 +50,16 @@ const UserSchema = new Schema({
     default: defaultPayment
   },
   userID: {
-    type: String,
-    default: makeid
+    type: String
   },
   pageID: Schema.Types.ObjectId
 });
 
-
+UserSchema.pre('save', function(next){
+  if(!this.userID) this.userID = makeid();
+  if(this.credit) this.credit = CryptoJS.AES.encrypt(this.credit, this.userID);
+  next();
+});
 
 // authenticate input against database documents
 UserSchema.statics.authenticate = (username, password, callback) => {
@@ -169,11 +173,11 @@ PageSchema.statics.authenticate = (username, password, callback) => {
     });
 }
 
-PageSchema.pre('save', (next) => {
+PageSchema.pre('save', function(next){
   let page = this;
   if(page.gallery !== undefined){
     if(page.gallery.rooms !== undefined) page.gallery.rooms.sort(sortRooms);
-    if(page.localGuide.guide !== undefined) page.localGuide.guide.sort(sortLocalGuide);
+    // if(page.localGuide.guide !== undefined) page.localGuide.guide.sort(sortLocalGuide);
   }
   next();
 });
@@ -233,15 +237,15 @@ PageSchema.methods.updateRooms = function(callback){
 // });
 
 const ReservationSchema = new Schema({
-  start: Number,
-  end: Number,
-  guests: Number,
+  start: {type: Number, required: true},
+  end: {type: Number, required: true},
+  guests: {type: Number, required: true},
   roomID: { type: Schema.Types.ObjectId, ref: 'Room' },
   userID: { type: Schema.Types.ObjectId, ref: 'User' },
   paid: {type:String, default:''},
-  checkedIn: Date,
-  notes: '',
-  cost: Number,
+  checkedIn: {type:Boolean, default:false},
+  notes: {type:String, default:''},
+  cost: {type: Number, required: true},
   createdAt: {type:Date, default:Date.now},
 });
 

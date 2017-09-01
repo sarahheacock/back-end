@@ -313,7 +313,9 @@ var messages = {
 
   creditExpError: "Invalid expiration date.",
   creditNumError: "Invalid credit card number.",
-  cvvError: "Invalid CVV number. Look for the 3 or 4 digits on the back of the card."
+  cvvError: "Invalid CVV number. Look for the 3 or 4 digits on the back of the card.",
+
+  userRes: "Thank you for staying with us!"
 };
 
 module.exports = {
