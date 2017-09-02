@@ -27,7 +27,7 @@ reservationRoutes.param("pageID", (req, res, next, id) => {
 });
 
 reservationRoutes.param("userID", (req, res, next, id) => {
-  User.findById(id, {userID: 1}).exec((err, doc) => {
+  User.findById(id, {userID: 1, email: 1}).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
       err = new Error("User Not Found");
@@ -41,28 +41,20 @@ reservationRoutes.param("userID", (req, res, next, id) => {
 
 //===================RESERVATIONS================================
 //get reservations by specified dates and return availability
-reservationRoutes.get('/available/:dateOne/:dateTwo/:guests', mid.getRooms, (req, res, next) => {
-  Reservation.find({
-    $or:[
-      {"start": {$gt: req.params.dateOne-1, $lt: req.params.dateTwo+1}},
-      {"end": {$gt: req.params.dateOne-1, $lt: req.params.dateTwo+1}}
-    ]
-  },
-  { roomID: 1 }).exec((err, reservation) => {
-    if(err) next(err);
-
-    let resObj = {};
-    reservation.forEach((saved) => {
-      if(!resObj[saved.roomID]) resObj[saved.roomID] = 1;
-      else resObj[saved.roomID] = resObj[saved.roomID] + 1;
-    });
-
-    const result = req.rooms.filter((room) => {
-      if(!resObj[room._id]) return true;
-      else return room.available > resObj[room._id];
-    });
-    res.json(result);
+reservationRoutes.get('/available/:dateOne/:dateTwo/:guests', mid.getRooms, mid.getRes, (req, res, next) => {
+  let resObj = {};
+  req.reservations.forEach((saved) => {
+    if(!resObj[saved.roomID]) resObj[saved.roomID] = 1;
+    else resObj[saved.roomID] = resObj[saved.roomID] + 1;
   });
+
+  const result = req.rooms.filter((room) => {
+    if(!resObj[room._id]) return true;
+    else return room.available > resObj[room._id];
+  });
+
+  // console.log("reservations", req.reservations, result);
+  res.json(result);
 });
 
 //===============RESERVATIONS THAT REQUIRE USER AUTH==============
@@ -82,41 +74,46 @@ reservationRoutes.get('/user/:userID', (req, res, next) => {
 });
 
 //user create reservation
-reservationRoutes.post('/user/:userID', (req, res, next) => {
-  let start = new Date().getTime();
-  let end = start + 24 * 60 * 60 * 1000;
-  // const days = (end - start) / (24 * 60 * 60 * 1000);
-
-  let stay = new Reservation({
-    start: start,
-    end: end,
-    guests: 2,
-    roomID: "59a6f1f732325214ae43741d",
-    cost: 100,
-    userID: req.params.userID
-  });
+reservationRoutes.post('/user/:userID', auth, mid.getRoom, mid.sendMessage, (req, res, next) => {
+  let stay = new Reservation(req.body);
+  stay.userID = req.params.userID;
 
   stay.save((err, newStay) => {
     if(err) next(err);
-    res.json({edit: data.initialEdit, message: data.messages.userRes})
-    // Reservation.findById(newStay._id).populate({
-    //   path: 'userID',
-    //   model: 'User'
-    // }).populate({
-    //   path: 'roomID',
-    //   model: 'Room'
-    // }).exec((err, doc) => {
-    //   if(err) next(err);
-    //   res.json(doc);
-    // });
+    res.json({edit: data.initialEdit, message: data.messages.userRes});
   });
 });
 
 //===============RESERVATIONS THAT REQUIRE ADMIN AUTH==================
 //get reservations by month
+
 //create user
+reservationRoutes.get('/page/:pageID', (req, res, next) => {
+  // Reservation.find({}, (err, doc) => {
+  //   if(err) next(err);
+  //   res.json(doc);
+  // });
+});
+
+reservationRoutes.post('/page/:pageID', (req, res, next) => {
+  // const stay = new Reservation({
+  //   start: start,
+  //   end: end,
+  //   guests: 2,
+  //   cost: 100,
+  //   roomID: "59a6f1f732325214ae43741d"
+  // });
+  //
+  // stay.save((err, newStay) => {
+  //   if(err) next(err);
+  //   console.log(newStay);
+  //   res.json(newStay);
+  // });
+});
+
 //create reservations
 //cancel reservations
+//send reminder message
 //charge client
 //check-in client
 

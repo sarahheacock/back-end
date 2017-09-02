@@ -1,21 +1,60 @@
 const data = require('../../data/data');
 const configure = require('../configure/config');
 const Room = require("../models/page").Room;
+const Reservation = require("../models/page").Reservation;
 const CryptoJS = require('crypto-js');
 
 const stripe = require('stripe')(configure.SecretKey)
+const nodemailer = require('nodemailer');
+const mg = require('nodemailer-mailgun-transport');
 
-// const getRoom = (req, res, next) => {
-//   Room.findById("59a6f1f732325214ae43741d", {"maximum-occupancy": 1, "cost": 1}).exec((err, room) => {
-//     if(err || !room) next(err);
-//     req.room = room;
-//   });
-// };
+// This is your API key that you retrieve from www.mailgun.com/cp (free up to 10K monthly emails)
+const auth = {
+  auth: {
+    api_key: 'key-8fe0080d32719b30edaa3ac4f24ae053',
+    domain: 'sandboxfc3e27202a7c46a084548a6462c6fa6a.mailgun.org'
+  }
+}
+const nodemailerMailgun = nodemailer.createTransport(mg(auth));
+
+const getRoom = (req, res, next) => {
+  Room.findById(req.body.roomID, {"title": 1, "image": 1}).exec((err, room) => {
+    if(err || !room) next(err);
+    req.room = room;
+    next();
+  });
+};
+
+const sendMessage = (req, res, next) => {
+  nodemailerMailgun.sendMail({
+    from: 'sheacock@kent.edu',
+    to: req.user.email, // An array if you have multiple recipients.
+    subject: 'Confirmation',
+    //You can use "html:" to send HTML email content. It's magic!
+    html: '<div><p>Thank you for staying with us at ' + req.room.title + '</p></div>',
+  }, (err, info) => {
+    if (err) next(err);
+    next();
+  });
+};
 
 const getRooms = (req, res, next) => {
   Room.find({"maximum-occupancy": {$gt: req.params.guests-1}}, {"maximum-occupancy": 1, "cost": 1, "available": 1, "image": 1, "title": 1}).exec((err, rooms) => {
     if(err) next(err);
     req.rooms = rooms;
+    next();
+  });
+};
+
+const getRes = (req, res, next) => {
+  Reservation.find({
+    $or:[
+      {"start": {$gt: req.params.dateOne-1, $lt: req.params.dateTwo+1}},
+      {"end": {$gt: req.params.dateOne-1, $lt: req.params.dateTwo+1}}
+    ]
+  }).exec((err, reservation) => {
+    if(err) next(err);
+    req.reservations = reservation;
     next();
   });
 };
@@ -53,7 +92,10 @@ const chargeClient = (req, res, next) => {
 
 module.exports = {
   chargeClient: chargeClient,
-  getRooms: getRooms
+  getRooms: getRooms,
+  getRoom: getRoom,
+  getRes: getRes,
+  sendMessage: sendMessage
 };
 
 // const TreeOne = require("../models/reservation").TreeOne;
