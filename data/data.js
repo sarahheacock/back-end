@@ -1,33 +1,43 @@
-var blogID = '598ce0f116ae3456118d1ca1';
+var blogID = "59a6f1f732325214ae43741c";
 var cloudName = "dhd1eov8v";
-var links = ["home", "gallery", "local-guide", "book"];
+var links = ["home", "gallery", "guide", "book"];
 
 
 //========INITIAL DATA=========================
 
-// var data = {
-//   "home": {},
-//   "gallery": {},
-//   "local-guide": {},
-//   "book": {}
-// };
+var start = new Date().setUTCHours(12, 0, 0, 0);
+var initial = {
+  "home": {},
+  "gallery": {},
+  "guide": {},
+  "book": {
+    "reservation": {
+      "start": start,
+      "end": start + 24*60*60*1000 - 60*1000,
+      "guests": 2,
+      "roomID": '',
+      "cost": 0
+    },
+    "available": []
+  },
+  "welcome": [],
+  "message": '',
+  "edit": {
+    "url": '',
+    "modalTitle": '',
+    "dataObj": {}
+  },
+  "user": {
+    "token": '',
+    "_id": '',
+    "name": '',
+    "email": '',
+    "billing": '',
+    "credit": ''
+  }
+}
 
-var initialUser = {
-  token: '',
-  _id: '',
-  name: '',
-  email: '',
-  billing: '',
-  credit: ''
-};
-
-var initialEdit = {
-  url: '',
-  modalTitle: '',
-  dataObj: {}
-};
-
-var initialMessage = '';
+// var initialData = [];
 
 //===============FORMS============================
 var notRequired = ['p1', 'b', 'link', "Address Line 2"];
@@ -315,17 +325,17 @@ var messages = {
   creditNumError: "Invalid credit card number.",
   cvvError: "Invalid CVV number. Look for the 3 or 4 digits on the back of the card.",
 
-  userRes: "Thank you for staying with us!"
+  userRes: "Thank you for staying with us!",
+  available: "This room is no longer available. Sorry for the inconvenience.",
+  reminderSent: "Reminder email sent!",
+  emailError: "Cannot send email"
 };
 
 module.exports = {
   blogID: blogID,
   cloudName: cloudName,
   links: links,
-
-  initialUser: initialUser,
-  initialEdit: initialEdit,
-  initialMessage: initialMessage,
+  initial: initial,
 
   notRequired: notRequired,
   loginData: loginData,

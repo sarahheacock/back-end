@@ -1,6 +1,7 @@
 const data = require('../../data/data');
 const configure = require('../configure/config');
 const Room = require("../models/page").Room;
+const User = require("../models/page").User;
 const Reservation = require("../models/page").Reservation;
 const CryptoJS = require('crypto-js');
 
@@ -17,11 +18,60 @@ const auth = {
 }
 const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
+const findUser = (req, res, next) => {
+  let thisUser = {
+    email: req.body.user.email,
+    billing: req.body.user.billing,
+    credit: req.body.user.credit
+  };
+
+  User.findOne({email: thisUser.email}).exec((err, doc) => {
+    if(!doc){
+      let user = new User(thisUser);
+      user.save((err, newUser) => {
+        if(err) next(err);
+        req.user = newUser;
+        next();
+      });
+    }
+    if(err) return next(err);
+
+    Object.assign(doc, thisUser);
+    doc.save((err, newUser) => {
+      if(err) next(err);
+      req.user = newUser;
+      next();
+    });
+
+  });
+}
+
+const modifyTime = (req, res, next) => {
+  req.body.book.reservation.start = new Date(parseInt(req.body.book.reservation.start)).setUTCHours(12, 0, 0, 0);
+  req.body.book.reservation.end = new Date(parseInt(req.body.book.reservation.end)).setUTCHours(11, 59, 0, 0);
+  // console.log(req.body.book.reservation);
+  next();
+}
+
 const getRoom = (req, res, next) => {
-  Room.findById(req.body.roomID, {"title": 1, "image": 1}).exec((err, room) => {
+  const reservation = req.body.book.reservation;
+  Room.findById(reservation.roomID, {"title": 1, "image": 1, "available": 1}).exec((err, room) => {
     if(err || !room) next(err);
-    req.room = room;
-    next();
+    Reservation.find({
+      $and:[
+        {$or:[
+          {"start": {$gt: reservation.start-1, $lt: reservation.end+1}},
+          {"end": {$gt: reservation.start-1, $lt: reservation.end+1}}
+        ]},
+        {roomID: reservation.roomID}
+      ]
+    }).exec((err, doc) => {
+      if(err) next(err);
+      if(doc.length >= room.available) res.json({message: data.messages.available});
+
+      req.room = room;
+      next();
+    });
   });
 };
 
@@ -33,7 +83,33 @@ const sendMessage = (req, res, next) => {
     //You can use "html:" to send HTML email content. It's magic!
     html: '<div><p>Thank you for staying with us at ' + req.room.title + '</p></div>',
   }, (err, info) => {
-    if (err) next(err);
+    if(err) res.json({message: data.messages.emailError});
+    next();
+  });
+};
+
+const sendReminder = (req, res, next) => {
+  nodemailerMailgun.sendMail({
+    from: 'sheacock@kent.edu',
+    to: req.reservation.userID.email, // An array if you have multiple recipients.
+    subject: 'Reminder',
+    //You can use "html:" to send HTML email content. It's magic!
+    html: '<div><p>Thank you for staying with us at ' + req.reservation.roomID.title + '</p></div>',
+  }, (err, info) => {
+    if(err) res.json({message: data.messages.emailError});
+    next();
+  });
+};
+
+const sendCancel = (req, res, next) => {
+  nodemailerMailgun.sendMail({
+    from: 'sheacock@kent.edu',
+    to: req.reservation.userID.email, // An array if you have multiple recipients.
+    subject: 'Cancel',
+    //You can use "html:" to send HTML email content. It's magic!
+    html: '<div><p>Thank you for staying with us at ' + req.reservation.roomID.title + '</p></div>',
+  }, (err, info) => {
+    if(err) res.json({message: data.messages.emailError});
     next();
   });
 };
@@ -47,10 +123,12 @@ const getRooms = (req, res, next) => {
 };
 
 const getRes = (req, res, next) => {
+  const dateOne = new Date(parseInt(req.params.dateOne)).setUTCHours(12, 0, 0, 0);
+  const dateTwo = new Date(parseInt(req.params.dateTwo)).setUTCHours(11, 59, 0, 0);
   Reservation.find({
     $or:[
-      {"start": {$gt: req.params.dateOne-1, $lt: req.params.dateTwo+1}},
-      {"end": {$gt: req.params.dateOne-1, $lt: req.params.dateTwo+1}}
+      {"start": {$gt: dateOne-1, $lt: dateTwo+1}},
+      {"end": {$gt: dateOne-1, $lt: dateTwo+1}}
     ]
   }).exec((err, reservation) => {
     if(err) next(err);
@@ -58,6 +136,10 @@ const getRes = (req, res, next) => {
     next();
   });
 };
+
+// const getMonth = (req, res, next) => {
+//
+// };
 
 const chargeClient = (req, res, next) => {
   let source = {object: 'card'};
@@ -92,10 +174,14 @@ const chargeClient = (req, res, next) => {
 
 module.exports = {
   chargeClient: chargeClient,
+  modifyTime: modifyTime,
   getRooms: getRooms,
   getRoom: getRoom,
   getRes: getRes,
-  sendMessage: sendMessage
+  sendMessage: sendMessage,
+  sendReminder: sendReminder,
+  sendCancel: sendCancel,
+  findUser: findUser
 };
 
 // const TreeOne = require("../models/reservation").TreeOne;

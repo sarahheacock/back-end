@@ -3,7 +3,7 @@ const authRoutes = express.Router();
 
 const configure = require('../configure/config');
 // const initialEdit = require('../../data/data').initialEdit;
-const initialUser = require('../../data/data').initialUser;
+const initialUser = require('../../data/data').initial.user;
 // const initialMessage = require('../../data/data').initialMessage;
 const User = require("../models/page").User;
 const jwt = require('jsonwebtoken');

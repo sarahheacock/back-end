@@ -21,16 +21,16 @@ const Routes = (props) => {
     <Home data={props.data} user={props.user} updateState={props.updateState}/> :
     ((props.section === "gallery") ?
       <Gallery data={props.data} user={props.user} updateState={props.updateState}/> :
-      ((props.section === "local-guide") ?
+      ((props.section === "guide") ?
         <LocalGuide data={props.data} user={props.user} updateState={props.updateState}/> :
         ((props.section === "book") ?
           <Book data={props.data} user={props.user} updateState={props.updateState}/> :
           <div></div>))))
 
   return (
-    <div className="main-content">
-      <PageHeader><span className="header-text">{title(props.section)}</span></PageHeader>
-      <div>{section}</div>
+    <div className={(props.section === "home") ? "" : "main-content"}>
+      {(props.section === "home") ? <div></div> : <PageHeader><span className="header-text">{title(props.section)}</span></PageHeader>}
+      <div>{(Object.keys(props.data).length > 0) ? section : '' }</div>
       <div className="text-center">{editButton}</div>
     </div>
   );

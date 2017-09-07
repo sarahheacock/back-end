@@ -15,13 +15,13 @@ const defaultPayment = (Object.keys(paymentData)).map((k) => paymentData[k]["def
 
 
 const makeid = () => {
-    let text = "";
-    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = "";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( let i=0; i < 16; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+  for( let i=0; i < 16; i++ )
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
 
-    return text;
+  return text;
 }
 
 
@@ -144,7 +144,7 @@ const PageSchema = new Schema({
     p1: {type: String, default: "We are excited to have you!"},
     rooms: [{ type: Schema.Types.ObjectId, ref: 'Room' }],
   },
-  "local-guide": {
+  guide: {
     title: {type: String, default: "Welcome to our bed and breakfast..."},
     b: {type: String, default: "We are excited to have you!"},
     p1: {type: String, default: "We are excited to have you!"},
@@ -182,12 +182,6 @@ PageSchema.pre('save', function(next){
   next();
 });
 
-// PageSchema.post('update', (err, res, next) => {
-//   if(err) next(err);
-//   Room.find({}).exec((err, rooms) => {
-//
-//   });
-// });
 
 PageSchema.methods.updateRooms = function(callback){
   let page = this;
@@ -212,42 +206,54 @@ PageSchema.methods.updateRooms = function(callback){
   });
 };
 
-// RoomSchema.pre('save', (doc) => {
-//   Page.find({}).exec((err, pages) => {
-//     pages.forEach((page) => {
-//       page.gallery.rooms.push(doc);
-//
-//     });
-//   });
-// });
-// RoomSchema.post('remove', (doc) => {
-//   Page.find({}).exec((err, page) => {
-//     if(err) console.log(err);
-//     const index = page.gallery.rooms.indexOf(doc._id);
-//     page.gallery.rooms.splice(index, 1);
-//
-//     page.save((err, newPage) => {
-//
-//     });
-//   })
-// });
-//
-// RoomSchema.post('init', (doc) => {
-//
-// });
 
 const ReservationSchema = new Schema({
   start: {type: Number, required: true},
   end: {type: Number, required: true},
   guests: {type: Number, required: true},
-  roomID: { type: Schema.Types.ObjectId, ref: 'Room' },
-  userID: { type: Schema.Types.ObjectId, ref: 'User' },
+  roomID: { type: Schema.Types.ObjectId, ref: 'Room', required: true },
+  userID: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   paid: {type:String, default:''},
   checkedIn: {type:Boolean, default:false},
+  charged: {type:Boolean, default:false},
+  reminded: {type:Boolean, default:false},
   notes: {type:String, default:''},
   cost: {type: Number, required: true},
   createdAt: {type:Date, default:Date.now},
 });
+
+ReservationSchema.pre('save', function(next){
+  let reservation = this;
+  const min = new Date().getTime() - (48*60*60*1000);
+  Reservation.remove({
+    end: {$lt: min}
+  }).exec((err, doc) => {
+    reservation.start = new Date(reservation.start).setUTCHours(12, 0, 0, 0);
+    reservation.end = new Date(reservation.end).setUTCHours(11, 59, 0, 0);
+    next();
+  });
+});
+
+ReservationSchema.statics.findMonth = (month, year, callback) => {
+  const date = new Date(month + "-01-" + year).getTime();
+  const min = date - (7*24*60*60*1000);
+  const max = date + (37*24*60*60*1000);
+
+  Reservation.find({
+    $or:[
+      {"start": {$gt: min, $lt: max}},
+      {"end": {$gt: min, $lt: max}}
+    ]
+  }).populate({
+    path: 'roomID',
+    model: 'Room',
+    select: 'image title'
+  }).populate({
+    path: 'userID',
+    model: 'User',
+    select: 'email credit'
+  }).exec(callback);
+};
 
 const Page = mongoose.model("Page", PageSchema);
 const Room = mongoose.model("Room", RoomSchema);

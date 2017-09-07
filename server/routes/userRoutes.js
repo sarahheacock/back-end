@@ -10,9 +10,9 @@ const bcrypt = require('bcrypt');
 const CryptoJS = require('crypto-js');
 
 
-const initialUser = require('../../data/data').initialUser;
-const initialMessage = require('../../data/data').initialMessage;
-const initialEdit = require('../../data/data').initialEdit;
+const initialUser = require('../../data/data').initial.user;
+const initialMessage = require('../../data/data').initial.message;
+const initialEdit = require('../../data/data').initial.edit;
 
 
 userRoutes.param("userID", (req, res, next, id) => {

@@ -8,7 +8,9 @@ const LocalGuide = (props) => {
 
   return (
     <div>
-
+      <h3 className="pretty">{props.data.title}</h3>
+      <p><b className="paragraph">{props.data.b}</b></p>
+      <p className="paragraph">{props.data.p1}</p>
       <div className="content">
         LocalGuide
       </div>

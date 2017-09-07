@@ -11,18 +11,8 @@ import AdminReducer from './reducers/admin';
 import './stylesheets/index.css';
 import './stylesheets/buttons.css';
 
-import {initialUser, initialEdit, initialMessage, links } from '../../data/data';
+import { initial } from '../../data/data';
 //=============================================================\
-let initialData = {};
-links.forEach((d) => initialData[d] = {});
-
-const initialState = {
-  edit: initialEdit,
-  message: initialMessage,
-  user: initialUser,
-  data: initialData
-}
-
 
 const saveState = (state) => {
   try {
@@ -34,10 +24,10 @@ const saveState = (state) => {
   }
 };
 
-const initial = (localStorage.bb !== undefined) ? JSON.parse(localStorage.bb) : {user: initialUser};
+const initialState = (localStorage.bb !== undefined) ? JSON.parse(localStorage.bb) : {user: initial.user};
 
 const store = createStore(
-  AdminReducer, {...initialState, ...initial}, applyMiddleware(thunk)
+  AdminReducer, {...initial, ...initialState}, applyMiddleware(thunk)
 );
 
 store.subscribe(() => { saveState(store.getState()); });

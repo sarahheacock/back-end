@@ -1,53 +1,62 @@
-/* ==COLOR SCHEME===
-grain #D7CEC7
-blackboard #565656
-oxblood #76323F
-tan #C09F80
+/*
+powder--#BFD8D2
+warm--#DF744A
+yellow--#BCB239
+peach--#FEDCD2
 */
 
 .button {
+  border-radius: 5%;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  width: 90px;
+  margin: 1%;
+  border-width: 0px;
+  background-color: #cdcdc0;
+  color: #626d71;
+}
+
+.button:hover{
+  background-color: #a5a58d;
+  color: WhiteSmoke;
+}
+
+.linkButton {
   border-radius: 5%;
   padding-left: 12px;
   padding-right: 12px;
   padding-top: 7px;
   padding-bottom: 7px;
-  width: 80px;
+  width: 200px;
   margin: 1%;
   border-width: 0px;
 }
 
-.blueButton {
+.orangeButton {
+  background-color: #DF744A;
   color: white;
-  background-color: #57a89b;
+}
+
+.orangeButton:hover{
+  background-color: #d95926;
+}
+
+.blueButton {
+  background-color: #81b1a6;
+  color: white;
 }
 
 .blueButton:hover {
-  background-color: #45877c;
-}
-
-.redButton {
-  color: white;
-  background-color: #874C62;
-}
-
-.redButton:hover {
-  background-color: #623747;
-}
-
-.orangeButton {
-  color: white;
-  background-color: #C98474;
-}
-
-.orangeButton:hover {
-  background-color: #bf6c5a;
+  background-color: #578e81;
 }
 
 .yellowButton {
+  background-color: #bcb239;
   color: white;
-  background-color: #edc25e;
 }
 
-.yellowButton:hover {
-  background-color: #e6a819;
+.yellowButton:hover{
+  background-color: #9c9330;
 }

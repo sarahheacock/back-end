@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
 
 import EditForm from '../forms/EditForm';
-import { initialMessage, initialEdit, messages } from '../../../../data/data';
+import { initial, messages } from '../../../../data/data';
 
 
 class EditModal extends React.Component {
@@ -23,8 +23,8 @@ class EditModal extends React.Component {
   pop = (e) => {
     e.preventDefault();
     this.props.updateState({
-      edit: initialEdit,
-      message: initialMessage
+      edit: initial.edit,
+      message: initial.message
     });
   }
 

@@ -11,6 +11,7 @@ import * as AdminActionCreators from '../actions/admin';
 import Routes from '../components/Routes';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import Room from '../components/routes/Room';
 
 
 //data
@@ -20,14 +21,18 @@ import { links } from '../../../data/data';
 class App extends Component {
   static propTypes = {
     user: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
+    home: PropTypes.object.isRequired,
+    gallery: PropTypes.object.isRequired,
+    guide: PropTypes.object.isRequired,
+    book: PropTypes.object.isRequired,
+    welcome: PropTypes.array.isRequired,
     message: PropTypes.string.isRequired,
     edit: PropTypes.object.isRequired
   }
 
 
   render(){
-    const{ dispatch, user, data, message, edit } = this.props;
+    const{ dispatch, user, home, gallery, guide, welcome, book, message, edit } = this.props;
     //turns an object whose values are action creators (functions)
     //and wraps in dispatch (what causes state change)
 
@@ -40,17 +45,21 @@ class App extends Component {
 
     console.log("");
     console.log("user", user);
-    console.log("data", data);
+    console.log("home", home);
+    console.log("gallery", gallery);
+    console.log("guide", guide);
+    console.log("book", book);
+    console.log("welcome", welcome);
     console.log("message", message);
     console.log("edit", edit);
 
-    const routes = (links).map((k) => {
-      if(k === "home"){
+    const routes = ([...links, "welcome"]).map((k) => {
+      if(k !== "guide" && k !== "book"){
         return (
-          <Route key={`route${k}`} exact path="/" render={ () => (
+          <Route key={`route${k}`} exact path={(k === "home") ? "/" : `/${k}`} render={ () => (
             <Routes
               section={k}
-              data={data[k]}
+              data={this.props[k]}
               user={user}
 
               updateState={updateState}
@@ -62,7 +71,7 @@ class App extends Component {
           <Route key={`route${k}`} path={`/${k}`} render={ () => (
             <Routes
               section={k}
-              data={data[k]}
+              data={this.props[k]}
               user={user}
 
               updateState={updateState}
@@ -87,6 +96,17 @@ class App extends Component {
 
           <Switch>
             {routes}
+            <Route path="/gallery/:room" render={ (req) => (
+              (gallery.rooms) ?
+              <Room
+                data={(gallery.rooms) ? gallery.rooms : {}}
+                user={user}
+
+                updateState={updateState}
+              />:
+              <div></div>
+            )}
+            />
             <Route render={ () => (
               <Redirect to="/" />
             )} />
@@ -114,7 +134,11 @@ class App extends Component {
 const mapStateToProps = state => (
   {
     user: state.user,
-    data: state.data,
+    home: state.home,
+    gallery: state.gallery,
+    guide: state.guide,
+    book: state.book,
+    welcome: state.welcome,
     message: state.message,
     edit: state.edit
   }

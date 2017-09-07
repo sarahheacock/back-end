@@ -4,7 +4,7 @@ import { Nav, Navbar, NavItem } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import EditButton from './buttons/EditButton';
-import { blogID, initialEdit, initialUser, initialMessage } from '../../../data/data';
+import { blogID, initial } from '../../../data/data';
 
 class Header extends React.Component {
   static propTypes = {
@@ -15,7 +15,7 @@ class Header extends React.Component {
   }
 
   componentDidMount(){
-    // this.props.getData(`/page/${blogID}`);
+
     if(window.location.hash.includes('register')){
       const arr = window.location.hash.split('/');
       const token = arr[1].replace('?token=', '');
@@ -24,14 +24,15 @@ class Header extends React.Component {
       window.location.hash = '';
       this.props.getData(`/user/${id}?token=${token}`);
     }
+    this.props.getData(`/page/${blogID}`);
   }
 
   logout = (e) => {
-    const content = {
-      edit: initialEdit,
-      message: initialMessage,
-      user: initialUser
-    };
+    // const content = {
+    //   edit: initial.edit,
+    //   message: initial.message,
+    //   user: initial.user
+    // };
     // this.props.updateState(content);
     this.props.getData('/auth/logout');
   }

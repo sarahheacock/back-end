@@ -273,7 +273,7 @@ const authorizeUser = (req, res, next) => {
   if (token) { // decode token
     jwt.verify(token, superSecret, (err, decoded) => { // verifies secret and checks exp
       if (err) {
-        res.json({message: messages.expError})
+        res.json({message: messages.expError, user: data.initial.user})
       }
       else { // if everything is good, save to request for use in other routes
         const userID = (req.page) ? req.page.userID : req.user.userID;

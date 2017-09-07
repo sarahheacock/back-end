@@ -3,9 +3,9 @@ const loginRoutes = express.Router();
 const mid = require('../middleware/middleware');
 
 const configure = require('../configure/config');
-const initialEdit = require('../../data/data').initialEdit;
-const initialUser = require('../../data/data').initialUser;
-const initialMessage = require('../../data/data').initialMessage;
+const initialEdit = require('../../data/data').initial.edit;
+const initialUser = require('../../data/data').initial.user;
+const initialMessage = require('../../data/data').initial.message;
 
 const Page = require("../models/page").Page;
 const User = require("../models/page").User;

@@ -6,12 +6,12 @@ const mid = require('../middleware/middleware');
 
 const configure = require('../configure/config');
 const bcrypt = require('bcrypt');
-const links = require('../../data/data').links;
-const initialEdit = require('../../data/data').initialEdit;
-const initialMessage = require('../../data/data').initialMessage;
+// const links = require('../../data/data').links;
+const initialEdit = require('../../data/data').initial.edit;
+const initialMessage = require('../../data/data').initial.message;
 
-const end = links.length;
-const keys = links.slice(0, end - 1);
+// const end = links.length;
+// const keys = links.slice(0, end - 1);
 
 
 
@@ -32,15 +32,15 @@ pageRoutes.param("pageID", (req, res, next, id) => {
   });
 });
 
-const formatOutput = (obj, get) => {
-  let newObj = {};
+const formatOutput = (obj) => {
+  let newObj = {edit: initialEdit, message: initialMessage};
+  const arr = ["home", "gallery", "guide"];
 
-  keys.forEach((k) => {
+  arr.forEach((k) => {
     newObj[k] = obj[k]
   });
 
-  if(get) return {data: obj};
-  return {data: obj, edit: initialEdit, message: initialMessage};
+  return newObj;
 }
 
 
@@ -74,8 +74,7 @@ pageRoutes.post('/', (req, res, next) => {
 //get page
 pageRoutes.get('/:pageID', (req, res, next) => {
   res.status(200);
-
-  res.json(formatOutput(req.page, true));
+  res.json(formatOutput(req.page));
 });
 
 
@@ -91,14 +90,14 @@ pageRoutes.post('/:pageID/room', mid.authorizeUser, mid.checkRoomInput, (req, re
         return next(err);
       }
       res.status(201);
-      res.json({data: page, edit: initialEdit, message: initialMessage});
+      res.json(formatOutput(page));
     });
   });
 });
 
 //add guide
 pageRoutes.post('/:pageID/guide', mid.authorizeUser, mid.checkGuideInput, (req, res, next) => {
-  req.page["local-guide"]["guide"].push(req.body);
+  req.page["guide"]["guide"].push(req.body);
 
   req.page.save((err, page) => {
     if(err){
@@ -151,7 +150,7 @@ pageRoutes.put('/:pageID/room/:roomID', mid.authorizeUser, mid.checkRoomInput, (
           return next(err);
         }
         res.status(200);
-        res.json({data: page, edit: initialEdit, message: initialMessage});
+        res.json(formatOutput(page));
       });
     });
 
@@ -160,7 +159,7 @@ pageRoutes.put('/:pageID/room/:roomID', mid.authorizeUser, mid.checkRoomInput, (
 
 //update guide
 pageRoutes.put('/:pageID/guide/:guideID', mid.authorizeUser, mid.checkGuideInput, (req, res, next) => {
-  let result = req.page["local-guide"].guide.id(req.params.guideID);
+  let result = req.page["guide"].guide.id(req.params.guideID);
   if(!result){
     err = new Error("Guide not found");
     next(err);
@@ -194,7 +193,7 @@ pageRoutes.delete("/:pageID/room/:roomID", mid.authorizeUser, (req, res) => {
           err.status = 404;
           return next(err);
         }
-        res.json({data: page, edit: initialEdit, message: initialMessage});
+        res.json(formatOutput(page));
       });
     });
 
@@ -203,7 +202,7 @@ pageRoutes.delete("/:pageID/room/:roomID", mid.authorizeUser, (req, res) => {
 
 //delete guide
 pageRoutes.delete("/:pageID/:guide/:guideID", mid.authorizeUser, (req, res) => {
-  let result = req.page["local-guide"].guide.id(req.params.guideID);
+  let result = req.page["guide"].guide.id(req.params.guideID);
   if(!result){
     err = new Error("Guide not found");
     next(err);

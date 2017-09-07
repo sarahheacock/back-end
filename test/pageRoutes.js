@@ -72,9 +72,9 @@
 //         .end((err, res) => {
 //           res.should.have.status(200);
 //           res.body.should.be.a('object');
-//           res.body.data.should.have.property('home');
-//           res.body.data.should.have.property('gallery');
-//           res.body.data.should.have.property('local-guide');
+//           res.body.should.have.property('home');
+//           res.body.should.have.property('gallery');
+//           res.body.should.have.property('guide');
 //           done();
 //         });
 //       });
@@ -119,10 +119,12 @@
 //         res.should.have.status(201);
 //         res.body.should.be.a('object');
 //         res.body.should.have.property('edit');
-//         res.body.should.have.property('data');
+//         res.body.should.have.property('home');
+//         res.body.should.have.property('gallery');
+//         res.body.should.have.property('guide');
 //         res.body.should.have.property('message');
 //
-//         res.body.data.gallery.rooms[0].should.have.property('cost').eql(150);
+//         res.body.gallery.rooms[0].should.have.property('cost').eql(150);
 //         done();
 //       });
 //     });
@@ -144,10 +146,11 @@
 //         res.should.have.status(201);
 //         res.body.should.be.a('object');
 //         res.body.should.have.property('edit');
-//         res.body.should.have.property('data');
+//         res.body.should.have.property('gallery');
+//         res.body.should.have.property('guide');
 //         res.body.should.have.property('message');
 //
-//         res.body.data["local-guide"]["guide"][1].should.have.property('category').eql('shopping');
+//         res.body["guide"]["guide"][1].should.have.property('category').eql('shopping');
 //         done();
 //       });
 //     });
@@ -273,7 +276,7 @@
 //       .end((err, res) => {
 //         res.should.have.status(200);
 //         res.body.should.be.a('object');
-//         res.body.data.gallery.should.have.property('title').eql(p1.title);
+//         res.body.gallery.should.have.property('title').eql(p1.title);
 //         done();
 //       });
 //     });
@@ -328,15 +331,14 @@
 //       };
 //
 //       chai.request(server)
-//       .put('/page/' + page.id + "/guide/" + page["local-guide"].guide[0].id)
+//       .put('/page/' + page.id + "/guide/" + page["guide"].guide[0].id)
 //       .send(guide)
 //       .end((err, res) => {
 //         res.should.have.status(200);
 //         res.body.should.be.a('object');
-//         res.body.should.have.property('data');
 //         res.body.should.have.property('edit');
 //         res.body.should.have.property('message');
-//         res.body.data["local-guide"]["guide"][0].should.have.property('title').eql("Coffee");
+//         res.body["guide"]["guide"][0].should.have.property('title').eql("Coffee");
 //         done();
 //       });
 //     });
@@ -353,7 +355,7 @@
 //       };
 //
 //       chai.request(server)
-//       .put('/page/' + page.id + "/guide/" + page["local-guide"].guide[0].id)
+//       .put('/page/' + page.id + "/guide/" + page["guide"].guide[0].id)
 //       .send(invalid)
 //       .end((err, res) => {
 //         res.body.should.be.a('object');
@@ -407,11 +409,10 @@
 //       .end((err, res) => {
 //         res.should.have.status(200);
 //         res.body.should.be.a('object');
-//         res.body.should.have.property('data');
 //         res.body.should.have.property('edit');
 //         res.body.should.have.property('message');
-//         res.body.data.gallery.rooms[0].should.have.property('cost').eql(200);
-//         res.body.data.gallery.rooms[0].should.have.property('title').eql("Swan");
+//         res.body.gallery.rooms[0].should.have.property('cost').eql(200);
+//         res.body.gallery.rooms[0].should.have.property('title').eql("Swan");
 //         done();
 //       });
 //     });
@@ -461,12 +462,11 @@
 //     it('should delete guide', (done) => {
 //
 //       chai.request(server)
-//       .delete('/page/' + page.id + "/guide/" + page["local-guide"].guide[0].id + "?token=" + token)
+//       .delete('/page/' + page.id + "/guide/" + page["guide"].guide[0].id + "?token=" + token)
 //       .end((err, res) => {
 //         res.should.have.status(200);
 //         res.body.should.be.a('object');
-//         res.body.should.have.property('data')
-//         res.body.data.gallery.rooms.should.be.a('array').length(0);
+//         res.body.gallery.rooms.should.be.a('array').length(0);
 //         done();
 //       });
 //     });
@@ -501,8 +501,7 @@
 //       .end((err, res) => {
 //         res.should.have.status(200);
 //         res.body.should.be.a('object');
-//         res.body.should.have.property('data')
-//         res.body.data.gallery.rooms.should.be.a('array').length(0);
+//         res.body.gallery.rooms.should.be.a('array').length(0);
 //         done();
 //       });
 //     });
