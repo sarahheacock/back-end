@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
+import { cloudName, name } from '../../../../data/data';
 
-import { cloudName } from '../../../../data/data';
-
+import EditButton from '../buttons/EditButton.js';
 
 const Home = (props) => {
-  console.log("hello", props.data);
 
   return (
     <div>
@@ -25,7 +24,16 @@ const Home = (props) => {
       <div className="home">
         <div className="content">
           <h3 className="pretty">{props.data.title}</h3>
+          <b className="paragraph">{props.data.b}</b>
           <p className="paragraph">{props.data.p1}</p>
+          <div className="text-center">
+            <EditButton
+              user={props.user}
+              dataObj={props.data}
+              updateState={props.updateState}
+              title="Edit Home"
+            />
+          </div>
         </div>
       </div>
     </div>

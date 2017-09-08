@@ -5,6 +5,7 @@ import { Carousel } from 'react-bootstrap';
 import { Image } from 'cloudinary-react';
 
 import { cloudName } from '../../../../data/data';
+import EditButton from '../buttons/EditButton.js';
 
 const Room = (props) => {
   const index = window.location.pathname.split('/').reduce((a, b) => {
@@ -51,6 +52,14 @@ const Room = (props) => {
             <NavLink to="/book">
               <button className="button blueButton">Book Now</button>
             </NavLink>
+          </div>
+          <div className="text-center">
+            <EditButton
+              user={props.user}
+              dataObj={props.data[index]}
+              updateState={props.updateState}
+              title="Edit Room"
+            />
           </div>
         </div>
       </div>

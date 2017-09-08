@@ -52,6 +52,7 @@ class App extends Component {
     console.log("welcome", welcome);
     console.log("message", message);
     console.log("edit", edit);
+    console.log(window.location);
 
     const routes = ([...links, "welcome"]).map((k) => {
       if(k !== "guide" && k !== "book"){

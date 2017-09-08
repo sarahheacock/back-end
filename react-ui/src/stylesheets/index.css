@@ -228,6 +228,13 @@ h4 {
   height: auto;
 }
 
+.fa-info-circle{
+  color: #cdcdc0;
+}
+
+.fa-info-circle:hover{
+  color: #a5a58d;
+}
 
 footer {
   background-color: #626d71;

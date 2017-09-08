@@ -1,6 +1,7 @@
 var blogID = "59a6f1f732325214ae43741c";
 var cloudName = "dhd1eov8v";
 var links = ["home", "gallery", "guide", "book"];
+var name = "test";
 
 
 //========INITIAL DATA=========================
@@ -25,6 +26,7 @@ var initial = {
   "edit": {
     "url": '',
     "modalTitle": '',
+    "next": '',
     "dataObj": {}
   },
   "user": {
@@ -300,6 +302,32 @@ var editData = {
   }
 };
 
+var homeData = {
+  "title": {
+    type: 'text',
+    placeholder: "Cursive Script",
+    componentClass: 'input',
+    default: ''
+  },
+  "b": {
+    type: 'text',
+    placeholder: "Bold text",
+    componentClass: 'input',
+    default: ''
+  },
+  p1: {
+    type: 'text',
+    placeholder: 'Write your paragraph here...',
+    componentClass: 'textarea'
+  },
+  "image": {
+    type: 'other',
+    placeholder: 'Primary Image',
+    componentClass: 'imageUpload',
+    default: 'Tile-Dark-Grey-Smaller-White-97_pxf5ux'
+  }
+}
+
 // var required = {
 //   message: Object.keys(message),
 //   edit: Object.keys(editData),
@@ -328,7 +356,7 @@ var messages = {
   userRes: "Thank you for staying with us!",
   available: "This room is no longer available. Sorry for the inconvenience.",
   reminderSent: "Reminder email sent!",
-  emailError: "Cannot send email"
+  emailSendError: "Cannot send email"
 };
 
 module.exports = {
@@ -336,6 +364,7 @@ module.exports = {
   cloudName: cloudName,
   links: links,
   initial: initial,
+  name: name,
 
   notRequired: notRequired,
   loginData: loginData,
@@ -346,6 +375,7 @@ module.exports = {
   editData: editData,
   addressData: addressData,
   paymentData: paymentData,
+  homeData: homeData,
 
   messages: messages
 }

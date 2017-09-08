@@ -5,7 +5,6 @@ import { Form } from 'react-bootstrap';
 import EditFormComponents from './EditFormComponents';
 import SubmitButtonSet from '../buttons/SubmitButtonSet';
 
-
 const EditForm = (props) => {
 
   //======ALL OF THE FORM GROUPS===================================
@@ -13,14 +12,31 @@ const EditForm = (props) => {
   // console.log(Object.keys(props.edit.dataObj));
   const formGroups = (props.edit.modalTitle.includes("Delete")) ?
     <div className="text-center">Are you sure you want to delete this service?</div>:
-    Object.keys(props.edit.dataObj).map(k =>
-      <EditFormComponents
-        key={k}
-        comp={k}
-        formChange={props.formChange}
-        value={props.edit.dataObj[k]}
-      />
-    );
+    Object.keys(props.edit.dataObj).map(k => {
+      if(k === "carousel"){
+        console.log(props.edit.dataObj[k]);
+        return props.edit.dataObj[k].map((j, i) => (
+          <EditFormComponents
+            key={`${i}car`}
+            comp={k}
+            message={props.message}
+            formChange={props.formChange}
+            value={j}
+          />
+        ));
+      }
+      else {
+        return(
+          <EditFormComponents
+            key={k}
+            comp={k}
+            message={props.message}
+            formChange={props.formChange}
+            value={props.edit.dataObj[k]}
+          />
+        );
+      }
+    });
 
 
   //============================================================

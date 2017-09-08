@@ -27,10 +27,10 @@ peach--#FEDCD2
   border-radius: 5%;
   padding-left: 12px;
   padding-right: 12px;
-  padding-top: 7px;
-  padding-bottom: 7px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   width: 200px;
-  margin: 1%;
+  margin: 3%;
   border-width: 0px;
 }
 
@@ -50,6 +50,17 @@ peach--#FEDCD2
 
 .blueButton:hover {
   background-color: #578e81;
+}
+
+.blueButtonActive {
+  background-color: #578e81;
+  color: White;
+}
+
+.blueButtonInactive {
+  background-color: #578e81;
+  color: White;
+  opacity: 0.3;
 }
 
 .yellowButton {

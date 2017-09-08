@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import { ControlLabel, FormGroup, FormControl, Checkbox } from 'react-bootstrap';
-import { loginData, notRequired, messages, signUpData } from '../../../../data/data';
-const formObj = {...loginData, ...signUpData};
+import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
+import { Button, Row, Col, ControlLabel, FormGroup, FormControl, Checkbox } from 'react-bootstrap';
+import { loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, notRequired, messages, cloudName } from '../../../../data/data';
 
 const upper = (label) => {
   const required = notRequired.reduce((c, d) => { return c || label === d }, false);
@@ -12,6 +11,7 @@ const upper = (label) => {
 };
 
 const EditForm = (props) => {
+  const formObj = { ...loginData, ...signUpData, ...addressData, ...paymentData, ...messageData, ...galleryData, ...localGuideData, ...editData };
 
   const check = (k) => {
     if(props.message === messages.inputError && !props.value){
@@ -25,6 +25,7 @@ const EditForm = (props) => {
     }
     return null;
   }
+
   const component = (!formObj[props.comp]) ?
     <div></div>:
     ((formObj[props.comp]["componentClass"] === 'checkbox') ?
@@ -36,15 +37,36 @@ const EditForm = (props) => {
       >
       </Checkbox>:
 
-      <FormControl
-         name={props.comp}
-         type={formObj[props.comp]["type"]}
-         placeholder={formObj[props.comp]["placeholder"]}
-         componentClass={formObj[props.comp]["componentClass"]}
-         value={props.value}
-         onChange={props.formChange}
-       />
-      );
+      ((props.comp === "carousel" || props.comp === "image") ?
+          <Row className="clearfix">
+            <Row className="clearfix">
+              <Col sm={6} className="text-center">
+                <CloudinaryContext cloudName={cloudName}>
+                    <Image publicId={props.value}>
+                        <Transformation width="200" crop="fill"/>
+                    </Image>
+                </CloudinaryContext>
+              </Col>
+              <Col sm={2} className="text-center">
+                {(props.comp === "carousel") ?
+                <Button bsStyle="link" name={props.name} value="delete" onClick={props.formChange}>
+                  Delete
+                </Button>:
+                <div></div>}
+              </Col>
+            </Row>
+            <hr />
+          </Row> :
+
+          <FormControl
+             name={props.comp}
+             type={formObj[props.comp]["type"]}
+             placeholder={formObj[props.comp]["placeholder"]}
+             componentClass={formObj[props.comp]["componentClass"]}
+             value={props.value}
+             onChange={props.formChange}
+           />
+         ));
   const classComp = (formObj[props.comp]["componentClass"] === 'checkbox') ?
     "text-center" : "";
 

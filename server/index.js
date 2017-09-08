@@ -22,7 +22,7 @@ const loginRoutes = require("./routes/loginRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
-
+const fileRoutes = require("./routes/fileRoutes");
 
 
 //=====CONFIGURATION=============================
@@ -55,18 +55,13 @@ refreshRoutes.get('*', function(request, response) {
 
 //=================ROUTES=======================================
 
-
-
-//upload file
-//get upcoming/availability
-//create/edit upcoming
-
 app.use('/sayHello', messageRoutes); //sayHello
 app.use('/login', loginRoutes); //login admin and user
 app.use('/auth', authRoutes); //facebook login
 app.use('/page', pageRoutes); //create/edit page
 app.use('/user', userRoutes); //create/edit user
-app.use('/res', reservationRoutes);
+app.use('/res', reservationRoutes); //get/create upcoming/availability
+app.use('/file', fileRoutes);//upload file
 app.use(refreshRoutes);
 
 //===========================================================

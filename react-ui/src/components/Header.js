@@ -15,7 +15,6 @@ class Header extends React.Component {
   }
 
   componentDidMount(){
-
     if(window.location.hash.includes('register')){
       const arr = window.location.hash.split('/');
       const token = arr[1].replace('?token=', '');
