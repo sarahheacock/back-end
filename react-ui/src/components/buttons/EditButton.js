@@ -2,37 +2,35 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavItem } from 'react-bootstrap';
 
-import Edit from './Edit';
-
+const modify = (string) => {
+  if(string.includes(' ')) return string.slice(0, string.indexOf(' ') + 1)
+  else return string;
+}
 
 const EditButton = (props) => {
-  const path = window.location.pathname;
-  const location = path.split('/').filter((p) => { return p !== ''; });
+  //determine style of edit button
+  const style = (props.title.includes("Edit")) ?
+    "button orangeButton":
+    ((props.title.includes("Add") || props.title.includes("Login")) ?
+      "button blueButton":
+      ((props.title.includes("Delete")) ?
+        "button yellowButton":
+        "button"));
 
-  let edit = new Edit(props.title);
-  edit.setDataObj(location, props.dataObj);
-  edit.setURL(props.user.token, props.dataObj._id, location);
+  //hide buttons that should only be used by admin
+  const adminAuth = props.title.includes("Edit") || props.title.includes("Add") || props.title.includes("Delete");
 
-
-  //=====DETERMINE NEXT AND MODAL-TITLE FROM PAGE-SECTION==========================================
-  const adminAuth = props.title.includes("Add") || props.title.includes("Edit") || props.title.includes("Delete");
-
-
-//====THE ACTUAL BUTTON=====================================================
-//page editing buttons are hidden
-//if we are not updating edit, then navLink to next page
-//...otherwise wait
-const button = (!props.user.token && adminAuth) ?
-  <div></div> :
-  ((edit.modalTitle === "Send Message") ?
-    <a href="#" onClick={(e) => { if(e) e.preventDefault(); props.updateState(edit.getEdit()); }}>
-      <i className="fa fa-envelope env" aria-hidden="true"></i>
-    </a> :
-    ((edit.modalTitle.includes("Login")) ?
-      <NavItem onClick={(e) => { if(e) e.preventDefault(); props.updateState(edit.getEdit()); }} ><span className="login">{edit.modalTitle}</span></NavItem> :
-      <button className={edit.style} onClick={(e) => { if(e) e.preventDefault(); props.updateState(edit.getEdit()); }}>
-        {props.title.slice(0, props.title.indexOf(' ') + 1)}
-      </button>))
+  const button = (!props.user.token && adminAuth) ?
+    <div></div> :
+    ((props.title === "Send Message") ?
+      <a href="#" onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }}>
+        <i className="fa fa-envelope env" aria-hidden="true"></i>
+      </a> :
+      ((props.title === "Login") ?
+        <NavItem onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }} ><span className="login">{modify(props.title)}</span></NavItem> :
+        <button className={style} onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }}>
+          {modify(props.title)}
+        </button>))
 
   return ( button );
 }

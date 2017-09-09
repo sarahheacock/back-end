@@ -16,6 +16,7 @@ class EditModal extends React.Component {
     putData: PropTypes.func.isRequired,
     postData: PropTypes.func.isRequired,
     deleteData: PropTypes.func.isRequired,
+    uploadFile: PropTypes.func.isRequired,
 
     updateState: PropTypes.func.isRequired,
   }
@@ -31,15 +32,23 @@ class EditModal extends React.Component {
   onFormChange = (e) => {
 
     let dataObj = {...this.props.edit.dataObj};
-    const name = e.target.name;
+    const nameArr = e.target.name.split("-");
+    const name = nameArr[0];
+    const index = nameArr[1]
     const value = e.target.value;
 
-    if(name !== "admin"){
-      dataObj[name] = value;
+    if(value === "delete"){
+      dataObj[name].splice(index, 1);
     }
     else {
-      dataObj[name] = !this.props.edit.dataObj[name];
+      if(Array.isArray(this.props.edit.dataObj[name])){
+        dataObj[name][index] = value;
+      }
+      else {
+        dataObj[name] = value;
+      }
     }
+
 
     this.props.updateState({
       edit: {
@@ -49,6 +58,43 @@ class EditModal extends React.Component {
       message: ''
     });
   }
+
+  onDrop = (files, rejected) => {
+    const name = (window.location.pathname === "/") ?
+      "carousel":
+      (window.location.pathname === "/publications")?
+        "link":
+        "image";
+
+    if(rejected[0]){
+      this.props.updateState({"message": (name === "link") ? "File must be pdf." : "Image must be png, jpg, or jpeg."})
+    }
+    else{
+      this.props.updateState({"message": "Loading..."})
+    }
+  }
+
+  onFormAdd = (files) => {
+    const name = (window.location.pathname.includes("gallery")) ?
+      "carousel":
+      "image";
+
+    let newEdit = {...this.props.edit};
+    const file = new File([files[0]], files[0].name, {
+      type: "image/jpeg",
+    });
+
+    let formData = new FormData();
+    formData.append('file', file);
+    console.log('file', formData.get('file'));
+
+    this.props.uploadFile({
+      url: `/file?token=${this.props.user.token}`,
+      edit: newEdit,
+      name: name
+    }, formData);
+  }
+
 
   render(){
 
@@ -73,6 +119,8 @@ class EditModal extends React.Component {
           <Modal.Body>
             <EditForm
               formChange={this.onFormChange}
+              drop={this.onDrop}
+              formAdd={this.onFormAdd}
               editData={editFunc}
               getData={this.props.getData}
               updateState={this.props.updateState}

@@ -83,6 +83,8 @@ export default EditForm;
 
 EditForm.propTypes = {
   comp: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
   formChange: PropTypes.func.isRequired,
   // value: PropTypes.object.isRequired,
 };

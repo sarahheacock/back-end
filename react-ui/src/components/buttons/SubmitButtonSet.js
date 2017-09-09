@@ -58,7 +58,7 @@ class SubmitButtonSet extends React.Component {
       ((edit.modalTitle.includes("Add") || edit.modalTitle.includes("Login") || edit.modalTitle.includes("Send")) ?
         "button blueButton":
         ((edit.modalTitle.includes("Delete")) ?
-          "button redButton":
+          "button yellowButton":
           "button"));
 
     return (

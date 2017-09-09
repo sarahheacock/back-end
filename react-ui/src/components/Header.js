@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Nav, Navbar, NavItem } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import EditButton from './buttons/EditButton';
@@ -24,16 +25,13 @@ class Header extends React.Component {
       this.props.getData(`/user/${id}?token=${token}`);
     }
     this.props.getData(`/page/${blogID}`);
-  }
 
-  logout = (e) => {
-    // const content = {
-    //   edit: initial.edit,
-    //   message: initial.message,
-    //   user: initial.user
-    // };
-    // this.props.updateState(content);
-    this.props.getData('/auth/logout');
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString();
+    const year = date.getFullYear().toString();
+    const url = `/res/page/${blogID}/${month}/${year}?token=${this.props.user.token}`;
+    console.log("url", url);
+    this.props.getData(url);
   }
 
   render(){
@@ -68,11 +66,9 @@ class Header extends React.Component {
           <Navbar.Collapse>
             <Nav className="ml-auto" navbar pullRight>
               {navItems}
-              <LinkContainer to="#">
+              <LinkContainer to={(this.props.user.token) ? "/welcome": "#"}>
                 {(!(!this.props.user.token))?
-                  <NavItem onClick={this.logout}>
-                    Logout
-                  </NavItem> :
+                  <NavItem>{this.props.user.name}</NavItem> :
                   <EditButton
                     user={this.props.user}
                     dataObj={{}}

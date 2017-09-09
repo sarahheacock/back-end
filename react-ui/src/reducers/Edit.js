@@ -1,4 +1,4 @@
-import { blogID, loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData } from '../../../../data/data';
+import { blogID, loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData } from '../../../data/data';
 
 const hash = {
   "Login": loginData,
@@ -15,14 +15,12 @@ const hash = {
 };
 
 const Edit = function(title){
-  this.style = (title.includes("Edit")) ?
-    "button orangeButton":
-    ((title.includes("Add") || title.includes("Login")) ?
-      "button blueButton":
-      ((title.includes("Delete")) ?
-        "button redButton":
-        "button"));
+  const path = window.location.pathname;
+  let location = path.split('/').filter((p) => { return p !== ''; });
+  if(location.length === 0) location.push('home');
+
   this.message = '';
+  this.location = location;
   this.url = '';
   this.next = '#';
   this.modalTitle = title;
@@ -30,32 +28,30 @@ const Edit = function(title){
 }
 
 Edit.prototype = {
-  setDataObj: function(location, dataObj){
+  setDataObj: function(dataObj){
     let newObj = {};
-    const A = ["Add Content", "Sign Up", "Send Message", "Login"];
+    const A = ["Add Room", "Add Guide", "Sign Up", "Send Message", "Login"];
     const defaultContent = A.includes(this.modalTitle.trim());
 
     Object.keys(hash[this.modalTitle.trim()]).forEach((k) => {
-      if(defaultContent) newObj[k] = hash[this.modalTitle.trim()][k]["default"] || '';
+      if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : hash[this.modalTitle.trim()][k]["default"] || '';
       else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
     });
 
     this.dataObj = newObj;
   },
 
-  setURL: function(token, id, location){
+  setURL: function(token, id){
+    console.log("location", this.location[0]);
     const title = this.modalTitle;
     let url = "";
     if(title.includes("Send Message")) url = "/sayHello";
     if(title.includes("Login")) url = "/login";
     if(title.includes("Sign Up")) url = "/user";
-    if(title.includes("Add Room")) url = "/room";
-    if(title.includes("Add Guide")) url = "/guide";
-    if(title.includes("Edit Content")) url = `/${(location[0]) ? location[0] : "home"}`;
-    if(title.includes("Edit Room")) url = `/room/${id}`;
-    if(title.includes("Edit Guide")) url = `/guide/${id}`;
-    if(title.includes("Delete Room")) url = `/room/${id}`;
-    if(title.includes("Delete Guide")) url = `/guide/${id}`;
+    if(title.includes("Room")) url = "/room";
+    if(title.includes("Guide")) url = "/guide";
+    if(title.includes("Edit Content") || title.includes("Edit Home")) url = `/${this.location[0]}`;
+    if((title.includes("Room") || title.includes("Guide")) && (title.includes("Edit") || title.includes("Delete"))) url += `/${id}`;
 
     if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) this.url = `/page/${blogID}${url}?token=${token}`;
     else this.url = url;

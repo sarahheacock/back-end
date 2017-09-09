@@ -10,6 +10,28 @@ export const updateState = (newState) => {
   }
 }
 
+export const uploadFile = (newData, file) => {
+
+  console.log("file", file);
+
+  return (dispatch) => {
+    axios.post(newData.url, file)
+      .then(response => {
+        // if(response.data.success === false) dispatch(updateState({ message: errorStatus.expError }));
+
+        console.log(response.data);
+        if(Array.isArray(newData.edit.dataObj[newData.name]))newData.edit.dataObj[newData.name].push(response.data.public_id);
+        newData.edit.dataObj["image"] = response.data.public_id;
+
+        dispatch(updateState({ edit: newData.edit, message: '' }));
+      })
+      .catch(error => {
+        console.log("err", error);
+        dispatch(updateState({ message: "Unable to upload image" }))
+      });
+  };
+}
+
 export const getData = (url) => {
   return (dispatch) => {
 

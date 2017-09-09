@@ -2,8 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Guide from './Guide';
+import EditButton from '../buttons/EditButton.js';
 
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Redirect, Switch } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import { Row, Col } from 'react-bootstrap';
 
@@ -23,6 +24,8 @@ const LocalGuide = (props) => {
     <Route key={`guideRoute${i}`} path={link(cat)} render={ () =>
       <Guide
         data={props.data.guide.filter((g) => { return g.category === cat; })}
+        user={props.user}
+        updateState={props.updateState}
       /> }
     />
   ));
@@ -39,6 +42,12 @@ const LocalGuide = (props) => {
         <h3 className="pretty">{props.data.title}</h3>
         <p><b className="paragraph">{props.data.b}</b></p>
         <p className="paragraph">{props.data.p1}</p>
+        <EditButton
+          user={props.user}
+          dataObj={props.data}
+          updateState={props.updateState}
+          title="Edit Content"
+        />
       </div>
 
       <Row className="clear-fix">
@@ -46,12 +55,22 @@ const LocalGuide = (props) => {
           <div className="text-center">{tabs}</div>
         </Col>
         <Col sm={8} className="columns">
-          <Route exact path="/guide/" render={ () =>
-            <Redirect to={link(categories[0])} /> }
-          />
-          {routes}
+          <Switch>
+            {routes}
+            <Route render={ () =>
+              <Redirect to={link(categories[0])} /> }
+            />
+          </Switch>
         </Col>
       </Row>
+      <div className="text-center">
+        <EditButton
+          user={props.user}
+          dataObj={props.data.guide[0]}
+          updateState={props.updateState}
+          title="Add Guide"
+        />
+      </div>
 
     </div>
   );

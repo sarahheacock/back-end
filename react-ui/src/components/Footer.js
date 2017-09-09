@@ -19,6 +19,7 @@ const Footer = (props) => {
         putData={props.putData}
         postData={props.postData}
         deleteData={props.deleteData}
+        uploadFile={props.uploadFile}
 
         updateState={props.updateState}
       />
@@ -68,6 +69,7 @@ Footer.propTypes = {
   putData: PropTypes.func.isRequired,
   postData: PropTypes.func.isRequired,
   deleteData: PropTypes.func.isRequired,
+  uploadFile: PropTypes.func.isRequired,
 
   updateState: PropTypes.func.isRequired,
 };

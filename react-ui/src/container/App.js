@@ -11,7 +11,7 @@ import * as AdminActionCreators from '../actions/admin';
 import Routes from '../components/Routes';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import Room from '../components/routes/Room';
+// import Room from '../components/routes/Room';
 
 
 //data
@@ -41,6 +41,7 @@ class App extends Component {
     const putData = bindActionCreators(AdminActionCreators.putData, dispatch);
     const postData = bindActionCreators(AdminActionCreators.postData, dispatch);
     const deleteData = bindActionCreators(AdminActionCreators.deleteData, dispatch);
+    const uploadFile = bindActionCreators(AdminActionCreators.uploadFile, dispatch);
 
 
     console.log("");
@@ -54,27 +55,31 @@ class App extends Component {
     console.log("edit", edit);
     console.log(window.location);
 
-    const routes = ([...links, "welcome"]).map((k) => {
+    const routes = ([...links, "welcome", "gallery/:room"]).map((k) => {
+      const key = (k.includes('/')) ? k.slice(0, k.indexOf('/')) : k;
+
       if(k !== "guide" && k !== "book"){
         return (
           <Route key={`route${k}`} exact path={(k === "home") ? "/" : `/${k}`} render={ () => (
             <Routes
               section={k}
-              data={this.props[k]}
+              data={this.props[key]}
               user={user}
 
+              getData={getData}
               updateState={updateState}
             />) }
           />);
       }
-      else {
+      else{
         return (
           <Route key={`route${k}`} path={`/${k}`} render={ () => (
             <Routes
               section={k}
-              data={this.props[k]}
+              data={this.props[key]}
               user={user}
 
+              getData={getData}
               updateState={updateState}
             />) }
           />);
@@ -97,17 +102,6 @@ class App extends Component {
 
           <Switch>
             {routes}
-            <Route path="/gallery/:room" render={ (req) => (
-              (gallery.rooms) ?
-              <Room
-                data={(gallery.rooms) ? gallery.rooms : {}}
-                user={user}
-
-                updateState={updateState}
-              />:
-              <div></div>
-            )}
-            />
             <Route render={ () => (
               <Redirect to="/" />
             )} />
@@ -123,6 +117,7 @@ class App extends Component {
             postData={postData}
             deleteData={deleteData}
             updateState={updateState}
+            uploadFile={uploadFile}
           />
         </div>
 

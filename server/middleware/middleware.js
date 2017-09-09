@@ -146,8 +146,8 @@ const checkGuideInput = (req, res, next) => {
 
 const checkEditInput = (req, res, next) => {
 
-  const cForm = checkForm(req.body, editData);
-  const cSize = checkSize(req.body, editData);
+  const cForm = (req.params.section === "home") ? checkForm(req.body, data.homeData) : checkForm(req.body, editData);
+  const cSize = (req.params.section === "home") ? checkSize(req.body, data.homeData) : checkSize(req.body, editData);
 
   if(!cForm){
     res.json({message: messages.inputError})

@@ -7,13 +7,27 @@ import { Image } from 'cloudinary-react';
 import { cloudName } from '../../../../data/data';
 import EditButton from '../buttons/EditButton.js';
 
-const Room = (props) => {
-  const index = window.location.pathname.split('/').reduce((a, b) => {
-    if(!isNaN(a)) return a;
-    else return parseInt(b);
-  }, NaN);
+const link = (cat) => {
+  return cat.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s/g, "-");
+}
 
-  const carouselImg = props.data[index]["carousel"].map((image, index) => (
+const Room = (props) => {
+  console.log(props.data);
+  const location = window.location.pathname.split('/').filter((p) => { return p !== ''; });
+  const pathname = location[location.length - 1];
+
+  const data = props.data.reduce((a, b) => {
+    if(pathname === link(b.title)) return b;
+    return a;
+  }, {title: "fghjk", carousel: []});
+
+  //this is a crappy solution to prevent people from adding a non-existent room
+  //since the route is /gallery/:room and
+  //and since /gallery was an exact route, I had to create
+  if(!data.cost) window.location.pathname = "/gallery";
+  console.log(data);
+
+  const carouselImg = data["carousel"].map((image, index) => (
     <Carousel.Item key={`carImg${index}`}>
       <Image className='carImg'
         id={`carImg${index}`}
@@ -42,13 +56,13 @@ const Room = (props) => {
 
       <div className="home">
         <div className="content">
-          <h3 className="pretty">{props.data[index].title}</h3>
-          <p className="paragraph"><b>{props.data[index].b}</b></p>
-          <p className="paragraph">{props.data[index].p1}</p>
+          <h3 className="pretty">{data.title}</h3>
+          <p className="paragraph"><b>{data.b}</b></p>
+          <p className="paragraph">{data.p1}</p>
           <br />
           <div className="text-center">
-            <h4 className="paragraph"><big>$</big>{`${props.data[index].cost}.`}<sup>00</sup><sub> per night</sub></h4>
-            <h4 className="paragraph"><big>{props.data[index]["maximum-occupancy"]}</big><sub> person max</sub></h4>
+            <h4 className="paragraph"><big>$</big>{`${data.cost}.`}<sup>00</sup><sub> per night</sub></h4>
+            <h4 className="paragraph"><big>{data["maximum-occupancy"]}</big><sub> person max</sub></h4>
             <NavLink to="/book">
               <button className="button blueButton">Book Now</button>
             </NavLink>
@@ -56,7 +70,7 @@ const Room = (props) => {
           <div className="text-center">
             <EditButton
               user={props.user}
-              dataObj={props.data[index]}
+              dataObj={data}
               updateState={props.updateState}
               title="Edit Room"
             />
@@ -70,7 +84,7 @@ const Room = (props) => {
 export default Room;
 
 Room.propsTypes = {
-  data: PropTypes.array.isRequired,
+  data: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired,
   updateState: PropTypes.func.isRequired
 }

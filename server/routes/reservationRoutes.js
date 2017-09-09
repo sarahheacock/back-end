@@ -60,6 +60,18 @@ reservationRoutes.param("resID", (req, res, next, id) => {
   })
 });
 
+const format = (reservations) => {
+  const newRes = reservations.map((r) => {
+    return{
+      start: new Date(r.start),
+      end: new Date(r.end),
+      title: r.userID.name || r.userID.email,
+      event: r
+    };
+  });
+  return {message: "", welcome: newRes, edit: data.initial.edit};
+};
+
 //===================RESERVATIONS================================
 //get reservations by specified dates and return availability
 reservationRoutes.get('/available/:dateOne/:dateTwo/:guests', mid.getRooms, mid.getRes, (req, res, next) => {
@@ -149,7 +161,7 @@ reservationRoutes.put("/page/:pageID/reminder/:resID", auth, mid.sendReminder, (
     const year = date.getFullYear().toString();
     Reservation.findMonth(month, year, (err, reservations) => {
       if(err) next(err);
-      res.json({message: "", welcome: reservations, edit: data.initial.edit});
+      res.json(format(reservations));
     });
   });
 });
@@ -166,7 +178,7 @@ reservationRoutes.put("/page/:pageID/checkIn/:resID", auth, (req, res, next) => 
     const year = date.getFullYear().toString();
     Reservation.findMonth(month, year, (err, reservations) => {
       if(err) next(err);
-      res.json({message: "", welcome: reservations, edit: data.initial.edit});
+      res.json(format(reservations));
     });
   });
 });
@@ -182,7 +194,7 @@ reservationRoutes.put("/page/:pageID/charge/:resID", auth, (req, res, next) => {
     const year = date.getFullYear().toString();
     Reservation.findMonth(month, year, (err, reservations) => {
       if(err) next(err);
-      res.json({message: "", welcome: reservations, edit: data.initial.edit});
+      res.json(format(reservations));
     });
   });
 });
@@ -196,7 +208,7 @@ reservationRoutes.delete("/page/:pageID/cancel/:resID/", auth, mid.sendCancel, (
     const year = date.getFullYear().toString();
     Reservation.findMonth(month, year, (err, reservations) => {
       if(err) next(err);
-      res.json({message: "", welcome: reservations, edit: data.initial.edit});
+      res.json(format(reservations));
     });
   });
 });
@@ -205,7 +217,7 @@ reservationRoutes.delete("/page/:pageID/cancel/:resID/", auth, mid.sendCancel, (
 reservationRoutes.get('/page/:pageID/:month/:year', auth, (req, res, next) => {
   Reservation.findMonth(req.params.month, req.params.year, (err, reservations) => {
     if(err) next(err);
-    res.json({message: "", welcome: reservations, edit: data.initial.edit});
+    res.json(format(reservations));
   });
 });
 

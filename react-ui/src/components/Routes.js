@@ -6,6 +6,8 @@ import Home from './routes/Home';
 import Gallery from './routes/Gallery';
 import LocalGuide from './routes/LocalGuide';
 import Book from './routes/Book';
+import Room from './routes/Room';
+import WelcomeAdmin from './routes/WelcomeAdmin';
 // import EditButton from './buttons/EditButton';
 
 const title = (s) => {
@@ -25,11 +27,15 @@ const Routes = (props) => {
         <LocalGuide data={props.data} user={props.user} updateState={props.updateState}/> :
         ((props.section === "book") ?
           <Book data={props.data} user={props.user} updateState={props.updateState}/> :
-          <div></div>))))
+          ((props.section === "gallery/:room") ?
+            <Room data={(Object.keys(props.data).length > 0) ? props.data.rooms : {} } user={props.user} updateState={props.updateState}/> :
+            ((props.section === "welcome") ?
+              <WelcomeAdmin data={props.data} user={props.user} updateState={props.updateState} getData={props.getData}/> :
+              <div></div>))))))
 
   return (
-    <div className={(props.section === "home") ? "" : "main-content"}>
-      {(props.section === "home") ? <div></div> : <PageHeader><span className="header-text">{title(props.section)}</span></PageHeader>}
+    <div className={(props.section === "home" || props.section === "gallery/:room") ? "" : "main-content"}>
+      {(props.section === "home" || props.section === "gallery/:room") ? <div></div> : <PageHeader><span className="header-text">{title(props.section)}</span></PageHeader>}
       <div>{(Object.keys(props.data).length > 0) ? section : '' }</div>
       <div className="text-center">{editButton}</div>
     </div>
@@ -40,10 +46,11 @@ export default Routes;
 
 Routes.propTypes = {
   section: PropTypes.string.isRequired,
-  data: PropTypes.object.isRequired,
+  // data: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired,
 
-  updateState: PropTypes.func.isRequired
+  updateState: PropTypes.func.isRequired,
+  getData: PropTypes.func.isRequired
 };
 
 // (Object.keys(props.data).length > 0)?

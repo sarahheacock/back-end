@@ -4,12 +4,9 @@ import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 import { cloudName } from '../../../../data/data';
-// import EditButton from '../buttons/EditButton';
-// <CloudinaryContext cloudName={cloudName} className="carousel-content">
-//     <Image publicId={props.data.image} className="carImg">
-//         <Transformation height="1000" width="2000" crop="fill"/>
-//     </Image>
-// </CloudinaryContext>
+
+import EditButton from '../buttons/EditButton.js';
+
 
 const Guide = (props) => {
   return (
@@ -34,7 +31,7 @@ const Guide = (props) => {
               <div className="text-center">
                 <CloudinaryContext cloudName={cloudName}>
                     <Image publicId={d.image} className="projectPic" >
-                        <Transformation width="150" crop="scale"/>
+                        <Transformation width="200" crop="scale" radius="10"/>
                     </Image>
                 </CloudinaryContext>
               </div>
@@ -43,6 +40,21 @@ const Guide = (props) => {
           <Row className="clear-fix">
             <br />
             <p className="paragraph">{d.p1}</p>
+            <br />
+            <div className="text-center">
+              <EditButton
+                user={props.user}
+                dataObj={d}
+                updateState={props.updateState}
+                title="Edit Guide"
+              />
+              <EditButton
+                user={props.user}
+                dataObj={d}
+                updateState={props.updateState}
+                title="Delete Guide"
+              />
+            </div>
           </Row>
         </div>
       ))}
