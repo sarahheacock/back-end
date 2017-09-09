@@ -4,6 +4,7 @@ import Dropzone from 'react-dropzone';
 import { Form } from 'react-bootstrap';
 
 import EditFormComponents from './EditFormComponents';
+import EditFormText from './EditFormText';
 import SubmitButtonSet from '../buttons/SubmitButtonSet';
 
 const EditForm = (props) => {
@@ -11,8 +12,11 @@ const EditForm = (props) => {
   //======ALL OF THE FORM GROUPS===================================
 
   // console.log(Object.keys(props.edit.dataObj));
-  const formGroups = (props.edit.modalTitle.includes("Delete")) ?
-    <div className="text-center">Are you sure you want to delete this service?</div>:
+  const formGroups = (props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Upcoming")) ?
+    <EditFormText
+      title={props.edit.modalTitle}
+      dataObj={props.edit.dataObj}
+    />:
     Object.keys(props.edit.dataObj).map(k => {
       if(k === "carousel"){
         console.log(props.edit.dataObj[k]);
@@ -48,7 +52,7 @@ const EditForm = (props) => {
     <Form className="content">
       {formGroups}
       <div className="text-center">
-        {(Object.keys(props.edit.dataObj).includes("carousel") || Object.keys(props.edit.dataObj).includes("image")) ?
+        {((Object.keys(props.edit.dataObj).includes("carousel") || Object.keys(props.edit.dataObj).includes("image")) && !props.edit.modalTitle.includes("Delete")) ?
           <Dropzone
             multiple={false}
             accept={"image/*"}
@@ -62,7 +66,6 @@ const EditForm = (props) => {
         <SubmitButtonSet
           editData={props.editData}
           updateState={props.updateState}
-          getData={props.getData}
 
           message={props.message}
           user={props.user}
@@ -84,7 +87,6 @@ EditForm.propTypes = {
 
   editData: PropTypes.func.isRequired,
   updateState: PropTypes.func.isRequired,
-  getData: PropTypes.func.isRequired,
 
   message: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired,

@@ -100,14 +100,12 @@ class EditModal extends React.Component {
 
     const title = this.props.edit.modalTitle;
     let editFunc = this.props.postData;
-    if(title.includes("Edit")){
+    if(title.includes("Edit") || title.includes("Upcoming")){
       editFunc = this.props.putData;
     }
     else if(title.includes("Delete")){
       editFunc = this.props.deleteData;
     }
-
-
 
     return (
       <div>
@@ -122,7 +120,6 @@ class EditModal extends React.Component {
               drop={this.onDrop}
               formAdd={this.onFormAdd}
               editData={editFunc}
-              getData={this.props.getData}
               updateState={this.props.updateState}
 
               message={this.props.message}

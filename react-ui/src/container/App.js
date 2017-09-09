@@ -11,7 +11,7 @@ import * as AdminActionCreators from '../actions/admin';
 import Routes from '../components/Routes';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-// import Room from '../components/routes/Room';
+import WelcomeAdmin from '../components/routes/WelcomeAdmin';
 
 
 //data
@@ -55,7 +55,7 @@ class App extends Component {
     console.log("edit", edit);
     console.log(window.location);
 
-    const routes = ([...links, "welcome", "gallery/:room"]).map((k) => {
+    const routes = ([...links, "gallery/:room"]).map((k) => {
       const key = (k.includes('/')) ? k.slice(0, k.indexOf('/')) : k;
 
       if(k !== "guide" && k !== "book"){
@@ -71,7 +71,7 @@ class App extends Component {
             />) }
           />);
       }
-      else{
+      else {
         return (
           <Route key={`route${k}`} path={`/${k}`} render={ () => (
             <Routes
@@ -102,6 +102,16 @@ class App extends Component {
 
           <Switch>
             {routes}
+            <Route path={"/welcome"} render={ () => (
+              (user.token)?
+              <WelcomeAdmin
+                data={welcome}
+                user={user}
+                getData={getData}
+                updateState={updateState}
+              />:
+              <Redirect to="/" />) }
+            />
             <Route render={ () => (
               <Redirect to="/" />
             )} />

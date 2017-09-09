@@ -29,9 +29,7 @@ const Routes = (props) => {
           <Book data={props.data} user={props.user} updateState={props.updateState}/> :
           ((props.section === "gallery/:room") ?
             <Room data={(Object.keys(props.data).length > 0) ? props.data.rooms : {} } user={props.user} updateState={props.updateState}/> :
-            ((props.section === "welcome") ?
-              <WelcomeAdmin data={props.data} user={props.user} updateState={props.updateState} getData={props.getData}/> :
-              <div></div>))))))
+            <div></div>)))))
 
   return (
     <div className={(props.section === "home" || props.section === "gallery/:room") ? "" : "main-content"}>
@@ -46,11 +44,11 @@ export default Routes;
 
 Routes.propTypes = {
   section: PropTypes.string.isRequired,
-  // data: PropTypes.object.isRequired,
+  data: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired,
 
   updateState: PropTypes.func.isRequired,
-  getData: PropTypes.func.isRequired
+  // getData: PropTypes.func.isRequired
 };
 
 // (Object.keys(props.data).length > 0)?

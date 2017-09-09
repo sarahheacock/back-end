@@ -34,9 +34,11 @@ const Book = (props) => {
 
   const keys = Object.keys(categories);
   const tabs = keys.map((cat, i) => (
-    <NavLink to={link(cat)} key={`bookTab${i}`}>
-      <button className={getClass(cat)}>{cat}</button>
-    </NavLink>
+    <div key={`bookTab${i}`}>
+      <NavLink to={link(cat)}>
+        <button className={getClass(cat)}>{cat}</button>
+      </NavLink>
+    </div>
   ));
 
   return (
@@ -61,13 +63,13 @@ const Book = (props) => {
             (categories[keys[2]]) ?
             <Pay
             />:
-            <Redirect to={link(keys[1])} /> }
+            <Redirect to={link(keys[0])} /> }
           />
           <Route path={link(keys[3])} render={ () =>
             (categories[keys[3]]) ?
             <Confirm
             />:
-            <Redirect to={link(keys[2])} /> }
+            <Redirect to={link(keys[0])} /> }
           />
           <Route render={ () => (
             <Redirect to={link(keys[0])} />

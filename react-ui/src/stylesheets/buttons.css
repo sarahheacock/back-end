@@ -34,6 +34,10 @@ peach--#FEDCD2
   border-width: 0px;
 }
 
+.smallLink {
+  margin: 1%;
+}
+
 .orangeButton {
   background-color: #DF744A;
   color: white;
@@ -60,6 +64,10 @@ peach--#FEDCD2
 .blueButtonInactive {
   background-color: #578e81;
   color: White;
+  opacity: 0.3;
+}
+
+.old {
   opacity: 0.3;
 }
 

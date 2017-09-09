@@ -25,13 +25,6 @@ class Header extends React.Component {
       this.props.getData(`/user/${id}?token=${token}`);
     }
     this.props.getData(`/page/${blogID}`);
-
-    const date = new Date();
-    const month = (date.getMonth() + 1).toString();
-    const year = date.getFullYear().toString();
-    const url = `/res/page/${blogID}/${month}/${year}?token=${this.props.user.token}`;
-    console.log("url", url);
-    this.props.getData(url);
   }
 
   render(){
@@ -68,7 +61,7 @@ class Header extends React.Component {
               {navItems}
               <LinkContainer to={(this.props.user.token) ? "/welcome": "#"}>
                 {(!(!this.props.user.token))?
-                  <NavItem>{this.props.user.name}</NavItem> :
+                  <NavItem>{this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}</NavItem> :
                   <EditButton
                     user={this.props.user}
                     dataObj={{}}

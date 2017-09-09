@@ -8,7 +8,7 @@ export default function Admin(state={}, action){
 
     case AdminActionTypes.UPDATE_STATE: {
 
-      if(Object.keys(action.newState).includes("dataObj")){
+      if(Object.keys(action.newState).includes("dataObj")){ //sent by EditButton
         let edit = new Edit(action.newState.title);
         edit.setDataObj(action.newState.dataObj);
         edit.setURL(state.user.token, action.newState.dataObj._id);

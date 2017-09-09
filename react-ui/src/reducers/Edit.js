@@ -5,8 +5,6 @@ const hash = {
   "Sign Up": signUpData,
   "Send Message": messageData,
   "Edit Content": editData,
-  "Delete Room": {"_id": ''},
-  "Delete Guide": {"_id": ''},
   "Add Room": galleryData,
   "Edit Room": galleryData,
   "Edit Guide": localGuideData,
@@ -29,16 +27,21 @@ const Edit = function(title){
 
 Edit.prototype = {
   setDataObj: function(dataObj){
-    let newObj = {};
-    const A = ["Add Room", "Add Guide", "Sign Up", "Send Message", "Login"];
-    const defaultContent = A.includes(this.modalTitle.trim());
+    if(!this.modalTitle.includes("Delete")){
+      let newObj = {};
+      const A = ["Add Room", "Add Guide", "Sign Up", "Send Message", "Login"];
+      const defaultContent = A.includes(this.modalTitle.trim());
 
-    Object.keys(hash[this.modalTitle.trim()]).forEach((k) => {
-      if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : hash[this.modalTitle.trim()][k]["default"] || '';
-      else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
-    });
+      Object.keys(hash[this.modalTitle.trim()]).forEach((k) => {
+        if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : hash[this.modalTitle.trim()][k]["default"] || '';
+        else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
+      });
 
-    this.dataObj = newObj;
+      this.dataObj = newObj;
+    }
+    else{
+      this.dataObj = dataObj;
+    }
   },
 
   setURL: function(token, id){
@@ -50,11 +53,14 @@ Edit.prototype = {
     if(title.includes("Sign Up")) url = "/user";
     if(title.includes("Room")) url = "/room";
     if(title.includes("Guide")) url = "/guide";
+    if(title.includes("Reservation")) url = "/cancel";
     if(title.includes("Edit Content") || title.includes("Edit Home")) url = `/${this.location[0]}`;
     if((title.includes("Room") || title.includes("Guide")) && (title.includes("Edit") || title.includes("Delete"))) url += `/${id}`;
 
-    if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) this.url = `/page/${blogID}${url}?token=${token}`;
-    else this.url = url;
+    if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) url = `/page/${blogID}${url}?token=${token}`;
+    if(title === "Delete Reservation") url = "/res" + url;
+
+    this.url = url;
   },
 
   getEdit: function(){

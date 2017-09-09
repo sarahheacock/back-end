@@ -31,9 +31,11 @@ const LocalGuide = (props) => {
   ));
 
   const tabs = categories.map((cat, i) => (
-    <NavLink to={link(cat)} key={`guideTab${i}`}>
+    <div key={`guideTab${i}`}>
+    <NavLink to={link(cat)}>
       <button className={(window.location.pathname.includes(link(cat))) ? "linkButton blueButtonActive": "linkButton blueButton"}>{cat}</button>
     </NavLink>
+    </div>
   ));
 
   return (

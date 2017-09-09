@@ -7,6 +7,8 @@ const Page = require("../models/page").Page;
 const Room = require("../models/page").Room;
 const User = require("../models/page").User;
 
+const CryptoJS = require('crypto-js');
+
 const mid = require('../middleware/upcomingMiddleware');
 const auth = require('../middleware/middleware').authorizeUser;
 
@@ -62,6 +64,15 @@ reservationRoutes.param("resID", (req, res, next, id) => {
 
 const format = (reservations) => {
   const newRes = reservations.map((r) => {
+    let credit = CryptoJS.AES.decrypt(r.userID.credit.toString(), r.userID.userID).toString(CryptoJS.enc.Utf8);
+    // credit.split('/');
+    r.userID.credit = credit.split('/').reduce((a, b) => {
+      if(b.length === 16) return "xxxx xxxx xxxx " + b.slice(-4);
+      else return a;
+    }, "");
+
+    delete r.userID.userID;
+
     return{
       start: new Date(r.start),
       end: new Date(r.end),

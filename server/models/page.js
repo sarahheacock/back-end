@@ -251,7 +251,7 @@ ReservationSchema.statics.findMonth = (month, year, callback) => {
   }).populate({
     path: 'userID',
     model: 'User',
-    select: 'email credit'
+    select: 'email credit billing userID'
   }).exec(callback);
 };
 

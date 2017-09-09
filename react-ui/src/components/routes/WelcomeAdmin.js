@@ -5,101 +5,94 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
 
-import { blogID } from '../../../../data/data';
+import { blogID, initial } from '../../../../data/data';
 BigCalendar.setLocalizer(
   BigCalendar.momentLocalizer(moment)
 ); // or globalizeLocalizer
 
-// class WelcomeAdmin extends React.Component {
-//   static propTypes = {
-//     user: PropTypes.object.isRequired,
-//     data: PropTypes.array.isRequired,
-//     getData: PropTypes.func.isRequired,
-//     updateState: PropTypes.func.isRequired,
-//   }
-//
-//   constructor(props){
-//     console.log("hello");
-//     super(props);
-//     BigCalendar.setLocalizer(
-//       BigCalendar.momentLocalizer(moment)
-//     ); // or globalizeLocalizer
-//
-//     const date = new Date();
-//     const month = (date.getMonth() + 1).toString();
-//     const year = date.getFullYear().toString();
-//
-//     this.state = {
-//       month: month,
-//       year: year
-//     };
-//   }
-//
-//   // componentDidUpdate(){
-//   //   BigCalendar.setLocalizer(
-//   //     BigCalendar.momentLocalizer(moment)
-//   //   ); // or globalizeLocalizer
-//   // }
-//
-//   logout = (e) => {
-//     this.props.getData('/auth/logout');
-//   }
-//
-//   navigate = (date) => {
-//     console.log(date);
-//     const month = (date.getMonth() + 1).toString();
-//     const year = date.getFullYear().toString();
-//     const url = `/res/page/${blogID}/${month}/${year}?token=${this.props.user.token}`;
-//     // this.props.getData(url);
-//     this.props.updateState({message: "hi"})
-//     // this.state.month = date.getMonth();
-//     // this.setState(this.state, () => this.props.getData(`/api/admin/${this.props.admin.user}/${this.state.month}?token=${this.props.admin.id}`));
-//   }
-//
-//   handleSelect = (event) => {
-//     // this.props.updateState({
-//     //   edit: {
-//     //     ...initialEdit,
-//     //     modalTitle: "Upcoming Stay",
-//     //     length: 2,
-//     //     pageSection: "welcome",
-//     //     dataObj: event
-//     //   }
-//     // })
-//
-//   }
+class WelcomeAdmin extends React.Component {
+  static propTypes = {
+    user: PropTypes.object.isRequired,
+    data: PropTypes.array.isRequired,
+    getData: PropTypes.func.isRequired,
+    updateState: PropTypes.func.isRequired,
+  }
 
-  const WelcomeAdmin = (props) => {
-    // const date = new Date();
-    // const end = new Date("Sept 8, 2017");
-    // const myEvents = [];
+  constructor(props){
+    super(props);
+    BigCalendar.setLocalizer(
+      BigCalendar.momentLocalizer(moment)
+    ); // or globalizeLocalizer
+
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString();
+    const year = date.getFullYear().toString();
+  }
+
+  componentDidMount(){
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString();
+    const year = date.getFullYear().toString();
+    const url = `/res/page/${blogID}/${month}/${year}?token=${this.props.user.token}`;
+    this.props.getData(url);
+  }
+
+  logout = (e) => {
+    this.props.getData('/auth/logout');
+  }
+
+  navigate = (date) => {
+    const month = (date.getMonth() + 1).toString();
+    const year = date.getFullYear().toString();
+    const url = `/res/page/${blogID}/${month}/${year}?token=${this.props.user.token}`;
+
+    this.props.getData(url);
+  }
+
+  handleSelect = (event) => {
+    this.props.updateState({
+      edit: {
+        ...initial.edit,
+        url: `/res/page/${blogID}/reminder/${event.event._id}?token=${this.props.user.token}`,
+        modalTitle: "Upcoming Stay",
+        dataObj: event.event
+      }
+    })
+
+  }
+
+  getClassName = (event) => {
+    let style = "blueButton";
+
+    //if(event.event.reminded) style = "blueButton";
+    if(event.event.checkedIn) style = "orangeButton";
+    if(event.event.charged) style = "yellowButton";
+
+    const end = new Date(event.end).getTime();
+    if(end < Date.now()) style += " old";
+
+    return {className: style};
+  }
+
+  render(){
 
     return(
       <div>
         <div className="text-center">
-          <button className="button blueButton" onClick={(e) => {}}>Logout</button>
+          <button className="button blueButton" onClick={this.logout}>Logout</button>
         </div>
         <div className="content">
           <BigCalendar
-            events={props.data}
+            events={this.props.data}
+            eventPropGetter={this.getClassName}
             style={{height: "600px"}}
-            onNavigate={(date) => {
-              const month = (date.getMonth() + 1).toString();
-              const year = date.getFullYear().toString();
-              const url = `/res/page/${blogID}/${month}/${year}?token=${props.user.token}`;
-              props.getData(url);
-            }}
-            onSelectEvent={() => {}}
+            onNavigate={this.navigate}
+            onSelectEvent={this.handleSelect}
+
           />
         </div>
       </div>);
   }
-// }
+}
 
 export default WelcomeAdmin;
-
-WelcomeAdmin.propTypes = {
-  user: PropTypes.object.isRequired,
-  getData: PropTypes.func.isRequired,
-  updateState: PropTypes.func.isRequired
-};
