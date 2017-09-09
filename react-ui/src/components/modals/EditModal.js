@@ -130,7 +130,7 @@ class EditModal extends React.Component {
 
           <Modal.Footer>
             <div className="text-center">
-              <button className="button" onClick={this.pop}>
+              <button className="button linkButton" onClick={this.pop}>
                 {(this.props.message === messages.messageSent) ? "Close" : "Cancel"}
               </button>
             </div>

@@ -8,18 +8,24 @@ const modify = (string) => {
   if(string.includes(' ')) return string.slice(0, string.indexOf(' ') + 1)
   else return string;
 }
+const getClass = (n) => {
+  let style = "";
+  if(n.includes("Edit") || n.includes("Check")) style = "orangeButton";
+  else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
+  else if(n.includes("Delete") || n.includes("Charge")) style = "yellowButton";
+
+  if(n === "Login" || n.includes("Sign Up")) style += " button"
+  else style += " linkButton smallLink"
+  return style;
+}
+
+const getIcon = (n) => {
+  if(n.includes("Send")) return "fa fa-paper-plane";
+  if(n.includes("Delete")) return "fa fa-trash";
+  return "";
+}
 
 const EditButton = (props) => {
-  //determine style of edit button
-  let style = (props.title.includes("Edit")) ?
-    "button orangeButton":
-    ((props.title.includes("Add") || props.title.includes("Login")) ?
-      "button blueButton":
-      ((props.title.includes("Delete")) ?
-        "button yellowButton":
-        "button"));
-  if(window.location.pathname.includes("welcome")) style += " linkButton smallLink";
-
   //hide buttons that should only be used by admin
   const adminAuth = props.title.includes("Edit") || props.title.includes("Add") || props.title.includes("Delete");
 
@@ -31,11 +37,8 @@ const EditButton = (props) => {
       </a> :
       ((props.title === "Login") ?
         <NavItem onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }} ><span className="login">{modify(props.title)}</span></NavItem> :
-        <button className={style} onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }}>
-          {modify(props.title)}
-          {(props.title).includes('Delete')?
-            <i className="fa fa-trash" aria-hidden="true"></i>:
-            <span></span>}
+        <button className={getClass(props.title)} onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }}>
+          {modify(props.title)}<i className={getIcon(props.title)} aria-hidden="true"></i>
         </button>))
 
   return ( button );

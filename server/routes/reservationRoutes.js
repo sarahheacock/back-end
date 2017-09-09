@@ -101,10 +101,15 @@ reservationRoutes.get('/available/:dateOne/:dateTwo/:guests', mid.getRooms, mid.
     return r;
   });
 
-  // console.log("reservations", req.reservations, result);
   res.json({
     book: {
-      reservation: data.initial.book.reservation,
+      reservation: {
+        "start": parseInt(req.params.dateOne),
+        "end": parseInt(req.params.dateTwo),
+        "guests": parseInt(req.params.guests),
+        "roomID": '',
+        "cost": 0
+      },
       available: result
     }
   });

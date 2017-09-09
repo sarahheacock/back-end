@@ -12,7 +12,7 @@ import Routes from '../components/Routes';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import WelcomeAdmin from '../components/routes/WelcomeAdmin';
-
+import Book from '../components/routes/Book';
 
 //data
 import { links } from '../../../data/data';
@@ -55,7 +55,7 @@ class App extends Component {
     console.log("edit", edit);
     console.log(window.location);
 
-    const routes = ([...links, "gallery/:room"]).map((k) => {
+    const routes = (["home", "guide", "gallery", "gallery/:room"]).map((k) => {
       const key = (k.includes('/')) ? k.slice(0, k.indexOf('/')) : k;
 
       if(k !== "guide" && k !== "book"){
@@ -102,6 +102,14 @@ class App extends Component {
 
           <Switch>
             {routes}
+            <Route path={"/book"} render={ () => (
+              <Book
+                data={book}
+                user={user}
+                getData={getData}
+                updateState={updateState}
+              />)}
+            />
             <Route path={"/welcome"} render={ () => (
               (user.token)?
               <WelcomeAdmin

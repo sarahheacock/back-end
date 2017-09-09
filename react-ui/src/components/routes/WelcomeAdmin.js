@@ -23,10 +23,6 @@ class WelcomeAdmin extends React.Component {
     BigCalendar.setLocalizer(
       BigCalendar.momentLocalizer(moment)
     ); // or globalizeLocalizer
-
-    const date = new Date();
-    const month = (date.getMonth() + 1).toString();
-    const year = date.getFullYear().toString();
   }
 
   componentDidMount(){

@@ -32,16 +32,6 @@ class SubmitButtonSet extends React.Component {
     });
   }
 
-  logout = (e) => {
-    e.preventDefault();
-    this.props.updateState({
-      edit: initialEdit,
-      message: initialMessage,
-      user: initialUser,
-    });
-  }
-
-
   submit = (e) => {
     e.preventDefault();
 
@@ -62,18 +52,29 @@ class SubmitButtonSet extends React.Component {
     this.props.editData(url);
   }
 
+  getClass = (n) => {
+    let style = "";
+    if(n.includes("Edit") || n.includes("Check")) style = "orangeButton";
+    else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
+    else if(n.includes("Delete") || n.includes("Charge")) style = "yellowButton";
+
+    if(n === "Login" || n.includes("Sign Up")) style += " button"
+    else style += " linkButton smallLink"
+    return style;
+  }
+
+  getIcon = (n) => {
+    if(n.includes("Send")) return "fa fa-paper-plane";
+    if(n.includes("Delete")) return "fa fa-trash";
+    if(n.includes("Check")) return "fa fa-check";
+    if(n.includes("Charge")) return "fa fa-usd";
+    return "";
+  }
+
 
   render(){
-
     const edit = this.props.edit;
-    let style = (edit.modalTitle.includes("Edit")) ?
-      "button orangeButton":
-      ((edit.modalTitle.includes("Add") || edit.modalTitle.includes("Login") || edit.modalTitle.includes("Send")) ?
-        "button blueButton":
-        ((edit.modalTitle.includes("Delete")) ?
-          "button yellowButton":
-          "button"));
-    if(window.location.pathname.includes("welcome")) style += " linkButton smallLink";
+    const style = this.getClass(edit.modalTitle);
 
     return (
       <div className="text-center">
@@ -87,12 +88,8 @@ class SubmitButtonSet extends React.Component {
               <div>
                 {names.map((n) => (
                 <div key={n}>
-                  <button className={(n.includes('Send')) ? "linkButton blueButton smallLink" : ((n.includes('Check')) ? "linkButton orangeButton smallLink" : "linkButton yellowButton smallLink")} onClick={this.editRes}>
-                    {n}
-                    {(n).includes('Send') ?
-                      <i className="fa fa-paper-plane" aria-hidden="true"></i>:
-                      <span></span>
-                    }
+                  <button className={this.getClass(n)}>
+                    {n}<i className={this.getIcon(n)} aria-hidden="true"></i>
                   </button>
                 </div>
                 ))}
@@ -104,14 +101,7 @@ class SubmitButtonSet extends React.Component {
                 />
               </div>:
               <button className={style} onClick={this.submit}>
-                {edit.modalTitle.replace('Message', '')}
-                {(edit.modalTitle).includes('Send') ?
-                  <i className="fa fa-paper-plane" aria-hidden="true"></i>:
-                  ((edit.modalTitle).includes('Delete')?
-                    <i className="fa fa-trash" aria-hidden="true"></i>:
-                    <span></span>
-                  )
-                }
+                {edit.modalTitle} <i className={this.getIcon(edit.modalTitle)} aria-hidden="true"></i>
               </button>}
 
               {(edit.modalTitle.includes("Login"))?
@@ -135,9 +125,6 @@ class SubmitButtonSet extends React.Component {
                 dataObj={{}}
                 title="Login Again"
               />
-              <button className="button" onClick={this.logout}>
-                Close
-              </button>
             </div>
         }
       </div>

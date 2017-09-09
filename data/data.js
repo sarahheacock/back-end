@@ -14,7 +14,7 @@ var initial = {
   "book": {
     "reservation": {
       "start": start,
-      "end": start + 24*60*60*1000 - 60*1000,
+      "end": start + 5*24*60*60*1000 - 60*1000,
       "guests": 2,
       "roomID": '',
       "cost": 0
