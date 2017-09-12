@@ -52,6 +52,10 @@ const UserSchema = new Schema({
   userID: {
     type: String
   },
+  cart: {
+    type: Array,
+    default: []
+  },
   pageID: Schema.Types.ObjectId
 });
 

@@ -181,8 +181,8 @@ const checkLoginInput = (req, res, next) => {
 };
 
 const checkSignUpInput = (req, res, next) => {
-  const cForm = checkForm(req.body, signUpData);
-  const cSize = checkSize(req.body, signUpData);
+  const cForm = (req.page) ? checkForm(req.body, data.signUpAdminData) : checkForm(req.body, signUpData);
+  const cSize = (req.page) ? checkSize(req.body, data.signUpAdminData) : checkSize(req.body, signUpData);
 
   if(!cForm){
     res.json({message: messages.inputError})
@@ -195,7 +195,7 @@ const checkSignUpInput = (req, res, next) => {
   else {
     const cPass = req.body.password === req.body["Verify Password"];
     const cEmail = checkEmail(req.body.email);
-    if(!cPass){
+    if(!cPass && !req.page){
       res.json({message: messages.passwordError})
     }
     else if(!cEmail){

@@ -40,6 +40,7 @@ loginRoutes.post('/', mid.checkLoginInput, (req, res, next) => {
       }
       else {
         res.status(200);
+        user.cart = req.body.cart;
         res.json(formatOutput(user));
       }
     });
@@ -51,6 +52,7 @@ loginRoutes.post('/', mid.checkLoginInput, (req, res, next) => {
       }
       else {
         res.status(200);
+        user.cart = req.body.cart;
         res.json(formatOutput(user));
       }
     });

@@ -1,19 +1,30 @@
 const express = require("express");
 const userRoutes = express.Router();
 const User = require("../models/page").User;
+const Page = require("../models/page").Page;
 const mid = require('../middleware/middleware');
 
 const configure = require('../configure/config');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
 const CryptoJS = require('crypto-js');
-
 
 const initialUser = require('../../data/data').initial.user;
 const initialMessage = require('../../data/data').initial.message;
 const initialEdit = require('../../data/data').initial.edit;
 
+userRoutes.param("pageID", (req, res, next, id) => {
+  Page.findById(id, {userID: 1, name: 1}).exec((err, doc) => {
+    if(err) return next(err);
+    if(!doc){
+      err = new Error("Page Not Found");
+      err.status = 404;
+      return next(err);
+    }
+    req.page = doc;
+    return next();
+  });
+});
 
 userRoutes.param("userID", (req, res, next, id) => {
   User.findById(id, (err, doc) => {
@@ -29,55 +40,57 @@ userRoutes.param("userID", (req, res, next, id) => {
 });
 
 //=============================================================
-const formatOutput = (obj) => {
-  const token = jwt.sign({userID: obj.userID}, configure.secret, {
-    expiresIn: '1h' //expires in one hour
-  });
-
+const formatOutput = (obj, body) => {
+  let token;
   let user = {};
   Object.keys(initialUser).forEach((k) => {
     if(k === 'credit' && obj[k] !== '') user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
     else if(obj[k]) user[k] = obj[k];
     else user[k] = initialUser[k];
   });
+
+  if(body){
+    token = jwt.sign({userID: body.userID}, configure.secret, {
+      expiresIn: '1h' //expires in one hour
+    });
+    user.name = body.name;
+  }
+  else{
+    token = jwt.sign({userID: obj.userID}, configure.secret, {
+      expiresIn: '1h' //expires in one hour
+    });
+  }
   user.token = token;
+
   return {user: user, edit: initialEdit, message: initialMessage};
 }
 
 
 //===================USER SECTIONS================================
-
-userRoutes.post('/', mid.checkSignUpInput, (req, res, next) => {
+userRoutes.post('/user', mid.checkSignUpInput, (req, res, next) => {
   let user = new User(req.body);
 
   bcrypt.hash(user.password, 10, (err, hash) => {
-    if (err) {
-      return next(err);
-    }
+    if(err) return next(err);
     user.password = hash;
 
     user.save((err, page) => {
-      if(err){
-        res.json({message: "This email already has an account associated with it."})
-        // return next(err);
-      }
+      if(err) res.json({message: "This email already has an account associated with it."})
       res.status(201);
+      user.cart = req.body.cart;
       res.json(formatOutput(user));
     });
   });
 });
 
-userRoutes.get('/:userID', mid.authorizeUser, (req, res, next) => {
+userRoutes.get('/user/:userID', mid.authorizeUser, (req, res, next) => {
   res.json(formatOutput(req.user));
 });
 
 //update page content
-userRoutes.put('/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
-  // const input = (req.params.userInfo === "credit") ? CryptoJS.AES.encrypt(req.newOutput, req.user.userID) : req.newOutput;
-  req.user[req.params.userInfo] = req.newOutput;
-
-  // const userID = req.user.userID
-  // req.user.userID = userID;
+userRoutes.put('/user/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
+  if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  else req.user[req.params.userInfo] = req.newOutput;
 
   req.user.save((err,user) => {
     if(err) return next(err);
@@ -85,5 +98,40 @@ userRoutes.put('/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (re
     res.json(formatOutput(user));
   });
 })
+
+//======================ADMIN SECTIONS================================
+userRoutes.post('/page/:pageID', mid.authorizeUser, mid.checkSignUpInput, (req, res, next) => {
+  User.findOne({email: req.body.email}, (err, doc) => {
+    if(err) next(err);
+    if(!doc){
+      let user = new User(req.body);
+      user.save((err, newUser) => {
+        if(err) next(err);
+        res.status(201);
+        res.json(formatOutput(newUser, req.page, true));
+      });
+    }
+    res.json(formatOutput(doc, req.page));
+  });
+});
+
+userRoutes.get('/page/:pageID/:userID/:userID', mid.authorizeUser, (req, res, next) => {
+  res.json(formatOutput(req.user, req.page));
+});
+
+
+//update page content
+userRoutes.put('/page/:pageID/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
+  if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  else req.user[req.params.userInfo] = req.newOutput;
+
+  req.user.save((err,user) => {
+    if(err) return next(err);
+    res.status(200);
+    res.json(formatOutput(user, req.page));
+  });
+});
+
+
 
 module.exports = userRoutes;

@@ -192,6 +192,11 @@ charcoal #3C3C3C
   margin-top: 2%;
 }
 
+.date-picker{
+  padding-left: 5%;
+  padding-right: 5%;
+  text-align: center;
+}
 
 h4 {
   line-height: 170%;

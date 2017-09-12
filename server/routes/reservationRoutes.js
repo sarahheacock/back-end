@@ -29,7 +29,7 @@ reservationRoutes.param("pageID", (req, res, next, id) => {
 });
 
 reservationRoutes.param("userID", (req, res, next, id) => {
-  User.findById(id, {userID: 1, email: 1}).exec((err, doc) => {
+  User.findById(id, {userID: 1, email: 1, cart: 1}).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
       err = new Error("User Not Found");
@@ -85,33 +85,42 @@ const format = (reservations) => {
 
 //===================RESERVATIONS================================
 //get reservations by specified dates and return availability
-reservationRoutes.get('/available/:dateOne/:dateTwo/:guests', mid.getRooms, mid.getRes, (req, res, next) => {
-  let resObj = {};
-  req.reservations.forEach((saved) => {
-    if(!resObj[saved.roomID]) resObj[saved.roomID] = 1;
-    else resObj[saved.roomID] = resObj[saved.roomID] + 1;
-  });
-
-  const days = Math.ceil((req.params.dateTwo - req.params.dateOne) / (24 * 60 * 60 * 1000));
-  const result = req.rooms.filter((room) => {
-    if(!resObj[room._id]) return true;
-    else return room.available > resObj[room._id];
-  }).map((r) => {
-    r.cost *= days;
-    return r;
-  });
-
+reservationRoutes.get('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAvailable, (req, res, next) => {
   res.json({
     book: {
       reservation: {
-        "start": parseInt(req.params.dateOne),
-        "end": parseInt(req.params.dateTwo),
+        "start": req.dateOne,
+        "end": req.dateTwo,
         "guests": parseInt(req.params.guests),
         "roomID": '',
         "cost": 0
       },
-      available: result
+      available: req.available
     }
+  });
+});
+
+reservationRoutes.post('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAvailable, (req, res, next) => {
+  let newItem = {
+    "start": req.dateOne,
+    "end": req.dateTwo,
+    "guests": parseInt(req.params.guests),
+    "roomID": '',
+    "cost": 0
+  };
+  req.user.cart.push(newItem);
+  req.user.save((err, user) => {
+    if(err) next(err);
+    let output = req.body.user;
+    output.cart = user.cart;
+
+    res.json({
+      book: {
+        reservation: newItem,
+        available: req.available
+      },
+      user: output
+    });
   });
 });
 
@@ -131,22 +140,34 @@ reservationRoutes.get('/user/:userID', auth, (req, res, next) => {
 });
 
 //user create reservation
-reservationRoutes.post('/user/:userID', auth, mid.modifyTime, mid.getRoom, mid.sendMessage, (req, res, next) => {
-  let stay = new Reservation(req.body.book.reservation);
-  stay.userID = req.params.userID;
-
-  stay.save((err, newStay) => {
-    if(err) next(err);
-    res.json({
-      book: data.initial.book,
-      message: data.messages.userRes
-    });
+// mid.modifyTime, mid.getRoom
+reservationRoutes.post('/user/:userID', mid.getRoom, mid.sendMessage, (req, res, next) => {
+  res.json({
+    rooms: req.room,
+    cart: req.user.cart
   });
+  async.each(req.user.cart, (reservation) => {
+    let stay = new Reservation(reservation);
+    stay.userID = req.params.userID;
+
+    // let user = req.body.user;
+    // user.cart = [];
+    //
+    // stay.save((err, newStay) => {
+    //   if(err) next(err);
+    //   res.json({
+    //     book: data.initial.book,
+    //     message: data.messages.userRes,
+    //     user: user
+    //   });
+    // });
+  });
+
 });
 
 //===============RESERVATIONS THAT REQUIRE ADMIN AUTH==================
 //create users and reservations
-reservationRoutes.post('/page/:pageID', auth, mid.modifyTime, mid.getRoom, mid.findUser, mid.sendMessage, (req, res, next) => {
+reservationRoutes.post('/page/:pageID/:userID', auth, mid.modifyTime, mid.getRoom, mid.findUser, mid.sendMessage, (req, res, next) => {
   let stay = new Reservation(req.body.book.reservation);
   stay.userID = req.user._id;
   stay.save((err, newStay) => {
@@ -160,7 +181,8 @@ reservationRoutes.post('/page/:pageID', auth, mid.modifyTime, mid.getRoom, mid.f
         name: req.body.user.name,
         email: '',
         billing: '',
-        credit: ''
+        credit: '',
+        cart: []
       }
     });
   });
@@ -169,7 +191,7 @@ reservationRoutes.post('/page/:pageID', auth, mid.modifyTime, mid.getRoom, mid.f
 
 //send reminder message
 reservationRoutes.put("/page/:pageID/reminder/:resID", auth, mid.sendReminder, (req, res, next) => {
-  req.reservation.reminded = true; //change later
+  req.reservation.reminded = true;
   req.reservation.save((err, doc) => {
     if(err) next(err);
     const date = new Date(doc.start);

@@ -8,6 +8,7 @@ import thunk from 'redux-thunk'
 
 
 import AdminReducer from './reducers/admin';
+import 'react-dates/lib/css/_datepicker.css';
 import './stylesheets/index.css';
 import './stylesheets/buttons.css';
 

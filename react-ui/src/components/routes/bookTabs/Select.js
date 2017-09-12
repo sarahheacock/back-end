@@ -7,7 +7,6 @@ import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 
 import moment from 'moment';
 import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
-import 'react-dates/lib/css/_datepicker.css';
 
 
 class Select extends React.Component {
@@ -38,14 +37,27 @@ class Select extends React.Component {
 
   onDatesChange({ startDate, endDate }) {
     // this.setState({ startDate, endDate });
-    //ADD UPDATE STATE
     console.log(startDate, endDate);
-    let start = this.props.data.reservation.start;
-    let end = this.props.data.reservation.end;
-    if(startDate !== null) start = new Date(startDate._d).setUTCHours(12, 0, 0, 0).toString();
-    if(endDate !== null) end = new Date(endDate._d).setUTCHours(11, 59, 0, 0).toString();
-    console.log(start, end);
-    this.props.getData(`/res/available/${start}/${end}/${this.props.data.reservation.guests}`);
+    const start = (startDate !== null) ? new Date(startDate._d).setUTCHours(12, 0, 0, 0) : this.props.data.reservation.start;
+    const end = (endDate !== null) ? new Date(endDate._d).setUTCHours(11, 59, 0, 0) : this.props.data.reservation.end;
+
+    // if(endDate !== null && startDate !== null){
+      console.log("get");
+      this.props.getData(`/res/available/${start.toString()}/${end.toString()}/${this.props.data.reservation.guests.toString()}`);
+    // }
+    // else {
+    //   console.log("update");
+    //   this.props.updateState({
+    //     book: {
+    //       ...this.props.data,
+    //       reservation: {
+    //         ...this.props.data.reservation,
+    //         start: start,
+    //         end: end
+    //       }
+    //     }
+    //   });
+    // }
   }
 
   onFocusChange(focusedInput) {
@@ -84,16 +96,21 @@ class Select extends React.Component {
       </div>
     ));
 
-    return (
-      <div>
+    const start = moment(this.props.data.reservation.start);
+    const end = moment(this.props.data.reservation.end);
 
-        <DayPickerRangeController
-          onDatesChange={this.onDatesChange}
-          onFocusChange={this.onFocusChange}
-          focusedInput={focusedInput}
-          startDate={moment(this.props.data.reservation.start)}
-          endDate={moment(this.props.data.reservation.end)}
-        />
+    return (
+      <div className="text-center">
+        <h4 className="content">{start.format('MMMM Do YYYY')} <i className="fa fa-arrow-right" aria-hidden="true"></i> {end.format('MMMM Do YYYY')}</h4>
+        <div className="date-picker">
+          <DayPickerRangeController
+            onDatesChange={this.onDatesChange}
+            onFocusChange={this.onFocusChange}
+            focusedInput={focusedInput}
+            startDate={start}
+            endDate={end}
+          />
+        </div>
 
         {gallery}
       </div>
@@ -103,61 +120,3 @@ class Select extends React.Component {
 
 
 export default Select;
-
-// import React from 'react';
-// import PropTypes from 'prop-types';
-//
-
-// import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
-// import moment from 'moment';
-// import 'react-dates/lib/css/_datepicker.css';
-//
-// class Select extends React.Component {
-
-//
-//   constructor(props){
-//     super(props);
-//
-//     this.state = {
-//       focusedInput: 'startDate'
-//     };
-//   }
-//
-
-//
-//   dateChange = (e) => {
-
-//     //
-//   }
-//
-//   focusChange = (e) => {
-//     console.log(e);
-//     const focus = (e === 'startDate') ? 'endDate'' : 'startDate';
-//     this.setState({ focusedInput: e });
-//   }
-//
-//   render(){
-
-//
-//     console.log(this.state);
-//     const start = moment(new Date(this.props.data.reservation.start));
-//     const end = moment(new Date(this.props.data.reservation.end));
-//
-//     return(
-//       <div>
-//         <div className="text-center">
-//           <DayPickerRangeController
-//             numberOfMonths={1}
-//             startDate={moment(new Date(this.props.data.reservation.start))}
-//             endDate={moment(new Date(this.props.data.reservation.end))}
-//             onDatesChange={this.dateChange}
-//             onFocusChange={this.focusChange}
-//           />
-//         </div>
-//
-//       </div>
-//     );
-//   }
-// }
-//
-// export default Select;

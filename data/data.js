@@ -35,7 +35,8 @@ var initial = {
     "name": '',
     "email": '',
     "billing": '',
-    "credit": ''
+    "credit": '',
+    "cart": []
   }
 }
 
@@ -87,6 +88,21 @@ var signUpData = {
   "Verify Password": {
     type: 'password',
     placeholder: 'Verify Password',
+    componentClass: 'input',
+    default: ''
+  }
+};
+
+var signUpAdminData = {
+  name: {
+    type: 'text',
+    placeholder: 'Full Name',
+    componentClass: 'input',
+    default: ''
+  },
+  email: {
+    type: 'text',
+    placeholder: 'Email',
     componentClass: 'input',
     default: ''
   }
@@ -369,6 +385,7 @@ module.exports = {
   notRequired: notRequired,
   loginData: loginData,
   signUpData: signUpData,
+  signUpAdminData: signUpAdminData,
   messageData: messageData,
   galleryData: galleryData,
   localGuideData: localGuideData,
