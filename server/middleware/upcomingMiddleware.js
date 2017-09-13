@@ -131,7 +131,7 @@ const sendCancel = (req, res, next) => {
   });
 };
 
-const getAvailable = (req, res, next) => {
+const updateCart = (req, res, next) => {
   const start = parseInt(req.params.dateOne) || parseInt(req.body.start);
   const end = parseInt(req.params.dateTwo) || parseInt(req.body.end);
   const guests = req.params.guests || req.body.guests;
@@ -154,63 +154,82 @@ const getAvailable = (req, res, next) => {
       dateTwo = new Date(end).setUTCHours(11, 59, 0, 0);
     }
   }
+  req.start = dateOne;
+  req.end = dateTwo;
+  req.guests = guests;
 
-  const obj = (req.body.cost) ? {
-    "start": dateOne,
-    "end": dateTwo,
-    "guests": guests,
-    "roomID": req.body.roomID,
-    "cost": req.body.cost
-  } : {};
-  console.log("obj", obj);
+  if(req.body.cost){
+    const obj = {
+      "start": dateOne,
+      "end": dateTwo,
+      "guests": guests,
+      "roomID": req.body.roomID,
+      "cost": req.body.cost
+    };
+    req.user.push(obj);
+  }
 
-  req.user.updateCart(obj, (err, user) => {
-    if(err) next(err);
-    Room.find({"maximum-occupancy": {$gt: guests-1}}, {"maximum-occupancy": 1, "cost": 1, "available": 1, "image": 1, "title": 1}).exec((err, rooms) => {
+  if(req.user){
+    req.user.save((err, doc) => {
       if(err) next(err);
-      Reservation.find({
-        $or:[
-          {"start": {$gt: dateOne-1, $lt: dateTwo+1}},
-          {"end": {$gt: dateOne-1, $lt: dateTwo+1}},
-          {"end": {$lt: dateOne+1}, "start": {$gt: dateTwo-1}}
-        ]
-      }).exec((err, reservation) => {
-        if(err) next(err);
+      next();
+    });
+  }
+  else{
+    next();
+  }
+};
 
-        //remove old cart items and cart items that have already been reserved
-        let cart = user.cart.filter((c) => {
-          return c.start >= limit;
-        });
+const getAvailable = (req, res, next) => {
+  const guests = req.guests;
+  const dateOne = req.start;
+  const dateTwo = req.end;
 
-        //add cart items that are relevant to reservations
-        const total = cart.filter((item) => {
-          const inRange = ((item.start >= dateOne && item.start <= dateTwo) || (item.end >= dateOne && item.end <= dateTwo) || (item.start <= dateOne && item.end >= dateTwo));
-          if(inRange) return item;
-        }).concat(reservation);
+  Room.find({"maximum-occupancy": {$gt: guests-1}}, {"maximum-occupancy": 1, "cost": 1, "available": 1, "image": 1, "title": 1}).exec((err, rooms) => {
+    if(err) next(err);
+    Reservation.find({
+      $or:[
+        {"start": {$gt: dateOne-1, $lt: dateTwo+1}},
+        {"end": {$gt: dateOne-1, $lt: dateTwo+1}},
+        {"end": {$lt: dateOne+1}, "start": {$gt: dateTwo-1}}
+      ]
+    }).exec((err, reservation) => {
+      if(err) next(err);
 
-        const resObj = total.reduce((a, b) => {
-          if(!a[b.roomID]) a[b.roomID] = 1;
-          else a[b.roomID] = a[b.roomID] + 1;
-          return a;
-        }, {});
-        console.log("reservation", resObj);
+      //remove old cart items and cart items that have already been reserved
+      // let cart = user.cart.filter((c) => {
+      //   return c.start >= limit;
+      // });
 
-        const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
-        const result = rooms.filter((room) => {
-          if(!resObj[room._id]) return true;
-          else return room.available > resObj[room._id];
-        }).map((r) => {
-          r.available = r.available - resObj[r._id];
-          r.cost *= days;
-          return r;
-        });
+      //add cart items that are relevant to reservations
+      const total = req.user.cart.filter((item) => {
+        const inRange = ((item.start >= dateOne && item.start <= dateTwo) || (item.end >= dateOne && item.end <= dateTwo) || (item.start <= dateOne && item.end >= dateTwo));
+        if(inRange) return item;
+      }).concat(reservation);
 
+      const resObj = total.reduce((a, b) => {
+        if(!a[b.roomID]) a[b.roomID] = 1;
+        else a[b.roomID] = a[b.roomID] + 1;
+        return a;
+      }, {});
+      console.log("reservation", resObj);
+      console.log("rooms", rooms);
 
-        req.available = result;
-        req.dateOne = dateOne;
-        req.dateTwo = dateTwo;
-        next();
+      const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
+      const result = rooms.filter((room) => {
+        if(!resObj[room._id]) return true;
+        else return room.available > resObj[room._id];
+      }).map((r) => {
+        r.available = r.available - resObj[r._id];
+        r.cost *= days;
+        return r;
       });
+
+
+      req.available = result;
+      // req.dateOne = dateOne;
+      // req.dateTwo = dateTwo;
+      next();
     });
   });
 };
@@ -259,6 +278,7 @@ module.exports = {
   getRoom: getRoom,
   // getRes: getRes,
   getAvailable: getAvailable,
+  updateCart: updateCart,
   sendMessage: sendMessage,
   sendReminder: sendReminder,
   sendCancel: sendCancel,

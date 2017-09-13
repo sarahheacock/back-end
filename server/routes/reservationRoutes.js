@@ -34,9 +34,9 @@ reservationRoutes.param("userID", (req, res, next, id) => {
   User.findById(id).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
-      err = new Error("User Not Found");
-      err.status = 404;
-      return next(err);
+      // err = new Error("User Not Found");
+      // err.status = 404;
+      // return next(err);
     }
     req.user = doc;
     return next();
@@ -86,79 +86,82 @@ const format = (reservations) => {
 };
 
 const formatOutput = (obj, body) => {
-  let user = {};
+  // let user = {};
   // console.log(CryptoJS.AES.decrypt(obj.credit.toString(), obj.userID).toString(CryptoJS.enc.Utf8));
 
-  Object.keys(data.initial.user).forEach((k) => {
+  return (Object.keys(data.initial.user)).reduce((a, k) => {
     // if(k === 'credit' && obj.credit !== '' && obj.credit !== undefined) user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
     // else
-    if(k === 'token' && body) user[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
-    else if(k === 'token' && !body) user[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
-    else if(k === 'name' && body) user[k] = body.name;
-    else if(!obj[k]) user[k] = data.initial.user[k];
-    else user[k] = obj[k];
-  });
+    if(k === 'token' && body) a[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'token' && !body) a[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'name' && body) a[k] = body.name;
+    else if(!obj[k]) a[k] = data.initial.user[k];
+    else a[k] = obj[k];
 
-  return user;
+    return a;
+  }, {});
+
+  // return user;
 }
 
 //===================RESERVATIONS================================
 //get reservations by specified dates and return availability
-reservationRoutes.get('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAvailable, (req, res, next) => {
+reservationRoutes.get('/available/:userID/:dateOne/:dateTwo/:guests', mid.updateCart, mid.getAvailable, (req, res, next) => {
   res.json({
     book: {
       reservation: {
-        "start": req.dateOne,
-        "end": req.dateTwo,
-        "guests": parseInt(req.params.guests),
+        "start": req.start,
+        "end": req.end,
+        "guests": req.guests,
         "roomID": '',
         "cost": 0
       },
       available: req.available
-    }
+    },
+    user: formatOutput(req.user)
   });
 });
 
-reservationRoutes.post('/available/:userID', auth, mid.getAvailable, (req, res, next) => {
+reservationRoutes.post('/available/:userID', auth, mid.updateCart, mid.getAvailable, (req, res, next) => {
   let newItem = {
-    "start": req.dateOne,
-    "end": req.dateTwo,
-    "guests": parseInt(req.params.guests),
+    "start": req.start,
+    "end": req.end,
+    "guests": req.guests,
     "roomID": '',
     "cost": 0
   };
   // req.user.cart.push(newItem);
-  req.user.save((err, user) => {
-    if(err) next(err);
+  // req.user.save((err, user) => {
+  //   if(err) next(err);
     res.json({
       book: {
         reservation: newItem,
         available: req.available
       },
-      user: formatOutput(user)
+      user: formatOutput(req.user)
     });
-  });
+  // });
 });
 
-reservationRoutes.post('/available/:userID/:pageID', mid.getAvailable, (req, res, next) => {
+reservationRoutes.post('/available/:userID/:pageID', auth, mid.updateCart, mid.getAvailable, (req, res, next) => {
   let newItem = {
-    "start": req.dateOne,
-    "end": req.dateTwo,
-    "guests": parseInt(req.params.guests),
+    "start": req.start,
+    "end": req.end,
+    "guests": req.guests,
     "roomID": '',
     "cost": 0
   };
   // req.user.cart.push(newItem);
-  req.user.save((err, user) => {
-    if(err) next(err);
+  // req.user.save((err, user) => {
+  //   if(err) next(err);
     res.json({
       book: {
         reservation: newItem,
         available: req.available
       },
-      user: formatOutput(user, req.page)
+      user: formatOutput(req.user, req.page)
     });
-  });
+  // });
 });
 
 //===============RESERVATIONS THAT REQUIRE USER AUTH==============

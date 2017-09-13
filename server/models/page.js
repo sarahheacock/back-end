@@ -60,6 +60,8 @@ const UserSchema = new Schema({
 });
 
 UserSchema.pre('save', function(next){
+  let user = this;
+
   if(!this.userID) this.userID = makeid();
   if(this.credit){
     // console.log(CryptoJS.AES.decrypt(this.credit.toString(), this.userID).toString(CryptoJS.enc.Utf8));
@@ -68,72 +70,111 @@ UserSchema.pre('save', function(next){
     // }
   }
   //update cart
-  // if(this.cart){
-  //   this.updateCart((err, user) => {
-  //
-  //   });
-  // }
+  if(!this.cart) this.cart = [];
+  if(this.cart.length > 0){
+    let newCart = [];
+    let i = 0;
+    const limit = new Date().setUTCHours(12, 0, 0, 0);
 
-  next();
+    user.cart.forEach((b) => {
+      const start = b.start;
+      const end = b.end;
+      if(start < limit) return a; //if the start time is current
+
+      Reservation.find({
+        $and: [
+          {$or:[
+            {"start": {$gt: start-1, $lt: end+1}},
+            {"end": {$gt: start-1, $lt: end+1}},
+            {"end": {$lt: start+1}, "start": {$gt: end-1}}
+          ]},
+          {roomID: b.roomID}
+        ]
+      }).exec((err, reservation) => {
+        if(err) next(err);
+        const reserved = newCart.reduce((c, d) => {
+          const inRange = ((d.start >= start && b.start <= end) || (d.end >= start && d.end <= end) || (d.start <= start && d.end >= end));
+          if(inRange) c + 1;
+          return c;
+        }, 0) + reservation.length;
+
+        Room.findById(b.roomID, {available: 1}).exec((err, room) => {
+          if(reserved < room["available"]){
+            newCart.push({
+              start: start,
+              end: end,
+              roomID: b.roomID,
+              cost: b.cost,
+              guests: b.guests
+            });
+          }
+          i++;
+          if(i >= user.cart.length - 1){
+            user.cart = newCart;
+            next();
+            //console.log(user.cart);
+            //user.save(callback);
+          }
+        });
+      });
+    });
+  }
+  else {
+    next();
+  }
 });
 
 UserSchema.methods.updateCart = function(obj, callback){
   //iterate through cart to find conflicting reservations or newCart []
-  let user = this;
-  user.cart.push(obj);
-
-  let newCart = [];
-  let i = 0;
-  const limit = new Date().setUTCHours(12, 0, 0, 0);
-  console.log(user);
-
-  user.cart.forEach((b) => {
-    // const start = (b.start < b.end) ? new Date(b.start).setUTCHours(12, 0, 0, 0) : new Date(b.end).setUTCHours(12, 0, 0, 0);
-    // const end = (b.end > b.start) ? new Date(b.end).setUTCHours(11, 59, 0, 0) : new Date(b.start).setUTCHours(11, 59, 0, 0);
-    const start = b.start;
-    const end = b.end;
-    console.log(start, end);
-    if(start < limit) return a; //if the start time is current
-
-    // b.start = start;
-    // b.end = end;
-
-    Reservation.find({
-      $and: [
-        {$or:[
-          {"start": {$gt: start-1, $lt: end+1}},
-          {"end": {$gt: start-1, $lt: end+1}},
-          {"end": {$lt: start+1}, "start": {$gt: end-1}}
-        ]},
-        {roomID: b.roomID}
-      ]
-    }).exec((err, reservation) => {
-      if(err) callback(err);
-      const reserved = newCart.reduce((c, d) => {
-        const inRange = ((d.start >= start && b.start <= end) || (d.end >= start && d.end <= end) || (d.start <= start && d.end >= end));
-        if(inRange) c + 1;
-        return c;
-      }, 0) + reservation.length;
-
-      Room.findById(b.roomID, {available: 1}).exec((err, room) => {
-        if(reserved < room["available"]){
-          newCart.push({
-            start: start,
-            end: end,
-            roomID: b.roomID,
-            cost: b.cost,
-            guests: b.guests
-          });
-        }
-        i++;
-        if(i >= user.cart.length - 1){
-          user.cart = newCart;
-          console.log(user.cart);
-          user.save(callback);
-        }
-      });
-    });
-  });
+  // let user = this;
+  // user.cart.push(obj);
+  //
+  // let newCart = [];
+  // let i = 0;
+  // const limit = new Date().setUTCHours(12, 0, 0, 0);
+  // console.log(user);
+  //
+  // user.cart.forEach((b) => {
+  //   const start = b.start;
+  //   const end = b.end;
+  //   if(start < limit) return a; //if the start time is current
+  //
+  //   Reservation.find({
+  //     $and: [
+  //       {$or:[
+  //         {"start": {$gt: start-1, $lt: end+1}},
+  //         {"end": {$gt: start-1, $lt: end+1}},
+  //         {"end": {$lt: start+1}, "start": {$gt: end-1}}
+  //       ]},
+  //       {roomID: b.roomID}
+  //     ]
+  //   }).exec((err, reservation) => {
+  //     if(err) callback(err);
+  //     const reserved = newCart.reduce((c, d) => {
+  //       const inRange = ((d.start >= start && b.start <= end) || (d.end >= start && d.end <= end) || (d.start <= start && d.end >= end));
+  //       if(inRange) c + 1;
+  //       return c;
+  //     }, 0) + reservation.length;
+  //
+  //     Room.findById(b.roomID, {available: 1}).exec((err, room) => {
+  //       if(reserved < room["available"]){
+  //         newCart.push({
+  //           start: start,
+  //           end: end,
+  //           roomID: b.roomID,
+  //           cost: b.cost,
+  //           guests: b.guests
+  //         });
+  //       }
+  //       i++;
+  //       if(i >= user.cart.length - 1){
+  //         user.cart = newCart;
+  //         console.log(user.cart);
+  //         user.save(callback);
+  //       }
+  //     });
+  //   });
+  // });
 
   //if
 

@@ -74,25 +74,25 @@ describe('Reservation', () => {
               roomID: roomTwo._id,
               userID: user.id
             };
-            const itemTwo = {
-              start: start + 100*24*60*60*1000,
-              end: end + 100*24*60*60*1000,
-              cost: 100,
-              guests: 2,
-              roomID: roomOne._id,
-              userID: user.id
-            };
-            const itemThree = {
-              start: start + 100*24*60*60*1000,
-              end: end + 100*24*60*60*1000,
-              cost: 100,
-              guests: 2,
-              roomID: roomTwo._id,
-              userID: user.id
-            };
+            // const itemTwo = {
+            //   start: start + 100*24*60*60*1000,
+            //   end: end + 100*24*60*60*1000,
+            //   cost: 100,
+            //   guests: 2,
+            //   roomID: roomOne._id,
+            //   userID: user.id
+            // };
+            // const itemThree = {
+            //   start: start + 100*24*60*60*1000,
+            //   end: end + 100*24*60*60*1000,
+            //   cost: 100,
+            //   guests: 2,
+            //   roomID: roomTwo._id,
+            //   userID: user.id
+            // };
             user.cart.push(item);
-            user.cart.push(itemTwo);
-            user.cart.push(itemThree);
+            // user.cart.push(itemTwo);
+            // user.cart.push(itemThree);
 
             user.save((err, newUser) => {
               reservation.roomID = roomOne._id;
@@ -121,85 +121,85 @@ describe('Reservation', () => {
     });
 
     describe('/GET availability from dates and guests', () => {
-      // it('should return availability with no reservations', (done) => {
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + start + '/' + end + '/2')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should return availability with cart items', (done) => {
-      //   const newStart = user.cart[0]["start"];
-      //   const newEnd = user.cart[0]["end"];
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     console.log(res.body.book.available);
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     res.body.book.available[0]['available'].should.eql(1);
-      //     res.body.book.available[1]['available'].should.eql(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should return availability with cart start', (done) => {
-      //   const newStart = user.cart[0]["start"] + 24*60*60*1000;
-      //   const newEnd = user.cart[0]["end"] + 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     console.log(res.body.book.available);
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     res.body.book.available[0]['available'].should.eql(1);
-      //     res.body.book.available[1]['available'].should.eql(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should return availability with cart end', (done) => {
-      //   const newStart = user.cart[0]["start"] - 24*60*60*1000;
-      //   const newEnd = user.cart[0]["end"] - 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     console.log(res.body.book.available);
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     res.body.book.available[0]['available'].should.eql(1);
-      //     res.body.book.available[1]['available'].should.eql(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should return availability with large cart', (done) => {
-      //   const newStart = user.cart[0]["start"] - 24*60*60*1000;
-      //   const newEnd = user.cart[0]["end"] + 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     console.log(res.body.book.available);
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     res.body.book.available[0]['available'].should.eql(1);
-      //     res.body.book.available[1]['available'].should.eql(1);
-      //     done();
-      //   });
-      // });
+      it('should return availability with no reservations', (done) => {
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + start + '/' + end + '/2')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          done();
+        });
+      });
+
+      it('should return availability with cart items', (done) => {
+        const newStart = user.cart[0]["start"];
+        const newEnd = user.cart[0]["end"];
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          console.log(res.body.book.available);
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.book.available[0]['available'].should.eql(1);
+          res.body.book.available[1]['available'].should.eql(1);
+          done();
+        });
+      });
+
+      it('should return availability with cart start', (done) => {
+        const newStart = user.cart[0]["start"] + 24*60*60*1000;
+        const newEnd = user.cart[0]["end"] + 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          console.log(res.body.book.available);
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.book.available[0]['available'].should.eql(1);
+          res.body.book.available[1]['available'].should.eql(1);
+          done();
+        });
+      });
+
+      it('should return availability with cart end', (done) => {
+        const newStart = user.cart[0]["start"] - 24*60*60*1000;
+        const newEnd = user.cart[0]["end"] - 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          console.log(res.body.book.available);
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.book.available[0]['available'].should.eql(1);
+          res.body.book.available[1]['available'].should.eql(1);
+          done();
+        });
+      });
+
+      it('should return availability with large cart', (done) => {
+        const newStart = user.cart[0]["start"] - 24*60*60*1000;
+        const newEnd = user.cart[0]["end"] + 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          console.log(res.body.book.available);
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.book.available[0]['available'].should.eql(1);
+          res.body.book.available[1]['available'].should.eql(1);
+          done();
+        });
+      });
 
       it('should return availability with small cart', (done) => {
         const newStart = user.cart[0]["start"] + 24*60*60*1000;
@@ -218,156 +218,156 @@ describe('Reservation', () => {
         });
       });
 
-      // it('should return availability with cart items', (done) => {
-      //   const newStart = user.cart[0]["start"];
-      //   const newEnd = user.cart[0]["end"];
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     console.log(res.body.book.available);
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     res.body.book.available[0]['available'].should.eql(1);
-      //     res.body.book.available[1]['available'].should.eql(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should reverse dates if dateOne is greater than dateTwo', (done) => {
-      //   const checkStart = new Date(parseInt(start)).setUTCHours(12, 0, 0, 0);
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + end + '/' + start + '/2')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     res.body.book.reservation.start.should.eql(checkStart);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should return availability with guest request less', (done) => {
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + start + '/' + end + '/1')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should return availability with large guest request', (done) => {
-      //   let newEnd = end + (24*60*60*1000);
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + start + '/' + newEnd + '/3')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(1);
-      //     res.body.book.available[0]["title"].should.equal(room1.title);
-      //     res.body.book.available[0]["cost"].should.equal(room1.cost * 2);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not matter if leaving when coming', (done) => {
-      //   let newEnd = reservation.start - (24*60*60*1000);
-      //   let newStart = reservation.start;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     // res.body.book.available[0]["title"].should.equal(room2.title);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not change if coming when leaving', (done) => {
-      //   let newEnd = reservation.end + (24*60*60*1000);
-      //   let newStart = reservation.end;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + "/" + newStart + '/' + newEnd + '/2')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(2);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not return if start is within a reservation', (done) => {
-      //   let newEnd = reservation.end + 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + reservation.start + '/' + newEnd + '/3')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not return if end is within a reservation', (done) => {
-      //   let newStart = reservation.start - 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + reservation.end + '/3')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not return if reservation if reservation outside', (done) => {
-      //   let newEnd = reservation.end + 24*60*60*1000;
-      //   let newStart = reservation.end - 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/3')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not return if reservation inside', (done) => {
-      //   let newEnd = reservation.end - 24*60*60*1000;
-      //   let newStart = reservation.end + 24*60*60*1000;
-      //
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/3')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(1);
-      //     done();
-      //   });
-      // });
-      //
-      // it('should not return room if reserved and guest request too high', (done) => {
-      //   chai.request(server)
-      //   .get('/res/available/' + user.id + '/' + reservation.start + '/' + reservation.end + '/3')
-      //   .end((err, res) => {
-      //     res.should.have.status(200);
-      //     res.body.should.be.a('object')
-      //     res.body.book.available.should.be.a('array').length(0);
-      //     done();
-      //   });
-      // });
+      it('should return availability with cart items', (done) => {
+        const newStart = user.cart[0]["start"];
+        const newEnd = user.cart[0]["end"];
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          console.log(res.body.book.available);
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.book.available[0]['available'].should.eql(1);
+          res.body.book.available[1]['available'].should.eql(1);
+          done();
+        });
+      });
+
+      it('should reverse dates if dateOne is greater than dateTwo', (done) => {
+        const checkStart = new Date(parseInt(start)).setUTCHours(12, 0, 0, 0);
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + end + '/' + start + '/2')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.book.reservation.start.should.eql(checkStart);
+          done();
+        });
+      });
+
+      it('should return availability with guest request less', (done) => {
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + start + '/' + end + '/1')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          done();
+        });
+      });
+
+      it('should return availability with large guest request', (done) => {
+        let newEnd = end + (24*60*60*1000);
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + start + '/' + newEnd + '/3')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(1);
+          res.body.book.available[0]["title"].should.equal(room1.title);
+          res.body.book.available[0]["cost"].should.equal(room1.cost * 2);
+          done();
+        });
+      });
+
+      it('should not matter if leaving when coming', (done) => {
+        let newEnd = reservation.start - (24*60*60*1000);
+        let newStart = reservation.start;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          // res.body.book.available[0]["title"].should.equal(room2.title);
+          done();
+        });
+      });
+
+      it('should not change if coming when leaving', (done) => {
+        let newEnd = reservation.end + (24*60*60*1000);
+        let newStart = reservation.end;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + "/" + newStart + '/' + newEnd + '/2')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(2);
+          done();
+        });
+      });
+
+      it('should not return if start is within a reservation', (done) => {
+        let newEnd = reservation.end + 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + reservation.start + '/' + newEnd + '/3')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(1);
+          done();
+        });
+      });
+
+      it('should not return if end is within a reservation', (done) => {
+        let newStart = reservation.start - 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + reservation.end + '/3')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(1);
+          done();
+        });
+      });
+
+      it('should not return if reservation if reservation outside', (done) => {
+        let newEnd = reservation.end + 24*60*60*1000;
+        let newStart = reservation.end - 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/3')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(1);
+          done();
+        });
+      });
+
+      it('should not return if reservation inside', (done) => {
+        let newEnd = reservation.end - 24*60*60*1000;
+        let newStart = reservation.end + 24*60*60*1000;
+
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/3')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(1);
+          done();
+        });
+      });
+
+      it('should not return room if reserved and guest request too high', (done) => {
+        chai.request(server)
+        .get('/res/available/' + user.id + '/' + reservation.start + '/' + reservation.end + '/3')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(0);
+          done();
+        });
+      });
     });
 
     // describe('/POST new reservation to cart', () => {
