@@ -8,6 +8,8 @@ const Room = require("../models/page").Room;
 const User = require("../models/page").User;
 
 const CryptoJS = require('crypto-js');
+const configure = require('../configure/config');
+const jwt = require('jsonwebtoken');
 
 const mid = require('../middleware/upcomingMiddleware');
 const auth = require('../middleware/middleware').authorizeUser;
@@ -16,7 +18,7 @@ const async = require("async");
 const each = require("async/each");
 
 reservationRoutes.param("pageID", (req, res, next, id) => {
-  Page.findById(id, {userID: 1}).exec((err, doc) => {
+  Page.findById(id, {userID: 1, name: 1}).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
       err = new Error("Page Not Found");
@@ -29,7 +31,7 @@ reservationRoutes.param("pageID", (req, res, next, id) => {
 });
 
 reservationRoutes.param("userID", (req, res, next, id) => {
-  User.findById(id, {userID: 1, email: 1, cart: 1}).exec((err, doc) => {
+  User.findById(id).exec((err, doc) => {
     if(err) return next(err);
     if(!doc){
       err = new Error("User Not Found");
@@ -83,6 +85,23 @@ const format = (reservations) => {
   return {message: "", welcome: newRes, edit: data.initial.edit};
 };
 
+const formatOutput = (obj, body) => {
+  let user = {};
+  // console.log(CryptoJS.AES.decrypt(obj.credit.toString(), obj.userID).toString(CryptoJS.enc.Utf8));
+
+  Object.keys(data.initial.user).forEach((k) => {
+    // if(k === 'credit' && obj.credit !== '' && obj.credit !== undefined) user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
+    // else
+    if(k === 'token' && body) user[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'token' && !body) user[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'name' && body) user[k] = body.name;
+    else if(!obj[k]) user[k] = data.initial.user[k];
+    else user[k] = obj[k];
+  });
+
+  return user;
+}
+
 //===================RESERVATIONS================================
 //get reservations by specified dates and return availability
 reservationRoutes.get('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAvailable, (req, res, next) => {
@@ -100,7 +119,7 @@ reservationRoutes.get('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAva
   });
 });
 
-reservationRoutes.post('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAvailable, (req, res, next) => {
+reservationRoutes.post('/available/:userID', auth, mid.getAvailable, (req, res, next) => {
   let newItem = {
     "start": req.dateOne,
     "end": req.dateTwo,
@@ -108,18 +127,36 @@ reservationRoutes.post('/available/:userID/:dateOne/:dateTwo/:guests', mid.getAv
     "roomID": '',
     "cost": 0
   };
-  req.user.cart.push(newItem);
+  // req.user.cart.push(newItem);
   req.user.save((err, user) => {
     if(err) next(err);
-    let output = req.body.user;
-    output.cart = user.cart;
-
     res.json({
       book: {
         reservation: newItem,
         available: req.available
       },
-      user: output
+      user: formatOutput(user)
+    });
+  });
+});
+
+reservationRoutes.post('/available/:userID/:pageID', mid.getAvailable, (req, res, next) => {
+  let newItem = {
+    "start": req.dateOne,
+    "end": req.dateTwo,
+    "guests": parseInt(req.params.guests),
+    "roomID": '',
+    "cost": 0
+  };
+  // req.user.cart.push(newItem);
+  req.user.save((err, user) => {
+    if(err) next(err);
+    res.json({
+      book: {
+        reservation: newItem,
+        available: req.available
+      },
+      user: formatOutput(user, req.page)
     });
   });
 });
@@ -209,7 +246,7 @@ reservationRoutes.put("/page/:pageID/reminder/:resID", auth, mid.sendReminder, (
 reservationRoutes.put("/page/:pageID/checkIn/:resID", auth, (req, res, next) => {
   req.reservation.checkedIn = !req.reservation.checkedIn;
   req.reservation.save((err, doc) => {
-    console.log(doc);
+    // console.log(doc);
     if(err) next(err);
     const date = new Date(doc.start);
     const month = (date.getMonth() + 1).toString();

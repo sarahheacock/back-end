@@ -41,26 +41,17 @@ userRoutes.param("userID", (req, res, next, id) => {
 
 //=============================================================
 const formatOutput = (obj, body) => {
-  let token;
+
   let user = {};
   Object.keys(initialUser).forEach((k) => {
-    if(k === 'credit' && obj[k] !== '') user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
-    else if(obj[k]) user[k] = obj[k];
-    else user[k] = initialUser[k];
+    // if(k === 'credit' && obj[k] !== '') user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
+    // else 
+    if(k === 'token' && body) user[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'token' && !body) user[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'name' && body) user[k] = body.name;
+    else if(!obj[k]) user[k] = initialUser[k];
+    else user[k] = obj[k];
   });
-
-  if(body){
-    token = jwt.sign({userID: body.userID}, configure.secret, {
-      expiresIn: '1h' //expires in one hour
-    });
-    user.name = body.name;
-  }
-  else{
-    token = jwt.sign({userID: obj.userID}, configure.secret, {
-      expiresIn: '1h' //expires in one hour
-    });
-  }
-  user.token = token;
 
   return {user: user, edit: initialEdit, message: initialMessage};
 }
@@ -77,14 +68,13 @@ userRoutes.post('/user', mid.checkSignUpInput, (req, res, next) => {
     user.save((err, page) => {
       if(err) res.json({message: "This email already has an account associated with it."})
       res.status(201);
-      user.cart = req.body.cart;
-      res.json(formatOutput(user));
+      res.json(formatOutput(user, null));
     });
   });
 });
 
 userRoutes.get('/user/:userID', mid.authorizeUser, (req, res, next) => {
-  res.json(formatOutput(req.user));
+  res.json(formatOutput(req.user, null));
 });
 
 //update page content
@@ -95,7 +85,7 @@ userRoutes.put('/user/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput
   req.user.save((err,user) => {
     if(err) return next(err);
     res.status(200);
-    res.json(formatOutput(user));
+    res.json(formatOutput(user, null));
   });
 })
 
@@ -104,18 +94,24 @@ userRoutes.post('/page/:pageID', mid.authorizeUser, mid.checkSignUpInput, (req, 
   User.findOne({email: req.body.email}, (err, doc) => {
     if(err) next(err);
     if(!doc){
-      let user = new User(req.body);
+      let user = new User({
+        email: req.body.email,
+        name: req.body.name
+      });
+
       user.save((err, newUser) => {
         if(err) next(err);
         res.status(201);
-        res.json(formatOutput(newUser, req.page, true));
+        res.json(formatOutput(newUser, req.page));
       });
     }
-    res.json(formatOutput(doc, req.page));
+    else {
+      res.json(formatOutput(doc, req.page));
+    }
   });
 });
 
-userRoutes.get('/page/:pageID/:userID/:userID', mid.authorizeUser, (req, res, next) => {
+userRoutes.get('/page/:pageID/:userID/', mid.authorizeUser, (req, res, next) => {
   res.json(formatOutput(req.user, req.page));
 });
 

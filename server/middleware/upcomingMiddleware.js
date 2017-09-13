@@ -132,9 +132,10 @@ const sendCancel = (req, res, next) => {
 };
 
 const getAvailable = (req, res, next) => {
-  const start = parseInt(req.params.dateOne);
-  const end = parseInt(req.params.dateTwo);
-  const limit = new Date().setUTCHours(0, 0, 0, 0);
+  const start = parseInt(req.params.dateOne) || parseInt(req.body.start);
+  const end = parseInt(req.params.dateTwo) || parseInt(req.body.end);
+  const guests = req.params.guests || req.body.guests;
+  const limit = new Date().setUTCHours(12, 0, 0, 0);
 
   let dateOne = 0;
   let dateTwo = 0;
@@ -143,68 +144,73 @@ const getAvailable = (req, res, next) => {
     dateOne = new Date().setUTCHours(12, 0, 0, 0);
     dateTwo = dateOne + 23*60*60*1000;
   }
-  else if(start >= end) {
-    dateOne = new Date(end).setUTCHours(12, 0, 0, 0);
-    dateTwo = new Date(start).setUTCHours(11, 59, 0, 0);
-  }
-  else if(start < end) {
-    dateOne = new Date(start).setUTCHours(12, 0, 0, 0);
-    dateTwo = new Date(end).setUTCHours(11, 59, 0, 0);
+  else{
+    if(start >= end) {
+      dateOne = new Date(end).setUTCHours(12, 0, 0, 0);
+      dateTwo = new Date(start).setUTCHours(11, 59, 0, 0);
+    }
+    else if(start < end) {
+      dateOne = new Date(start).setUTCHours(12, 0, 0, 0);
+      dateTwo = new Date(end).setUTCHours(11, 59, 0, 0);
+    }
   }
 
+  const obj = (req.body.cost) ? {
+    "start": dateOne,
+    "end": dateTwo,
+    "guests": guests,
+    "roomID": req.body.roomID,
+    "cost": req.body.cost
+  } : {};
+  console.log("obj", obj);
 
-  Room.find({"maximum-occupancy": {$gt: req.params.guests-1}}, {"maximum-occupancy": 1, "cost": 1, "available": 1, "image": 1, "title": 1}).exec((err, rooms) => {
+  req.user.updateCart(obj, (err, user) => {
     if(err) next(err);
-    Reservation.find({
-      $or:[
-        {"start": {$gt: dateOne-1, $lt: dateTwo+1}},
-        {"end": {$gt: dateOne-1, $lt: dateTwo+1}}
-      ]
-    }).exec((err, reservation) => {
+    Room.find({"maximum-occupancy": {$gt: guests-1}}, {"maximum-occupancy": 1, "cost": 1, "available": 1, "image": 1, "title": 1}).exec((err, rooms) => {
       if(err) next(err);
-      let cart = req.user.cart;
+      Reservation.find({
+        $or:[
+          {"start": {$gt: dateOne-1, $lt: dateTwo+1}},
+          {"end": {$gt: dateOne-1, $lt: dateTwo+1}},
+          {"end": {$lt: dateOne+1}, "start": {$gt: dateTwo-1}}
+        ]
+      }).exec((err, reservation) => {
+        if(err) next(err);
 
-      if(req.body && start >= limit){
-        if(req.body.book){
-          cart.push({
-            "start": dateOne,
-            "end": dateTwo,
-            "guests": parseInt(req.params.guests),
-            "roomID": req.body.book.reservation.roomID,
-            "cost": req.body.book.reservation.cost
-          });
-        }
-      }
+        //remove old cart items and cart items that have already been reserved
+        let cart = user.cart.filter((c) => {
+          return c.start >= limit;
+        });
 
-      cart.forEach((item) => {
-        const newStart = item.start;
-        const newEnd = item.end;
+        //add cart items that are relevant to reservations
+        const total = cart.filter((item) => {
+          const inRange = ((item.start >= dateOne && item.start <= dateTwo) || (item.end >= dateOne && item.end <= dateTwo) || (item.start <= dateOne && item.end >= dateTwo));
+          if(inRange) return item;
+        }).concat(reservation);
 
-        if((newStart >= dateOne && newStart <= dateTwo) || (newEnd >= dateOne && newEnd <= dateTwo)){
-          reservation.push(item);
-        }
+        const resObj = total.reduce((a, b) => {
+          if(!a[b.roomID]) a[b.roomID] = 1;
+          else a[b.roomID] = a[b.roomID] + 1;
+          return a;
+        }, {});
+        console.log("reservation", resObj);
+
+        const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
+        const result = rooms.filter((room) => {
+          if(!resObj[room._id]) return true;
+          else return room.available > resObj[room._id];
+        }).map((r) => {
+          r.available = r.available - resObj[r._id];
+          r.cost *= days;
+          return r;
+        });
+
+
+        req.available = result;
+        req.dateOne = dateOne;
+        req.dateTwo = dateTwo;
+        next();
       });
-      // req.reservations = reservation;
-      // next();
-      let resObj = {};
-      reservation.forEach((saved) => {
-        if(!resObj[saved.roomID]) resObj[saved.roomID] = 1;
-        else resObj[saved.roomID] = resObj[saved.roomID] + 1;
-      });
-
-      const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
-      const result = rooms.filter((room) => {
-        if(!resObj[room._id]) return true;
-        else return room.available > resObj[room._id];
-      }).map((r) => {
-        r.cost *= days;
-        return r;
-      });
-
-      req.available = result;
-      req.dateOne = dateOne;
-      req.dateTwo = dateTwo;
-      next();
     });
   });
 };
