@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavItem } from 'react-bootstrap';
 
-import { name } from '../../../../data/data';
+//import { name } from '../../../../data/data';
 
 const modify = (string) => {
   if(string.includes(' ')) return string.slice(0, string.indexOf(' ') + 1)
@@ -29,7 +29,7 @@ const EditButton = (props) => {
   //hide buttons that should only be used by admin
   const adminAuth = props.title.includes("Edit") || props.title.includes("Add") || props.title.includes("Delete");
 
-  const button = (props.user.name !== name && adminAuth) ?
+  const button = (!props.user.admin && adminAuth) ?
     <div></div> :
     ((props.title === "Send Message") ?
       <a href="#" onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }}>

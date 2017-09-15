@@ -31,16 +31,22 @@ reservationRoutes.param("pageID", (req, res, next, id) => {
 });
 
 reservationRoutes.param("userID", (req, res, next, id) => {
-  User.findById(id).exec((err, doc) => {
-    if(err) return next(err);
-    if(!doc){
-      // err = new Error("User Not Found");
-      // err.status = 404;
-      // return next(err);
-    }
-    req.user = doc;
+  if(id === 'undefined'){
+    req.user = false;
     return next();
-  });
+  }
+  else{
+    User.findById(id).exec((err, doc) => {
+      if(err) return next(err);
+      if(!doc){
+        err = new Error("User Not Found");
+        err.status = 404;
+        return next(err);
+      }
+      req.user = doc;
+      return next();
+    });
+  }
 });
 
 reservationRoutes.param("resID", (req, res, next, id) => {
@@ -95,6 +101,9 @@ const formatOutput = (obj, body) => {
     if(k === 'token' && body) a[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
     else if(k === 'token' && !body) a[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
     else if(k === 'name' && body) a[k] = body.name;
+    else if(k === 'admin' && body) a[k] = true;
+    else if(k === 'admin' && !body) a[k] = false;
+    else if(!obj) a[k] = data.initial.user[k];
     else if(!obj[k]) a[k] = data.initial.user[k];
     else a[k] = obj[k];
 
@@ -105,20 +114,23 @@ const formatOutput = (obj, body) => {
 }
 
 //===================RESERVATIONS================================
-//get reservations by specified dates and return availability
-reservationRoutes.get('/available/:userID/:dateOne/:dateTwo/:guests', mid.updateCart, mid.getAvailable, (req, res, next) => {
+//this route is for when user's token is not defined yet
+//if user tries to add cart item, login modal will pop up
+reservationRoutes.post('/available/', mid.updateCart, mid.getAvailable, (req, res, next) => {
+  let newItem = {
+    "start": req.start,
+    "end": req.end,
+    "guests": req.guests,
+    "roomID": '',
+    "cost": 0
+  };
+
   res.json({
     book: {
-      reservation: {
-        "start": req.start,
-        "end": req.end,
-        "guests": req.guests,
-        "roomID": '',
-        "cost": 0
-      },
+      reservation: newItem,
       available: req.available
     },
-    user: formatOutput(req.user)
+    message: req.message
   });
 });
 
@@ -130,19 +142,19 @@ reservationRoutes.post('/available/:userID', auth, mid.updateCart, mid.getAvaila
     "roomID": '',
     "cost": 0
   };
-  // req.user.cart.push(newItem);
-  // req.user.save((err, user) => {
-  //   if(err) next(err);
-    res.json({
-      book: {
-        reservation: newItem,
-        available: req.available
-      },
-      user: formatOutput(req.user)
-    });
-  // });
+
+  res.json({
+    book: {
+      reservation: newItem,
+      available: req.available
+    },
+    user: formatOutput(req.user),
+    message: req.message,
+    edit: data.initial.edit
+  });
 });
 
+//if userID is not defined and client tries to item to cart, modal requesting email will pop up
 reservationRoutes.post('/available/:userID/:pageID', auth, mid.updateCart, mid.getAvailable, (req, res, next) => {
   let newItem = {
     "start": req.start,
@@ -151,17 +163,16 @@ reservationRoutes.post('/available/:userID/:pageID', auth, mid.updateCart, mid.g
     "roomID": '',
     "cost": 0
   };
-  // req.user.cart.push(newItem);
-  // req.user.save((err, user) => {
-  //   if(err) next(err);
-    res.json({
-      book: {
-        reservation: newItem,
-        available: req.available
-      },
-      user: formatOutput(req.user, req.page)
-    });
-  // });
+
+  res.json({
+    book: {
+      reservation: newItem,
+      available: req.available
+    },
+    user: formatOutput(req.user, req.page),
+    message: req.message,
+    edit: data.initial.edit
+  });
 });
 
 //===============RESERVATIONS THAT REQUIRE USER AUTH==============
@@ -181,51 +192,36 @@ reservationRoutes.get('/user/:userID', auth, (req, res, next) => {
 
 //user create reservation
 // mid.modifyTime, mid.getRoom
-reservationRoutes.post('/user/:userID', mid.getRoom, mid.sendMessage, (req, res, next) => {
+reservationRoutes.post('/user/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
+  console.log(req.reservations);
   res.json({
-    rooms: req.room,
-    cart: req.user.cart
+    book: data.initial.book,
+    message: data.messages.userRes,
+    user: formatOutput(req.user)
   });
-  async.each(req.user.cart, (reservation) => {
-    let stay = new Reservation(reservation);
-    stay.userID = req.params.userID;
-
-    // let user = req.body.user;
-    // user.cart = [];
-    //
-    // stay.save((err, newStay) => {
-    //   if(err) next(err);
-    //   res.json({
-    //     book: data.initial.book,
-    //     message: data.messages.userRes,
-    //     user: user
-    //   });
-    // });
-  });
-
 });
 
 //===============RESERVATIONS THAT REQUIRE ADMIN AUTH==================
 //create users and reservations
-reservationRoutes.post('/page/:pageID/:userID', auth, mid.modifyTime, mid.getRoom, mid.findUser, mid.sendMessage, (req, res, next) => {
-  let stay = new Reservation(req.body.book.reservation);
-  stay.userID = req.user._id;
-  stay.save((err, newStay) => {
-    if(err) next(err);
-    res.json({
-      book: data.initial.book,
-      message: data.messages.userRes,
-      user: {
-        token: req.body.user.token,
-        _id: req.params.pageID,
-        name: req.body.user.name,
-        email: '',
-        billing: '',
-        credit: '',
-        cart: []
-      }
-    });
+reservationRoutes.post('/page/:pageID/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
+  console.log(req.reservations);
+  res.json({
+    book: data.initial.book,
+    message: data.messages.userRes,
+    user: formatOutput(null, req.page)
   });
+//});
+// reservationRoutes.post('/page/:pageID/:userID', auth, mid.modifyTime, mid.getRoom, mid.findUser, mid.sendMessage, (req, res, next) => {
+//   let stay = new Reservation(req.body.book.reservation);
+//   stay.userID = req.user._id;
+//   stay.save((err, newStay) => {
+//     if(err) next(err);
+//     res.json({
+//       book: data.initial.book,
+//       message: data.messages.userRes,
+//       user: formatOutput(null, req.page)
+//     });
+//   });
 });
 
 

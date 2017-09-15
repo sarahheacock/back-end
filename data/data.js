@@ -1,7 +1,7 @@
 var blogID = "59a6f1f732325214ae43741c";
 var cloudName = "dhd1eov8v";
 var links = ["home", "gallery", "guide", "book"];
-var name = "test";
+// var name = "test";
 
 
 //========INITIAL DATA=========================
@@ -31,6 +31,7 @@ var initial = {
   },
   "user": {
     "token": '',
+    "admin": false,
     "_id": '',
     "name": '',
     "email": '',
@@ -43,7 +44,7 @@ var initial = {
 // var initialData = [];
 
 //===============FORMS============================
-var notRequired = ['p1', 'b', 'link', "Address Line 2"];
+var notRequired = ['p1', 'b', 'link', "Address Line 2", 'cart'];
 
 var loginData = {
   username: {
@@ -63,7 +64,8 @@ var loginData = {
     placeholder: 'Admin',
     componentClass: 'checkbox',
     default: false
-  }
+  },
+  //cart: []
 };
 
 var signUpData = {
@@ -90,7 +92,8 @@ var signUpData = {
     placeholder: 'Verify Password',
     componentClass: 'input',
     default: ''
-  }
+  },
+  //cart: []
 };
 
 var signUpAdminData = {
@@ -105,7 +108,8 @@ var signUpAdminData = {
     placeholder: 'Email',
     componentClass: 'input',
     default: ''
-  }
+  },
+  //cart: []
 };
 
 var addressData = {
@@ -369,10 +373,12 @@ var messages = {
   creditNumError: "Invalid credit card number.",
   cvvError: "Invalid CVV number. Look for the 3 or 4 digits on the back of the card.",
 
-  userRes: "Thank you for staying with us!",
-  available: "This room is no longer available. Sorry for the inconvenience.",
+  userRes: "Confirmed! Thank you for staying with us!",
+  available: "Oh no! Some of the items in your cart, are no longer available and have been removed from your cart. We apologize for the inconvenience.",
   reminderSent: "Reminder email sent!",
-  emailSendError: "Cannot send email"
+  continueMessage: "Sign up or log in to continue",
+  adminContinueMessage: "Enter client's email and name to continue",
+  confirmError: "Oh no! We could not confirm your reservation(s). Some of the items in your cart, are no longer available. We apologize for the inconvenience."
 };
 
 module.exports = {
@@ -380,7 +386,7 @@ module.exports = {
   cloudName: cloudName,
   links: links,
   initial: initial,
-  name: name,
+  // name: name,
 
   notRequired: notRequired,
   loginData: loginData,

@@ -42,16 +42,20 @@ userRoutes.param("userID", (req, res, next, id) => {
 //=============================================================
 const formatOutput = (obj, body) => {
 
-  let user = {};
-  Object.keys(initialUser).forEach((k) => {
-    // if(k === 'credit' && obj[k] !== '') user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
-    // else 
-    if(k === 'token' && body) user[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
-    else if(k === 'token' && !body) user[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
-    else if(k === 'name' && body) user[k] = body.name;
-    else if(!obj[k]) user[k] = initialUser[k];
-    else user[k] = obj[k];
-  });
+  const user = (Object.keys(data.initial.user)).reduce((a, k) => {
+    // if(k === 'credit' && obj.credit !== '' && obj.credit !== undefined) user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
+    // else
+    if(k === 'token' && body) a[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'token' && !body) a[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'name' && body) a[k] = body.name;
+    else if(k === 'admin' && body) a[k] = true;
+    else if(k === 'admin' && !body) a[k] = false;
+    else if(!obj) a[k] = data.initial.user[k];
+    else if(!obj[k]) a[k] = data.initial.user[k];
+    else a[k] = obj[k];
+
+    return a;
+  }, {});
 
   return {user: user, edit: initialEdit, message: initialMessage};
 }

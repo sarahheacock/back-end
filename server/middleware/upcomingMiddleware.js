@@ -4,6 +4,7 @@ const Room = require("../models/page").Room;
 const User = require("../models/page").User;
 const Reservation = require("../models/page").Reservation;
 const CryptoJS = require('crypto-js');
+const jwt = require('jsonwebtoken');
 
 const async = require("async");
 const each = require("async/each");
@@ -98,7 +99,7 @@ const sendMessage = (req, res, next) => {
     to: req.user.email, // An array if you have multiple recipients.
     subject: 'Confirmation',
     //You can use "html:" to send HTML email content. It's magic!
-    html: '<div><p>Thank you for staying with us at ' + req.room.title + '</p></div>',
+    html: '<div><p>Thank you for staying with us at </p></div>',
   }, (err, info) => {
     if(err) res.json({message: data.messages.emailError});
     next();
@@ -132,9 +133,9 @@ const sendCancel = (req, res, next) => {
 };
 
 const updateCart = (req, res, next) => {
-  const start = parseInt(req.params.dateOne) || parseInt(req.body.start);
-  const end = parseInt(req.params.dateTwo) || parseInt(req.body.end);
-  const guests = req.params.guests || req.body.guests;
+  const start = parseInt(req.body.start);
+  const end = parseInt(req.body.end);
+  const guests = parseInt(req.body.guests);
   const limit = new Date().setUTCHours(12, 0, 0, 0);
 
   let dateOne = 0;
@@ -158,7 +159,9 @@ const updateCart = (req, res, next) => {
   req.end = dateTwo;
   req.guests = guests;
 
-  if(req.body.cost){
+  let cartSize = (req.user) ? req.user.cart.length : 0;
+
+  if(req.body.roomID !== '' && req.body.roomID !== undefined){
     const obj = {
       "start": dateOne,
       "end": dateTwo,
@@ -166,16 +169,74 @@ const updateCart = (req, res, next) => {
       "roomID": req.body.roomID,
       "cost": req.body.cost
     };
-    req.user.push(obj);
+
+    if(req.user){
+      cartSize += 1;
+      req.user.cart.push(obj);
+    }
+    else if(req.page){
+      const dataObj = (Object.keys(data.signUpAdminData)).reduce((a, b) => {
+        a[b] = data.signUpAdminData[b]["default"];
+        return a;
+      }, {});
+
+      const token = jwt.sign({userID: req.page.userID}, configure.secret, { expiresIn: '1h' });
+
+      const user = (Object.keys(data.initial.user)).reduce((a, b) => {
+        if(b === 'token') a.token = token;
+        else if(b === 'name') a.name = req.page.name;
+        //else if(b === 'cart') a.cart = [obj];
+        else if(b === 'admin') a.admin = true;
+        else a[b] = data.initial.user[b];
+        return a;
+      }, {});
+
+      res.json({
+        message: data.messages.adminContinueMessage,
+        edit: {
+          url: '/user/page/' + req.page._id + '?token=' + token,
+          modalTitle: 'Login',
+          next: '#',
+          dataObj: dataObj
+        },
+        user: user
+      });
+    }
+    else{
+      const dataObj = (Object.keys(data.loginData)).reduce((a, b) => {
+        a[b] = data.loginData[b]["default"];
+        return a;
+      }, {});
+
+      //let user = data.initial.user;
+
+      res.json({
+        message: data.messages.continueMessage,
+        edit: {
+          url: '/login',
+          modalTitle: 'Login',
+          next: '#',
+          dataObj: dataObj
+        }
+      });
+    }
   }
 
   if(req.user){
     req.user.save((err, doc) => {
       if(err) next(err);
-      next();
+      if(cartSize > doc.cart.length){
+        req.message = data.messages.available;
+        next();
+      }
+      else {
+        req.message = '';
+        next();
+      }
     });
   }
   else{
+    req.message = '';
     next();
   }
 };
@@ -196,24 +257,17 @@ const getAvailable = (req, res, next) => {
     }).exec((err, reservation) => {
       if(err) next(err);
 
-      //remove old cart items and cart items that have already been reserved
-      // let cart = user.cart.filter((c) => {
-      //   return c.start >= limit;
-      // });
-
       //add cart items that are relevant to reservations
-      const total = req.user.cart.filter((item) => {
+      const total = (req.user) ? req.user.cart.filter((item) => {
         const inRange = ((item.start >= dateOne && item.start <= dateTwo) || (item.end >= dateOne && item.end <= dateTwo) || (item.start <= dateOne && item.end >= dateTwo));
         if(inRange) return item;
-      }).concat(reservation);
+      }).concat(reservation) : reservation;
 
       const resObj = total.reduce((a, b) => {
         if(!a[b.roomID]) a[b.roomID] = 1;
         else a[b.roomID] = a[b.roomID] + 1;
         return a;
       }, {});
-      console.log("reservation", resObj);
-      console.log("rooms", rooms);
 
       const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
       const result = rooms.filter((room) => {
@@ -232,6 +286,37 @@ const getAvailable = (req, res, next) => {
       next();
     });
   });
+};
+
+const createRes = (req, res, next) => {
+  if(req.message === data.messages.available){
+    res.json({
+      message: data.messages.confirmError
+    });
+  }
+  else {
+    let result = [];
+    const end = req.user.cart.length;
+
+    async.each(req.user.cart, (reservation) => {
+      let stay = new Reservation(reservation);
+      stay.userID = req.user._id;
+
+      stay.save((err, newStay) => {
+        if(err) next(err);
+        result.push(newStay);
+        if(result.length === end){
+          req.user.cart = [];
+          req.user.save((err, user) => {
+            if(err) next(err);
+            req.reservations = result;
+            return next();
+          });
+        }
+      });
+
+    });
+  }
 };
 
 
@@ -276,6 +361,7 @@ module.exports = {
   modifyTime: modifyTime,
   // getRooms: getRooms,
   getRoom: getRoom,
+  createRes: createRes,
   // getRes: getRes,
   getAvailable: getAvailable,
   updateCart: updateCart,

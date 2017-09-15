@@ -73,50 +73,55 @@ UserSchema.pre('save', function(next){
   if(!this.cart) this.cart = [];
   if(this.cart.length > 0){
     let newCart = [];
-    let i = 0;
+    //let i = 0;
     const limit = new Date().setUTCHours(12, 0, 0, 0);
 
-    user.cart.forEach((b) => {
-      const start = b.start;
-      const end = b.end;
-      if(start < limit) return a; //if the start time is current
+    user.cart.forEach((b, i) => {
+      const start = new Date(b.start).setUTCHours(12, 0, 0, 0);
+      const end = new Date(b.end).setUTCHours(11, 59, 0, 0);
 
-      Reservation.find({
-        $and: [
-          {$or:[
-            {"start": {$gt: start-1, $lt: end+1}},
-            {"end": {$gt: start-1, $lt: end+1}},
-            {"end": {$lt: start+1}, "start": {$gt: end-1}}
-          ]},
-          {roomID: b.roomID}
-        ]
-      }).exec((err, reservation) => {
-        if(err) next(err);
-        const reserved = newCart.reduce((c, d) => {
-          const inRange = ((d.start >= start && b.start <= end) || (d.end >= start && d.end <= end) || (d.start <= start && d.end >= end));
-          if(inRange) c + 1;
-          return c;
-        }, 0) + reservation.length;
+      if(start < limit && i >= user.cart.length - 1){
+        user.cart = newCart; //if the start time is current
+        next();
+      }
+      else if(start >= limit){
+        Reservation.find({
+          $and: [
+            {$or:[
+              {"start": {$gt: start-1, $lt: end+1}},
+              {"end": {$gt: start-1, $lt: end+1}},
+              {"end": {$lt: start+1}, "start": {$gt: end-1}}
+            ]},
+            {roomID: b.roomID}
+          ]
+        }).exec((err, reservation) => {
+          if(err) next(err);
+          const reserved = newCart.reduce((c, d) => {
+            const inRange = ((d.start >= start && b.start <= end) || (d.end >= start && d.end <= end) || (d.start <= start && d.end >= end));
+            if(inRange) c + 1;
+            return c;
+          }, 0) + reservation.length;
 
-        Room.findById(b.roomID, {available: 1}).exec((err, room) => {
-          if(reserved < room["available"]){
-            newCart.push({
-              start: start,
-              end: end,
-              roomID: b.roomID,
-              cost: b.cost,
-              guests: b.guests
-            });
-          }
-          i++;
-          if(i >= user.cart.length - 1){
-            user.cart = newCart;
-            next();
-            //console.log(user.cart);
-            //user.save(callback);
-          }
+          Room.findById(b.roomID, {available: 1}).exec((err, room) => {
+            if(reserved < room["available"]){
+              newCart.push({
+                start: start,
+                end: end,
+                roomID: b.roomID,
+                cost: b.cost,
+                guests: b.guests
+              });
+            }
+            //i++;
+            if(i >= user.cart.length - 1){
+              user.cart = newCart;
+              next();
+              //console.log(user.cart);
+              //user.save(callback);
+            }
+          });
         });
-      });
+      }
     });
   }
   else {
@@ -349,8 +354,9 @@ ReservationSchema.pre('save', function(next){
   Reservation.remove({
     end: {$lt: min}
   }).exec((err, doc) => {
-    reservation.start = new Date(reservation.start).setUTCHours(12, 0, 0, 0);
-    reservation.end = new Date(reservation.end).setUTCHours(11, 59, 0, 0);
+    reservation.start = (reservation.start < reservation.end) ? new Date(reservation.start).setUTCHours(12, 0, 0, 0) : new Date(reservation.end).setUTCHours(12, 0, 0, 0);
+    reservation.end = (reservation.end > reservation.start) ? new Date(reservation.end).setUTCHours(11, 59, 0, 0) : new Date(reservation.start).setUTCHours(11, 59, 0, 0);
+    //reservation.userID = req.params.userID;
     next();
   });
 });

@@ -268,6 +268,12 @@ const checkUserInput = (req, res, next) => {
 
 // verifies token after login
 const authorizeUser = (req, res, next) => {
+  // super specific for reservation route
+  // helps check for availability before signing in
+  // if(req.page === false && req.user === false){
+  //   next();
+  // }
+
   // check header or url parameters or post parameters for token
   const token = req.body.token || req.query.token || req.headers['x-access-token'];
   if (token) { // decode token

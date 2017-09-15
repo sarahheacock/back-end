@@ -52,7 +52,8 @@ describe('Reservation', () => {
         "password": "password"
       });
       user = new User({
-        email: "sarah@gmail.com"
+        email: "seheacock@bellsouth.net",
+        name: "Sarah"
       })
       reservation = new Reservation({
         start: start + 30 * 24 * 60 * 60 * 1000,
@@ -74,25 +75,7 @@ describe('Reservation', () => {
               roomID: roomTwo._id,
               userID: user.id
             };
-            // const itemTwo = {
-            //   start: start + 100*24*60*60*1000,
-            //   end: end + 100*24*60*60*1000,
-            //   cost: 100,
-            //   guests: 2,
-            //   roomID: roomOne._id,
-            //   userID: user.id
-            // };
-            // const itemThree = {
-            //   start: start + 100*24*60*60*1000,
-            //   end: end + 100*24*60*60*1000,
-            //   cost: 100,
-            //   guests: 2,
-            //   roomID: roomTwo._id,
-            //   userID: user.id
-            // };
             user.cart.push(item);
-            // user.cart.push(itemTwo);
-            // user.cart.push(itemThree);
 
             user.save((err, newUser) => {
               reservation.roomID = roomOne._id;
@@ -120,15 +103,35 @@ describe('Reservation', () => {
       });
     });
 
-    describe('/GET availability from dates and guests', () => {
+    describe('/POST get availability from dates and guests when user signed in', () => {
+      let userToken;
+      let pageToken
+      beforeEach(() => {
+        userToken = jwt.sign({userID: user.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+        pageToken = jwt.sign({userID: page.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+      });
+
       it('should return availability with no reservations', (done) => {
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + start + '/' + end + '/2')
+        .post('/res/available/')
+        .send({
+          start: start,
+          end: end,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
+          console.log(res.body);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
+          //res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -138,14 +141,21 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"];
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
-          console.log(res.body.book.available);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.available[0]['available'].should.eql(1);
           res.body.book.available[1]['available'].should.eql(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -155,14 +165,21 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] + 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
-          console.log(res.body.book.available);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.available[0]['available'].should.eql(1);
           res.body.book.available[1]['available'].should.eql(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -172,14 +189,21 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] - 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
-          console.log(res.body.book.available);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.available[0]['available'].should.eql(1);
           res.body.book.available[1]['available'].should.eql(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -189,14 +213,21 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] + 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
-          console.log(res.body.book.available);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.available[0]['available'].should.eql(1);
           res.body.book.available[1]['available'].should.eql(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -206,14 +237,21 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] - 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
-          console.log(res.body.book.available);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.available[0]['available'].should.eql(1);
           res.body.book.available[1]['available'].should.eql(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -223,14 +261,21 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"];
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
-          console.log(res.body.book.available);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.available[0]['available'].should.eql(1);
           res.body.book.available[1]['available'].should.eql(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -239,23 +284,39 @@ describe('Reservation', () => {
         const checkStart = new Date(parseInt(start)).setUTCHours(12, 0, 0, 0);
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + end + '/' + start + '/2')
+        .post('/res/available/')
+        .send({
+          start: start,
+          end: end,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
           res.body.book.reservation.start.should.eql(checkStart);
+          //res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
 
       it('should return availability with guest request less', (done) => {
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + start + '/' + end + '/1')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: start,
+          end: end,
+          guests: 1,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -264,27 +325,44 @@ describe('Reservation', () => {
         let newEnd = end + (24*60*60*1000);
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + start + '/' + newEnd + '/3')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: start,
+          end: newEnd,
+          guests: 3,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
           res.body.book.available[0]["title"].should.equal(room1.title);
           res.body.book.available[0]["cost"].should.equal(room1.cost * 2);
+          res.body.user.cart.should.be.a('array').length(1);
+          res.body.user.name.should.equal(user.name);
           done();
         });
       });
 
       it('should not matter if leaving when coming', (done) => {
-        let newEnd = reservation.start - (24*60*60*1000);
-        let newStart = reservation.start;
+        let newEnd = reservation.start;
+        let newStart = reservation.start - (24*60*60*1000);
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
+          res.body.user.cart.should.be.a('array').length(1);
           // res.body.book.available[0]["title"].should.equal(room2.title);
           done();
         });
@@ -295,11 +373,19 @@ describe('Reservation', () => {
         let newStart = reservation.end;
 
         chai.request(server)
-        .get('/res/available/' + user.id + "/" + newStart + '/' + newEnd + '/2')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -308,11 +394,19 @@ describe('Reservation', () => {
         let newEnd = reservation.end + 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + reservation.start + '/' + newEnd + '/3')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: reservation.start,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -321,11 +415,19 @@ describe('Reservation', () => {
         let newStart = reservation.start - 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + reservation.end + '/3')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: reservation.end,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -335,11 +437,19 @@ describe('Reservation', () => {
         let newStart = reservation.end - 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/3')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
@@ -349,82 +459,301 @@ describe('Reservation', () => {
         let newStart = reservation.end + 24*60*60*1000;
 
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + newStart + '/' + newEnd + '/3')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: newStart,
+          end: newEnd,
+          guests: 2,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
+          res.body.user.cart.should.be.a('array').length(1);
           done();
         });
       });
 
       it('should not return room if reserved and guest request too high', (done) => {
         chai.request(server)
-        .get('/res/available/' + user.id + '/' + reservation.start + '/' + reservation.end + '/3')
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: reservation.start,
+          end: reservation.end,
+          guests: 3,
+          roomID: '',
+          cost: 0
+        })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(0);
+          res.body.user.cart.should.be.a('array').length(1);
+          done();
+        });
+      });
+
+      it('should not return room if reserved and guest request too high with admin', (done) => {
+        chai.request(server)
+        .post('/res/available/' + user.id + "/" + page.id + "?token=" + pageToken)
+        .send({
+          start: reservation.start,
+          end: reservation.end,
+          guests: 3,
+          roomID: '',
+          cost: 0
+        })
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(0);
+          res.body.user.cart.should.be.a('array').length(1);
+          done();
+        });
+      });
+
+      it('should not return room if reserved and guest request too high with admin and without user', (done) => {
+        chai.request(server)
+        .post('/res/available/undefined/' + page.id + "?token=" + pageToken)
+        .send({
+          start: reservation.start,
+          end: reservation.end,
+          guests: 3,
+          roomID: '',
+          cost: 0
+        })
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object')
+          res.body.book.available.should.be.a('array').length(0);
+          res.body.user.cart.should.be.a('array').length(0);
+          done();
+        });
+      });
+
+      it('should remove cart item and send message if no longer available', (done) => {
+        let newRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+        let newNewRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 7*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+
+        newRes.save((err, doc) => {
+          newNewRes.save((err, newDoc) => {
+            chai.request(server)
+            .post('/res/available/' + user.id + "?token=" + userToken)
+            .send({
+              start: start + 5*24*60*60*1000,
+              end: end + 6*24*60*60*1000,
+              guests: 2,
+              roomID: '',
+              cost: 0
+            })
+            .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object')
+              res.body.book.available.should.be.a('array').length(1);
+              res.body.user.cart.should.be.a('array').length(0);
+              res.body.message.should.eql(messages.available);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    describe('/POST add cart item and get availability', () => {
+      let userToken;
+      let pageToken
+      beforeEach(() => {
+        userToken = jwt.sign({userID: user.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+        pageToken = jwt.sign({userID: page.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+      });
+
+      it("should return larger cart if user defined", (done) => {
+        chai.request(server)
+        .post('/res/available/' + user.id + "?token=" + userToken)
+        .send({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        })
+        .end((err, res) => {
+          res.body.should.be.a('object');
+          res.body.book.available.should.be.a('array').length(1);
+          res.body.user.cart.should.be.a('array').length(2);
+          res.body.user.name.should.eql(user.name);
+          done();
+        });
+      });
+
+      it("should return larger cart if user and page defined", (done) => {
+        chai.request(server)
+        .post('/res/available/' + user.id + "/" + page.id + "?token=" + pageToken)
+        .send({
+          start: start + 300*24*60*60*1000,
+          end: end + 305*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        })
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.should.be.a('object');
+          res.body.book.available.should.be.a('array').length(2);
+          res.body.user.cart.should.be.a('array').length(2);
+          res.body.book.available[0]["available"].should.eql(1);
+          res.body.book.available[1]["available"].should.eql(1);
+          res.body.user.name.should.eql(page.name);
+          done();
+        });
+      });
+
+      it("should return message if new cart item not available", (done) => {
+        let newRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room1.id,
+          userID: user.id
+        });
+
+        newRes.save((err, doc) => {
+          chai.request(server)
+          .post('/res/available/' + user.id + "/" + page.id + "?token=" + pageToken)
+          .send({
+            start: start + 2*24*60*60*1000,
+            end: end + 6*24*60*60*1000,
+            cost: 100,
+            guests: 2,
+            roomID: room1.id,
+            userID: user.id
+          })
+          .end((err, res) => {
+            console.log(res.body);
+            res.body.should.be.a('object');
+            res.body.book.available.should.be.a('array').length(1);
+            res.body.user.cart.should.be.a('array').length(1);
+            res.body.book.available[0]["available"].should.eql(1);
+            res.body.user.name.should.eql(page.name);
+            res.body.message.should.eql(messages.available);
+            done();
+          });
+        });
+      });
+
+      it("should return login modal user undefined and page undefined", (done) => {
+        chai.request(server)
+        .post('/res/available/')
+        .send({
+          start: start + 2*24*60*60*1000,
+          end: end + 6*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room1.id,
+          userID: user.id
+        })
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.should.be.a('object');
+          res.body.edit.url.should.eql('/login');
+          done();
+        });
+      });
+
+      it("should return email modal if page defined but user undefined", (done) => {
+        chai.request(server)
+        .post('/res/available/undefined/' + page.id + '?token=' + pageToken)
+        .send({
+          start: start + 2*24*60*60*1000,
+          end: end + 6*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room1.id,
+          userID: user.id
+        })
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.should.be.a('object');
+          res.body.user.name.should.eql(page.name);
           done();
         });
       });
     });
 
-    // describe('/POST new reservation to cart', () => {
-    //   let input;
-    //   beforeEach((done) => {
-    //     input = {
-    //       start: start,
-    //       end: end,
-    //       cost: 100,
-    //       guests: 2,
-    //       roomID: room1.id,
-    //       userID: user.id
-    //     };
-    //   });
-    //
-    //   it('should post new item to cart if available', (done) => {
-    //     chai.request(server)
-    //     .post('/res/available/' + user.id)
-    //     .send(input)
-    //     .end((err, res) => {
-    //       res.body.should.be.a('object')
-    //       res.body.user.cart.should.be.a('array').length(4);
-    //       done();
-    //     });
-    //   });
-    //
-    //   it('should just give current availability if dates are old', (done) => {
-    //     input.start = input.start - 24*60*60*1000;
-    //     chai.request(server)
-    //     .post('/res/available/' + user.id)
-    //     .send(input)
-    //     .end((err, res) => {
-    //       res.body.should.be.a('object')
-    //       res.body.user.cart.should.be.a('array').length(3);
-    //       res.body.book.reservation.start.should.eql(new Date().setUTCHours(12, 0, 0, 0));
-    //       done();
-    //     });
-    //   });
-    //
-    //   it('should not post if conflicting with another reservation', (done) => {
-    //
-    //   });
-    //
-    //   it('should not post if conflicting with cart', (done) => {
-    //
-    //   });
-    //
-    //   it('should not post if too many guests', (done) => {
-    //
-    //   });
-    // });
-    //
-    // describe('/POST admin post new reservation to cart', () => {
-    //   it('should post new item to cart if available', (done) => {
-    //
-    //   });
-    // });
+    describe('/POST reservations by user', () => {
+      let token;
+      beforeEach(() => {
+        token = jwt.sign({userID: user.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+      });
+
+      it('should book cart reservations if they are available', (done) => {
+        chai.request(server)
+        .post('/res/user/' + user.id + "?token=" + token)
+        .send({})
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.user.cart.should.be.a('array').length(0);
+          res.body.user.name.should.eql(user.name);
+          done();
+        });
+      });
+
+      it('should halt all reservations if one cart item is not available', (done) => {
+        let newRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+        let newNewRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+
+        newRes.save((err, doc) => {
+          newNewRes.save((err, newDoc) => {
+            chai.request(server)
+            .post('/res/user/' + user.id + "?token=" + token)
+            .send({})
+            .end((err, res) => {
+              res.body.message.should.eql(messages.confirmError);
+              done();
+            });
+          });
+        });
+      });
+    });
 
     describe('/GET reservation by user', () => {
       let token;
@@ -484,45 +813,7 @@ describe('Reservation', () => {
 
 
 
-  // });
 
-  // describe('/GET reservation by user', () => {
-  //   let user;
-  //   let token;
-  //   let page;
-  //   let room;
-  //
-  //   beforeEach((done) => {
-  //     user = new User({
-  //       name: "Sarah",
-  //       email: "seheacock@bellsouth.net",
-  //       billing: "fghjk",
-  //       credit: "Sarah/5105105105105100/Jan 01/2017/555"
-  //     });
-  //
-  //     page = new Page({
-  //       "name": "test",
-  //       "password": "password"
-  //     });
-  //     room = new Room({title: "Foo"});
-  //
-  //     room.save((err, newRoom) => {
-  //       page.gallery.rooms.push(newRoom._id);
-  //       page.save((err, newPage) => {
-  //         user.pageID = newPage._id;
-  //         user.save((err, newUser) => {
-  //           token = jwt.sign({userID: newUser.userID}, configure.secret, {
-  //             expiresIn: '1d' //expires in one day
-  //           });
-  //           done();
-  //         });
-  //       });
-  //     });
-  //   });
-  //
-
-  // });
-  //
   // describe('/POST reservation by user', () => {
   //   let user;
   //   let token;

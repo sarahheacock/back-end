@@ -15,16 +15,14 @@ const jwt = require('jsonwebtoken');
 
 //================LOGIN==================================
 const formatOutput = (obj) => {
-  const token = jwt.sign({userID: obj.userID}, configure.secret, {
-    expiresIn: '3h' //expires in three hour
-  });
 
-  let user = {};
-  Object.keys(initialUser).forEach((k) => {
-    if(obj[k]) user[k] = obj[k];
-    else user[k] = initialUser[k]
-  });
-  user.token = token;
+  const user = Object.keys(initialUser).reduce((user, k) => {
+    if(k === 'token') user.token = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '3h' });
+    else if(k === '_id' && obj.admin) user._id = '';
+    else if(obj[k]) user[k] = obj[k];
+    else user[k] = initialUser[k];
+    return user;
+  }, {});
 
   return {user: user, edit: initialEdit, message: initialMessage};
 }
@@ -40,7 +38,8 @@ loginRoutes.post('/', mid.checkLoginInput, (req, res, next) => {
       }
       else {
         res.status(200);
-        user.cart = req.body.cart;
+        //user._id = '';
+        user.admin = true;
         res.json(formatOutput(user));
       }
     });
@@ -52,7 +51,7 @@ loginRoutes.post('/', mid.checkLoginInput, (req, res, next) => {
       }
       else {
         res.status(200);
-        user.cart = req.body.cart;
+        user.admin = false;
         res.json(formatOutput(user));
       }
     });

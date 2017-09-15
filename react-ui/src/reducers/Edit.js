@@ -28,16 +28,13 @@ const Edit = function(title){
 Edit.prototype = {
   setDataObj: function(dataObj){
     if(!this.modalTitle.includes("Delete")){
-      let newObj = {};
       const A = ["Add Room", "Add Guide", "Sign Up", "Send Message", "Login"];
       const defaultContent = A.includes(this.modalTitle.trim());
 
-      Object.keys(hash[this.modalTitle.trim()]).forEach((k) => {
+      this.dataObj = (Object.keys(hash[this.modalTitle.trim()])).reduce((newObj, k) => {
         if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : hash[this.modalTitle.trim()][k]["default"] || '';
         else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
-      });
-
-      this.dataObj = newObj;
+      }, {});
     }
     else{
       this.dataObj = dataObj;
