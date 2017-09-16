@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const async = require("async");
 const each = require("async/each");
 
+const moment = require('moment');
 const stripe = require('stripe')(configure.SecretKey)
 const nodemailer = require('nodemailer');
 const mg = require('nodemailer-mailgun-transport');
@@ -22,116 +23,111 @@ const auth = {
 }
 const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
-const findUser = (req, res, next) => {
-  let thisUser = {
-    email: req.body.user.email,
-    billing: req.body.user.billing,
-    credit: req.body.user.credit
+const Twilio = require('twilio');
+const textClient = new Twilio(
+  'AC78f4cac2211a9b4289ce01afd4b2d077',
+  'a4f27ac774519b870f03b2ffae392fab'
+);
+
+//============================================================
+//============================================================
+const createMessage = (reservations, task, name) => {
+  const roomList = reservations.reduce((a, b) => {
+    const start = moment(new Date(b.start)).add(6, 'hours').format('MMMM Do YYYY, h:mm:ss a');
+    const end = moment(new Date(b.end)).add(3, 'hours').add(1, 'minutes').format('MMMM Do YYYY, h:mm:ss a');
+    const add = start + " - " + end + " in the " + b.roomID.title + " room with " + b.guests + " guest(s)\n";
+    a += add;
+    return a;
+  }, "");
+
+  const total = reservations.reduce((a, b) => {
+    a += b.cost;
+    return a;
+  }, 0);
+
+  let subject = "Confirmation";
+  let content = 'Welcome, ' + name + "! We are excited to have you! \n\nYour current reservation is for: \n" + roomList + "\nThis totals to: $" + total + ".00";
+
+  if(task === "checkIn"){
+    subject = "Welcome";
+    content = 'Welcome, ' + name + "! \n\nYou have received this message because you have just checked in for: \n" + roomList + "\nYou will receive a follow up email with your receipt and confirmation number.";
+  }
+  else if(task === "remind"){
+    subject = "Reminder";
+    content = "Hello, " + name + "! \n\nYou are receiving this message because you have an upcoming stay for: \n" + roomList;
+  }
+  else if(task === "cancel"){
+    subject = "Cancel";
+    content = "Hello, " + name + "! \n\nWe are sorry to see you go! You are receiving this message because you have canceled for reservation for: \n" + roomList;
+  }
+
+  content += "\n\nContact us through our web site or with the number below for any questions, concerns, or cancellations.\n\n\nSincerely,\nB&B\n555-555-5555";
+  const html = content.split("\n").reduce((a, b) => {
+    if(b === '') a += '<br />'
+    else a +='<p>' + b + '</p>';
+    return a;
+  }, '');
+
+  return {
+    subject: subject,
+    html: "<div>" + html + "</div>",
+    body: content
   };
-
-  User.findOne({email: thisUser.email}).exec((err, doc) => {
-    if(!doc){
-      let user = new User(thisUser);
-      user.save((err, newUser) => {
-        if(err) next(err);
-        req.user = newUser;
-        next();
-      });
-    }
-    if(err) return next(err);
-
-    Object.assign(doc, thisUser);
-    doc.save((err, newUser) => {
-      if(err) next(err);
-      req.user = newUser;
-      next();
-    });
-
-  });
 }
 
-const modifyTime = (req, res, next) => {
-  const cart = req.body.user.cart.map((c) => (
-    {
-      "start": new Date(parseInt(c.start)).setUTCHours(12, 0, 0, 0),
-      "end": new Date(parseInt(c.end)).setUTCHours(11, 59, 0, 0),
-      "guests": c.guests,
-      "roomID": c.roomID,
-      "cost": c.cost
-    }
-  ));
-  req.body.user.cart = cart;
-  next();
-}
-
-const getRoom = (req, res, next) => {
-  const cart = req.user.cart;
-  let roomArr = [];
-
-  async.each(cart, function(reservation){
-    Room.findById(reservation.roomID, {"title": 1, "image": 1, "available": 1}).exec((err, room) => {
-      if(err || !room) next(err);
-      Reservation.find({
-        $and:[
-          {$or:[
-            {"start": {$gt: reservation.start-1, $lt: reservation.end+1}},
-            {"end": {$gt: reservation.start-1, $lt: reservation.end+1}}
-          ]},
-          {roomID: reservation.roomID}
-        ]
-      }).exec((err, doc) => {
-        if(err) next(err);
-        if(doc.length >= room.available) res.json({message: data.messages.available});
-
-        roomArr.push(room);
-        if(roomArr.length === cart.length){
-          req.room = roomArr;
-          next();
-        }
-      });
-    });
-  });
-};
-
+//send email and text message if client elects
 const sendMessage = (req, res, next) => {
+  const name = (req.user.name) ? req.user.name : req.user.email;
+  const messageObj = createMessage(req.reservations, req.params.task, name);
+
   nodemailerMailgun.sendMail({
     from: 'sheacock@kent.edu',
     to: req.user.email, // An array if you have multiple recipients.
-    subject: 'Confirmation',
+    subject: messageObj.subject,
     //You can use "html:" to send HTML email content. It's magic!
-    html: '<div><p>Thank you for staying with us at </p></div>',
-  }, (err, info) => {
-    if(err) res.json({message: data.messages.emailError});
-    next();
+    html: messageObj.html,
+  },
+  (err, info) => {
+    let newMessage = (err) ? data.messages.emailError : '';
+
+    if(req.user.billing){
+      const phone = req.user.billing.split('/').reduce((a, b) => {
+        if(b.includes('+')) return b;
+        else if(b === "false") return false;
+        else return a;
+      }, false);
+      console.log(phone);
+
+      if(phone !== false){
+        textClient.messages.create({
+          from: '+16156453672',
+          to: phone,
+          body: messageObj.body
+        }, (error, message) => {
+          console.log(error);
+          if(error){
+            if(newMessage !== '') req.message = newMessage + " " + data.messages.phoneError;
+            else req.message = data.messages.phoneError
+          }
+          else{
+            req.message = newMessage;
+          }
+          next();
+        });
+      }
+      else{
+        req.message = newMessage;
+        next();
+      }
+    }
+    else{
+      req.message = newMessage;
+      next();
+    }
   });
 };
 
-const sendReminder = (req, res, next) => {
-  nodemailerMailgun.sendMail({
-    from: 'sheacock@kent.edu',
-    to: req.reservation.userID.email, // An array if you have multiple recipients.
-    subject: 'Reminder',
-    //You can use "html:" to send HTML email content. It's magic!
-    html: '<div><p>Thank you for staying with us at ' + req.reservation.roomID.title + '</p></div>',
-  }, (err, info) => {
-    if(err) res.json({message: data.messages.emailError});
-    next();
-  });
-};
-
-const sendCancel = (req, res, next) => {
-  nodemailerMailgun.sendMail({
-    from: 'sheacock@kent.edu',
-    to: req.reservation.userID.email, // An array if you have multiple recipients.
-    subject: 'Cancel',
-    //You can use "html:" to send HTML email content. It's magic!
-    html: '<div><p>Thank you for staying with us at ' + req.reservation.roomID.title + '</p></div>',
-  }, (err, info) => {
-    if(err) res.json({message: data.messages.emailError});
-    next();
-  });
-};
-
+//=====================================================================
 const updateCart = (req, res, next) => {
   const start = parseInt(req.body.start);
   const end = parseInt(req.body.end);
@@ -208,8 +204,6 @@ const updateCart = (req, res, next) => {
         return a;
       }, {});
 
-      //let user = data.initial.user;
-
       res.json({
         message: data.messages.continueMessage,
         edit: {
@@ -281,12 +275,11 @@ const getAvailable = (req, res, next) => {
 
 
       req.available = result;
-      // req.dateOne = dateOne;
-      // req.dateTwo = dateTwo;
       next();
     });
   });
 };
+
 
 const createRes = (req, res, next) => {
   if(req.message === data.messages.available){
@@ -301,28 +294,47 @@ const createRes = (req, res, next) => {
     async.each(req.user.cart, (reservation) => {
       let stay = new Reservation(reservation);
       stay.userID = req.user._id;
-
+      //======================================
       stay.save((err, newStay) => {
         if(err) next(err);
-        result.push(newStay);
-        if(result.length === end){
-          req.user.cart = [];
-          req.user.save((err, user) => {
-            if(err) next(err);
-            req.reservations = result;
-            return next();
-          });
-        }
+        Reservation.populate(newStay, { //=====
+          path: 'roomID',
+          model: 'Room',
+          select: 'image title'
+        }, (err, book) => {
+          //add populated reservation to result
+          result.push(book);
+          if(result.length === end){
+            req.user.cart = [];
+            req.user.save((err, user) => {
+              if(err) next(err);
+              req.reservations = result;
+              return next();
+            });
+          }
+        }); //================================
       });
-
+      //======================================
     });
   }
 };
 
 
-// const getMonth = (req, res, next) => {
-//
-// };
+const deleteRes = (req, res, next) => {
+  Reservation.findById(req.params.resID).populate({
+    path: 'roomID',
+    model: 'Room',
+    select: 'image title'
+  }).exec((err, doc) => {
+    if(err) next(err);
+    req.reservations = [doc];
+    doc.remove((err, stay) => {
+      if(err) next(err);
+      console.log(req.reservations);
+      next();
+    });
+  });
+};
 
 // const chargeClient = (req, res, next) => {
 //   let source = {object: 'card'};
@@ -356,17 +368,9 @@ const createRes = (req, res, next) => {
 // };
 
 module.exports = {
-  // chargeClient: chargeClient,
-  // checkDates: checkDates,
-  modifyTime: modifyTime,
-  // getRooms: getRooms,
-  getRoom: getRoom,
   createRes: createRes,
-  // getRes: getRes,
+  deleteRes: deleteRes,
   getAvailable: getAvailable,
   updateCart: updateCart,
   sendMessage: sendMessage,
-  sendReminder: sendReminder,
-  sendCancel: sendCancel,
-  findUser: findUser
 };

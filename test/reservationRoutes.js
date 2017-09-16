@@ -53,7 +53,8 @@ describe('Reservation', () => {
       });
       user = new User({
         email: "seheacock@bellsouth.net",
-        name: "Sarah"
+        name: "Sarah",
+        billing: "+16155251915/true"
       })
       reservation = new Reservation({
         start: start + 30 * 24 * 60 * 60 * 1000,
@@ -723,6 +724,48 @@ describe('Reservation', () => {
         });
       });
 
+      it('should post confirmation even if email does not send', (done) => {
+        user.email = "sarah@gmail.com";
+        user.save((err, doc) => {
+          chai.request(server)
+          .post('/res/user/' + user.id + "?token=" + token)
+          .send({})
+          .end((err, res) => {
+            res.body.user.cart.should.be.a('array').length(0);
+            res.body.user.name.should.eql(user.name);
+            done();
+          });
+        });
+      })
+
+      it('should post confirmation even if text does not send', (done) => {
+        user.billing = "55555/true";
+        user.save((err, doc) => {
+          chai.request(server)
+          .post('/res/user/' + user.id + "?token=" + token)
+          .send({})
+          .end((err, res) => {
+            res.body.user.cart.should.be.a('array').length(0);
+            res.body.user.name.should.eql(user.name);
+            done();
+          });
+        });
+      })
+
+      it('should post confirmation even if text does not send by choice', (done) => {
+        user.billing = "+16155251915/false";
+        user.save((err, doc) => {
+          chai.request(server)
+          .post('/res/user/' + user.id + "?token=" + token)
+          .send({})
+          .end((err, res) => {
+            res.body.user.cart.should.be.a('array').length(0);
+            res.body.user.name.should.eql(user.name);
+            done();
+          });
+        });
+      })
+
       it('should halt all reservations if one cart item is not available', (done) => {
         let newRes = new Reservation({
           start: start + 5*24*60*60*1000,
@@ -745,6 +788,59 @@ describe('Reservation', () => {
           newNewRes.save((err, newDoc) => {
             chai.request(server)
             .post('/res/user/' + user.id + "?token=" + token)
+            .send({})
+            .end((err, res) => {
+              res.body.message.should.eql(messages.confirmError);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    describe('/POST reservations by admin', () => {
+      let token;
+      beforeEach(() => {
+        token = jwt.sign({userID: page.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+      });
+
+      it('should book cart reservations if they are available', (done) => {
+        chai.request(server)
+        .post('/res/page/' + page.id + "/" + user.id + "?token=" + token)
+        .send({})
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.user.cart.should.be.a('array').length(0);
+          res.body.user.name.should.eql(page.name);
+          done();
+        });
+      });
+
+      it('should halt all reservations if one cart item is not available', (done) => {
+        let newRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+
+        let newNewRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+
+        newRes.save((err, doc) => {
+          newNewRes.save((err, newDoc) => {
+            chai.request(server)
+            .post('/res/page/' + page.id + "/" + user.id + "?token=" + token)
             .send({})
             .end((err, res) => {
               res.body.message.should.eql(messages.confirmError);
@@ -807,486 +903,117 @@ describe('Reservation', () => {
       });
     });
 
+    describe('/PUT reservation by admin', () => {
+      let token;
+      beforeEach(() => {
+        token = jwt.sign({userID: page.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+      });
+
+      it('should check in client', (done) => {
+        chai.request(server)
+        .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
+        .send({})
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.message.should.eql('');
+          res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+          done();
+        });
+      });
+
+      it('should remind client', (done) => {
+        chai.request(server)
+        .put('/res/page/' + page.id + "/reminder/" + user.id + "/" + reservation.start + "?token=" + token)
+        .send({})
+        .end((err, res) => {
+          res.body.message.should.eql('');
+          res.body.welcome[0]["event"]["reminded"].should.eql(true);
+          done();
+        });
+      });
+
+      it('should send error message if email wrong', (done) => {
+        user.email = "sarah@gmail.com";
+        user.save((err, doc) => {
+          chai.request(server)
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
+          .send({})
+          .end((err, res) => {
+            console.log(user);
+            res.body.message.should.eql(messages.emailError);
+            res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+            done();
+          });
+        });
+      });
+
+      it('should send error message if phone wrong', (done) => {
+        user.billing = "+456789/true";
+        user.save((err, doc) => {
+          chai.request(server)
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
+          .send({})
+          .end((err, res) => {
+            res.body.message.should.eql(messages.phoneError);
+            res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+            done();
+          });
+        });
+      });
+
+      it('should send error if both are wrong', (done) => {
+        user.email = "sarah@gmail.com";
+        user.billing = "+456789/true";
+
+        user.save((err, doc) => {
+          chai.request(server)
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
+          .send({})
+          .end((err, res) => {
+            res.body.message.should.eql(messages.emailError + " " + messages.phoneError);
+            res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+            done();
+          });
+        });
+      });
+    });
+
+    // describe('/DELETE cart item', () => {
+    //   let token;
+    //   beforeEach(() => {
+    //     token = jwt.sign({userID: user.userID}, configure.secret, {
+    //       expiresIn: '1d' //expires in one day
+    //     });
+    //   });
+    //
+    //   it('should delete cart item and update availability', (done) => {
+    //
+    //   });
+    // });
+
+    describe('/DELETE reservation', () => {
+      let token;
+      beforeEach(() => {
+        token = jwt.sign({userID: page.userID}, configure.secret, {
+          expiresIn: '1d' //expires in one day
+        });
+      });
+
+      it('should delete reservation and return calendar', (done) => {
+        chai.request(server)
+        .delete('/res/page/' + page.id + "/cancel/" + user.id + "/" + reservation.id + "?token=" + token)
+        .send({})
+        .end((err, res) => {
+          console.log(res.body);
+          res.body.message.should.eql('');
+          res.body.welcome.should.be.a('array').length(0);
+          done();
+        });
+      });
+    });
+
 
   });
 });
-
-
-
-
-  // describe('/POST reservation by user', () => {
-  //   let user;
-  //   let token;
-  //   let page;
-  //   let room;
-  //
-  //   beforeEach((done) => {
-  //     user = new User({
-  //       name: "Sarah",
-  //       email: "seheacock@bellsouth.net",
-  //       billing: "fghjk",
-  //       credit: "Sarah/5105105105105100/Jan 01/2017/555"
-  //     });
-  //
-  //     page = new Page({
-  //       "name": "test",
-  //       "password": "password"
-  //     });
-  //     room = new Room();
-  //
-  //     room.save((err, newRoom) => {
-  //       page.gallery.rooms.push(newRoom._id);
-  //       page.save((err, newPage) => {
-  //         user.pageID = newPage._id;
-  //         user.save((err, newUser) => {
-  //           token = jwt.sign({userID: newUser.userID}, configure.secret, {
-  //             expiresIn: '1d' //expires in one day
-  //           });
-  //           done();
-  //         });
-  //       });
-  //     });
-  //   });
-  //
-  //   it("should post reservation, and send email client when user is signed in", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //
-  //     const myRes = {
-  //       book: {
-  //         reservation: {
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         },
-  //         available: []
-  //       }
-  //     };
-  //
-  //     chai.request(server)
-  //     .post('/res/user/' + user.id + "?token=" + token)
-  //     .send(myRes)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.be.a('object');
-  //       res.body.should.have.property('book');
-  //       res.body.should.have.property('message').eql(messages.userRes);
-  //       done();
-  //     });
-  //   });
-  //
-  //   it("should return no longer available if another res made", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //
-  //     const myRes = {
-  //       book: {
-  //         reservation: {
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100,
-  //           userID: user.id
-  //         },
-  //         available: []
-  //       }
-  //     };
-  //
-  //     const reservation = new Reservation(myRes.book.reservation);
-  //     reservation.save((err, doc) => {
-  //       chai.request(server)
-  //       .post('/res/user/' + user.id + "?token=" + token)
-  //       .send(myRes)
-  //       .end((err, res) => {
-  //         res.body.should.be.a('object');
-  //         res.body.should.have.property('message').eql(messages.available);
-  //         done();
-  //       });
-  //     });
-  //   });
-  //
-  //   it("should return expiration message and logout if user not signed in", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //     const reservation = {
-  //       book: {
-  //         reservation: {
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         },
-  //         available: []
-  //       }
-  //     };
-  //
-  //     chai.request(server)
-  //     .post('/res/user/' + user.id + "?token=ghjkl")
-  //     .send(reservation)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('message').eql(messages.expError);
-  //       done();
-  //     });
-  //   });
-  // });
-  //
-  // describe('/POST reservation by admin', () => {
-  //   let token;
-  //   let page;
-  //   let room;
-  //   let user;
-  //
-  //   beforeEach((done) => {
-  //     page = new Page({
-  //       "name": "test",
-  //       "password": "password"
-  //     });
-  //
-  //     room = new Room({available: 2});
-  //     user = new User({
-  //       name: "Sarah",
-  //       email: "seheacock@bellsouth.net",
-  //       billing: "fghjk",
-  //       credit: "Sarah/5105105105105100/Jan 01/2017/555"
-  //     });
-  //
-  //     room.save((err, newRoom) => {
-  //       page.gallery.rooms.push(newRoom._id);
-  //       page.save((err, newPage) => {
-  //         token = jwt.sign({userID: newPage.userID}, configure.secret, {
-  //           expiresIn: '1d' //expires in one day
-  //         });
-  //         user.save((err, newUser))
-  //         done();
-  //       });
-  //     });
-  //   });
-  //
-  //   it("should create a new reservation new user", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //     const input = {
-  //       user: {
-  //         token: token,
-  //         name: "Sarah",
-  //         email: "seheacock@bellsouth.net",
-  //         billing: "fghjk",
-  //         credit: "Sarah/5105105105105100/Jan 01/2017/555",
-  //         cart: [{
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         }]
-  //       }
-  //     };
-  //
-  //     chai.request(server)
-  //     .post('/res/page/' + page.id + "?token=" + token)
-  //     .send(input)
-  //     .end((err, res) => {
-  //       console.log(res.body);
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('book');
-  //       res.body.should.have.property('message').eql(messages.userRes);
-  //       res.body.user.should.have.property('token').eql(token);
-  //       res.body.user.should.have.property('email').eql('');
-  //       done();
-  //     });
-  //   });
-  //
-  //   it("should create multiple reservations with new user", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //     const input = {
-  //       user: {
-  //         token: token,
-  //         name: "Sarah",
-  //         email: "seheacock@bellsouth.net",
-  //         billing: "fghjk",
-  //         credit: "Sarah/5105105105105100/Jan 01/2017/555",
-  //         cart: [{
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         },
-  //         {
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         }]
-  //       }
-  //     };
-  //
-  //     chai.request(server)
-  //     .post('/res/page/' + page.id + "?token=" + token)
-  //     .send(input)
-  //     .end((err, res) => {
-  //       console.log(res.body);
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('book');
-  //       res.body.should.have.property('message').eql(messages.userRes);
-  //       res.body.user.should.have.property('token').eql(token);
-  //       res.body.user.should.have.property('email').eql('');
-  //       done();
-  //     });
-  //   });
-  //
-  //   it("should create a new reservation with old user", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //     const input = {
-  //       user: {
-  //         name: "Sarah",
-  //         email: "seheacock@bellsouth.net",
-  //         billing: "fghjk",
-  //         credit: "Sarah/5105105105105100/Jan 01/2017/555",
-  //         cart: [{
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         }]
-  //       }
-  //     };
-  //
-  //     let oldUser = new User(input.user);
-  //     oldUser.save((err, doc) => {
-  //       chai.request(server)
-  //       .post('/res/page/' + page.id + "?token=" + token)
-  //       .send(input)
-  //       .end((err, res) => {
-  //         res.should.have.status(200);
-  //         res.body.should.have.property('book');
-  //         res.body.should.have.property('message').eql(messages.userRes);
-  //         res.body.user.should.have.property('token').eql(token);
-  //         res.body.user.should.have.property('email').eql('');
-  //         done();
-  //       });
-  //     });
-  //   });
-  //
-  //   // it("should return to admin no longer available if another res made", (done) => {
-  //   //   let start = new Date().getTime();
-  //   //   let end = start + 24 * 60 * 60 * 1000;
-  //   //
-  //   //   const myRes = {
-  //   //     user: {
-  //   //       name: "Sarah",
-  //   //       email: "seheacock@bellsouth.net",
-  //   //       billing: "fghjk",
-  //   //       credit: "Sarah/5105105105105100/Jan 01/2017/555",
-  //   //       cart: [
-  //   //         {
-  //   //           start: start,
-  //   //           end: end,
-  //   //           guests: 2,
-  //   //           roomID: room.id,
-  //   //           cost: 100
-  //   //         }
-  //   //       ]
-  //   //     }
-  //   //   };
-  //   //
-  //   //
-  //   //
-  //   //   const reservation = new Reservation(myRes.user.cart[0]);
-  //   //   reservation.save((err, doc) => {
-  //   //     chai.request(server)
-  //   //     .post('/res/page/' + page.id + "?token=" + token)
-  //   //     .send(myRes)
-  //   //     .end((err, res) => {
-  //   //       res.body.should.be.a('object');
-  //   //       res.body.should.have.property('message').eql(messages.available);
-  //   //       done();
-  //   //     });
-  //   //   });
-  //   // });
-  //
-  //   it("should send error if reservations conflict", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //     const input = {
-  //       user: {
-  //         token: token,
-  //         name: "Sarah",
-  //         email: "seheacock@bellsouth.net",
-  //         billing: "fghjk",
-  //         credit: "Sarah/5105105105105100/Jan 01/2017/555",
-  //         cart: [{
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         },
-  //         {
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         },
-  //         {
-  //           start: start,
-  //           end: end,
-  //           guests: 2,
-  //           roomID: room.id,
-  //           cost: 100
-  //         }]
-  //       }
-  //     };
-  //
-  //     chai.request(server)
-  //     .post('/res/page/' + page.id + "?token=" + token)
-  //     .send(input)
-  //     .end((err, res) => {
-  //       console.log(res.body);
-  //       res.should.have.status(400);
-  //       done();
-  //     });
-  //   });
-  //
-  //   it("should return expiration message and logout if user not signed in", (done) => {
-  //     let start = new Date().getTime();
-  //     let end = start + 24 * 60 * 60 * 1000;
-  //     const reservation = {
-  //       user: {
-  //         name: "Sarah",
-  //         email: "seheacock@bellsouth.net",
-  //         billing: "fghjk",
-  //         credit: "Sarah/5105105105105100/Jan 01/2017/555",
-  //         cart: [
-  //           {
-  //             start: start,
-  //             end: end,
-  //             guests: 2,
-  //             roomID: room.id,
-  //             cost: 100
-  //           }
-  //         ]
-  //       }
-  //     };
-  //
-  //     chai.request(server)
-  //     .post('/res/page/' + page.id + "?token=ghjkl")
-  //     .send(reservation)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('message')
-  //       res.body.message.should.eql(messages.expError);
-  //       res.body.should.have.property('user');
-  //       done();
-  //     });
-  //   });
-  // });
-  //
-  // describe('/PUT update reservation', (done) => {
-  //   let user;
-  //   let page;
-  //   let room;
-  //   let token;
-  //   let reservation;
-  //
-  //   let start = new Date().getTime();
-  //   let end = start + 24 * 60 * 60 * 1000;
-  //
-  //   beforeEach((done) => {
-  //     user = new User({
-  //       name: "Sarah",
-  //       email: "seheacock@bellsouth.net",
-  //       billing: "fghjk",
-  //       credit: "Sarah/5105105105105100/Jan 01/2017/555"
-  //     });
-  //
-  //     page = new Page({
-  //       "name": "test",
-  //       "password": "password"
-  //     });
-  //     room = new Room({title: "Foo"});
-  //
-  //
-  //     room.save((err, newRoom) => {
-  //       page.gallery.rooms.push(newRoom._id);
-  //       page.save((err, newPage) => {
-  //         user.pageID = newPage._id;
-  //         user.save((err, newUser) => {
-  //           token = jwt.sign({userID: newPage.userID}, configure.secret, {
-  //             expiresIn: '1d' //expires in one day
-  //           });
-  //           reservation = new Reservation({
-  //             start: start,
-  //             end: end,
-  //             guests: 2,
-  //             roomID: room.id,
-  //             userID: user.id,
-  //             cost: 100
-  //           });
-  //           reservation.save((err, newRes) => {done();});
-  //         });
-  //       });
-  //     });
-  //   });
-  //
-  //   it('should check in reservation', (done) => {
-  //     chai.request(server)
-  //     .put('/res/page/' + page.id + "/checkIn/" + reservation.id + "?token=" + token)
-  //     .send(reservation)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('welcome')
-  //       res.body.welcome[0]["checkedIn"].eql(true);
-  //       done();
-  //     });
-  //   });
-  //
-  //   it('should send reminder', (done) => {
-  //     chai.request(server)
-  //     .put('/res/page/' + page.id + "/reminder/" + reservation.id + "?token=" + token)
-  //     .send(reservation)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('welcome')
-  //       res.body.welcome[0]["reminded"].eql(true);
-  //       done();
-  //     });
-  //   });
-  //
-  //   it('should charge client', (done) => {
-  //     chai.request(server)
-  //     .put('/res/page/' + page.id + "/charge/" + reservation.id + "?token=" + token)
-  //     .send(reservation)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('welcome')
-  //       res.body.welcome[0]["charged"].eql(true);
-  //       res.body.welcome[0]["checkedIn"].eql(true);
-  //       done();
-  //     });
-  //   });
-  //
-  //   it('should cancel reservation', (done) => {
-  //     chai.request(server)
-  //     .delete('/res/page/' + page.id + "/cancel/" + reservation.id + "?token=" + token)
-  //     .send(reservation)
-  //     .end((err, res) => {
-  //       res.should.have.status(200);
-  //       res.body.should.have.property('welcome');
-  //       res.body.welcome.should.be('array').length(0);
-  //       done();
-  //     });
-  //   });
-  // });
-
-// });

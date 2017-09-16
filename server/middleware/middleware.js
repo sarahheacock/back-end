@@ -29,7 +29,8 @@ const checkSize = (obj, form) => {
 }
 
 const formatNum = (num) => {
-  return num.replace(/[^0-9]/gi, '');
+  const newNum = num.replace(/[^0-9]/gi, '');
+  return (newNum.length < 11) ? "+1" + newNum : "+" + newNum;
 };
 
 const checkPhone = (newNum) => {

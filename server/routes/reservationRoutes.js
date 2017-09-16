@@ -49,15 +49,16 @@ reservationRoutes.param("userID", (req, res, next, id) => {
   }
 });
 
-reservationRoutes.param("resID", (req, res, next, id) => {
-  Reservation.findById(id).populate({
+reservationRoutes.param("start", (req, res, next, id) => {
+  const start = new Date(parseInt(id)).setUTCHours(12, 0, 0, 0);
+  Reservation.find({userID: req.params.userID, start: start}).populate({
     path: 'roomID',
     model: 'Room',
     select: 'image title'
   }).populate({
     path: 'userID',
     model: 'User',
-    select: 'email credit'
+    select: 'credit billing name email'
   }).exec((err, doc) => {
     if(err) next(err);
     if(!doc){
@@ -65,12 +66,12 @@ reservationRoutes.param("resID", (req, res, next, id) => {
       err.status = 404;
       return next(err);
     }
-    req.reservation = doc;
+    req.reservations = doc;
     next();
-  })
+  });
 });
-
-const format = (reservations) => {
+//========================================================================
+const format = (reservations, message) => {
   const newRes = reservations.map((r) => {
     let credit = CryptoJS.AES.decrypt(r.userID.credit.toString(), r.userID.userID).toString(CryptoJS.enc.Utf8);
     // credit.split('/');
@@ -88,13 +89,11 @@ const format = (reservations) => {
       event: r
     };
   });
-  return {message: "", welcome: newRes, edit: data.initial.edit};
+  const newMessage = (message) ? message: '';
+  return {message: newMessage, welcome: newRes, edit: data.initial.edit};
 };
 
 const formatOutput = (obj, body) => {
-  // let user = {};
-  // console.log(CryptoJS.AES.decrypt(obj.credit.toString(), obj.userID).toString(CryptoJS.enc.Utf8));
-
   return (Object.keys(data.initial.user)).reduce((a, k) => {
     // if(k === 'credit' && obj.credit !== '' && obj.credit !== undefined) user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
     // else
@@ -109,8 +108,6 @@ const formatOutput = (obj, body) => {
 
     return a;
   }, {});
-
-  // return user;
 }
 
 //===================RESERVATIONS================================
@@ -191,9 +188,7 @@ reservationRoutes.get('/user/:userID', auth, (req, res, next) => {
 });
 
 //user create reservation
-// mid.modifyTime, mid.getRoom
 reservationRoutes.post('/user/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
-  console.log(req.reservations);
   res.json({
     book: data.initial.book,
     message: data.messages.userRes,
@@ -204,86 +199,10 @@ reservationRoutes.post('/user/:userID', auth, mid.updateCart, mid.createRes, mid
 //===============RESERVATIONS THAT REQUIRE ADMIN AUTH==================
 //create users and reservations
 reservationRoutes.post('/page/:pageID/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
-  console.log(req.reservations);
   res.json({
     book: data.initial.book,
     message: data.messages.userRes,
     user: formatOutput(null, req.page)
-  });
-//});
-// reservationRoutes.post('/page/:pageID/:userID', auth, mid.modifyTime, mid.getRoom, mid.findUser, mid.sendMessage, (req, res, next) => {
-//   let stay = new Reservation(req.body.book.reservation);
-//   stay.userID = req.user._id;
-//   stay.save((err, newStay) => {
-//     if(err) next(err);
-//     res.json({
-//       book: data.initial.book,
-//       message: data.messages.userRes,
-//       user: formatOutput(null, req.page)
-//     });
-//   });
-});
-
-
-//send reminder message
-reservationRoutes.put("/page/:pageID/reminder/:resID", auth, mid.sendReminder, (req, res, next) => {
-  req.reservation.reminded = true;
-  req.reservation.save((err, doc) => {
-    if(err) next(err);
-    const date = new Date(doc.start);
-    const month = (date.getMonth() + 1).toString();
-    const year = date.getFullYear().toString();
-    Reservation.findMonth(month, year, (err, reservations) => {
-      if(err) next(err);
-      res.json(format(reservations));
-    });
-  });
-});
-
-
-//check-in client
-reservationRoutes.put("/page/:pageID/checkIn/:resID", auth, (req, res, next) => {
-  req.reservation.checkedIn = !req.reservation.checkedIn;
-  req.reservation.save((err, doc) => {
-    // console.log(doc);
-    if(err) next(err);
-    const date = new Date(doc.start);
-    const month = (date.getMonth() + 1).toString();
-    const year = date.getFullYear().toString();
-    Reservation.findMonth(month, year, (err, reservations) => {
-      if(err) next(err);
-      res.json(format(reservations));
-    });
-  });
-});
-
-//charge client
-reservationRoutes.put("/page/:pageID/charge/:resID", auth, (req, res, next) => {
-  req.reservation.charged = true; //change later
-  req.reservation.checkedIn = true;
-  req.reservation.save((err, doc) => {
-    if(err) next(err);
-    const date = new Date(doc.start);
-    const month = (date.getMonth() + 1).toString();
-    const year = date.getFullYear().toString();
-    Reservation.findMonth(month, year, (err, reservations) => {
-      if(err) next(err);
-      res.json(format(reservations));
-    });
-  });
-});
-
-//cancel reservations
-reservationRoutes.delete("/page/:pageID/cancel/:resID/", auth, mid.sendCancel, (req, res, next) => {
-  req.reservation.remove((err, doc) => {
-    if(err) next(err);
-    const date = new Date(doc.start);
-    const month = (date.getMonth() + 1).toString();
-    const year = date.getFullYear().toString();
-    Reservation.findMonth(month, year, (err, reservations) => {
-      if(err) next(err);
-      res.json(format(reservations));
-    });
   });
 });
 
@@ -291,7 +210,69 @@ reservationRoutes.delete("/page/:pageID/cancel/:resID/", auth, mid.sendCancel, (
 reservationRoutes.get('/page/:pageID/:month/:year', auth, (req, res, next) => {
   Reservation.findMonth(req.params.month, req.params.year, (err, reservations) => {
     if(err) next(err);
-    res.json(format(reservations));
+    res.json(format(reservations, req.message));
+  });
+});
+
+//charge client
+reservationRoutes.put("/page/:pageID/charge/:userID/:start", auth, (req, res, next) => {
+  let i = 1;
+  async.each(req.reservations, (reservation) => {
+    reservation.charged = true; //change later
+    //reservation.checkedIn = true;
+    reservation.save((err, doc) => {
+      if(err) next(err);
+      i++;
+      if(i === req.reservations.length){
+        const date = new Date(doc.start);
+        const month = (date.getMonth() + 1).toString();
+        const year = date.getFullYear().toString();
+        Reservation.findMonth(month, year, (err, reservations) => {
+          if(err) next(err);
+          res.json(format(reservations, req.message));
+        });
+      }
+    });
+  });
+});
+
+
+//send reminder message => task === "reminder"
+//send checked in message => task === "checkIn"
+reservationRoutes.put("/page/:pageID/:task/:userID/:start", auth, (req, res, next) => {
+  const change = (req.params.task === "checkIn") ? {checkedIn: true} : {reminded: true};
+  let i = 0;
+  async.each(req.reservations, (reservation) => {
+    if(req.params.task === "checkIn")reservation.checkedIn = true; //change later
+    if(req.params.task === "reminder")reservation.reminded = true;
+
+    reservation.save((err, doc) => {
+      if(err) next(err);
+      i++;
+      if(req.reservations.length === i){
+        next();
+      }
+    });
+  });
+}, mid.sendMessage, (req, res, next) => {
+  const date = new Date(parseInt(req.params.start));
+  const month = (date.getMonth() + 1).toString();
+  const year = date.getFullYear().toString();
+  Reservation.findMonth(month, year, (err, reservations) => {
+    if(err) next(err);
+    res.json(format(reservations, req.message));
+  });
+});
+
+//cancel reservations
+//task = "cancel"
+reservationRoutes.delete("/page/:pageID/:task/:userID/:resID/", auth, mid.deleteRes, mid.sendMessage, (req, res, next) => {
+  const date = new Date(req.reservations[0]["start"]);
+  const month = (date.getMonth() + 1).toString();
+  const year = date.getFullYear().toString();
+  Reservation.findMonth(month, year, (err, reservations) => {
+    if(err) next(err);
+    res.json(format(reservations, req.message));
   });
 });
 

@@ -13,5 +13,9 @@ module.exports = {
   'FACEBOOK_CALLBACKURL': 'http://localhost:5000/auth/facebook/callback',
 
   'PublishableKey': 'pk_test_EDg9wB7ruLGgGai4R6fAO0WT',
-  'SecretKey': 'sk_test_yFU0LpusthkM1dFCoznns8wh'
+  'SecretKey': 'sk_test_yFU0LpusthkM1dFCoznns8wh',
+
+  'AccoutSID': 'AC78f4cac2211a9b4289ce01afd4b2d077',
+  'AuthTok': 'a4f27ac774519b870f03b2ffae392fab',
+  'phone': '+16156453672'
 }

@@ -354,8 +354,11 @@ ReservationSchema.pre('save', function(next){
   Reservation.remove({
     end: {$lt: min}
   }).exec((err, doc) => {
-    reservation.start = (reservation.start < reservation.end) ? new Date(reservation.start).setUTCHours(12, 0, 0, 0) : new Date(reservation.end).setUTCHours(12, 0, 0, 0);
-    reservation.end = (reservation.end > reservation.start) ? new Date(reservation.end).setUTCHours(11, 59, 0, 0) : new Date(reservation.start).setUTCHours(11, 59, 0, 0);
+    const start = parseInt(reservation.start);
+    const end = parseInt(reservation.end);
+
+    reservation.start = (start < end) ? new Date(start).setUTCHours(12, 0, 0, 0) : new Date(end).setUTCHours(12, 0, 0, 0);
+    reservation.end = (end > start) ? new Date(end).setUTCHours(11, 59, 0, 0) : new Date(start).setUTCHours(11, 59, 0, 0);
     //reservation.userID = req.params.userID;
     next();
   });
