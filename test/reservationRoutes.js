@@ -128,7 +128,6 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
-          console.log(res.body);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
@@ -151,6 +150,7 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
+          console.log(res.body, user);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);

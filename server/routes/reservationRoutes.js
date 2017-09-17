@@ -95,10 +95,9 @@ const format = (reservations, message) => {
 
 const formatOutput = (obj, body) => {
   return (Object.keys(data.initial.user)).reduce((a, k) => {
-    // if(k === 'credit' && obj.credit !== '' && obj.credit !== undefined) user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
-    // else
-    if(k === 'token' && body) a[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
-    else if(k === 'token' && !body) a[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
+    if(k === 'credit' && obj) a[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
+    else if(k === 'token' && body) a[k] = jwt.sign({userID: body.userID}, configure.secret, { expiresIn: '1h' });
+    else if(k === 'token' && !body && obj) a[k] = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '1h' });
     else if(k === 'name' && body) a[k] = body.name;
     else if(k === 'admin' && body) a[k] = true;
     else if(k === 'admin' && !body) a[k] = false;

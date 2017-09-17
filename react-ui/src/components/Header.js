@@ -17,12 +17,16 @@ class Header extends React.Component {
 
   componentDidMount(){
     if(window.location.hash.includes('register')){
-      const arr = window.location.hash.split('/');
-      const token = arr[1].replace('?token=', '');
-      const id = arr[2].replace('?id=', '');
+      const obj = window.location.hash.split('/').reduce((a, b) => {
+        if(b.includes('token')) a.token = b.replace('?token=', '');
+        if(b.includes('?id=')) a.id = b.replace('?id=', '');
+        return a;
+      }, {});
 
       window.location.hash = '';
-      this.props.getData(`/user/${id}?token=${token}`);
+      const url = `/user/user/${obj.id}/?token=${obj.token}`;
+      console.log(url)
+      this.props.getData(url);
     }
     this.props.getData(`/page/${blogID}`);
   }
@@ -57,11 +61,13 @@ class Header extends React.Component {
           </Navbar.Header>
 
           <Navbar.Collapse>
-            <Nav className="ml-auto" navbar pullRight>
+            <Nav className="ml-auto" navbar>
               {navItems}
+            </Nav>
+            <Nav className="" navbar pullRight>
               <LinkContainer to={(this.props.user.token) ? "/welcome": "#"}>
                 {(!(!this.props.user.token))?
-                  <NavItem>{this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}</NavItem> :
+                  <NavItem><span className="shop">{`${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))} `}<i className="fa fa-shopping-cart large-icon" aria-hidden="true"></i>{this.props.user.cart.length}</span></NavItem> :
                   <EditButton
                     user={this.props.user}
                     dataObj={{}}

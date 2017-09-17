@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { cloudName } from '../../../../../data/data';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, FormGroup, FormControl, ControlLabel } from 'react-bootstrap';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 
 import moment from 'moment';
@@ -14,7 +14,9 @@ class Select extends React.Component {
     data: PropTypes.object.isRequired,
     user: PropTypes.object.isRequired,
     updateState: PropTypes.func.isRequired,
-    getData: PropTypes.func.isRequired
+    getData: PropTypes.func.isRequired,
+    putData: PropTypes.func.isRequired,
+    postData: PropTypes.func.isRequired
   }
 
   constructor(props) {
@@ -32,7 +34,9 @@ class Select extends React.Component {
 
   componentDidMount(){
     console.log("hi");
-    this.props.getData(`/res/available/${this.props.data.reservation.start}/${this.props.data.reservation.end}/${this.props.data.reservation.guests}`)
+    //this.props.getData(`/res/available/${this.props.data.reservation.start}/${this.props.data.reservation.end}/${this.props.data.reservation.guests}`)
+    this.props.postData("/res/available", this.props.data.reservation);
+
   }
 
   onDatesChange({ startDate, endDate }) {
@@ -41,23 +45,11 @@ class Select extends React.Component {
     const start = (startDate !== null) ? new Date(startDate._d).setUTCHours(12, 0, 0, 0) : this.props.data.reservation.start;
     const end = (endDate !== null) ? new Date(endDate._d).setUTCHours(11, 59, 0, 0) : this.props.data.reservation.end;
 
-    // if(endDate !== null && startDate !== null){
-      console.log("get");
-      this.props.getData(`/res/available/${start.toString()}/${end.toString()}/${this.props.data.reservation.guests.toString()}`);
-    // }
-    // else {
-    //   console.log("update");
-    //   this.props.updateState({
-    //     book: {
-    //       ...this.props.data,
-    //       reservation: {
-    //         ...this.props.data.reservation,
-    //         start: start,
-    //         end: end
-    //       }
-    //     }
-    //   });
-    // }
+    this.props.postData('/res/available/', {
+      ...this.props.data.reservation,
+      start: start,
+      end: end
+    });
   }
 
   onFocusChange(focusedInput) {
@@ -65,6 +57,21 @@ class Select extends React.Component {
       // Force the focusedInput to always be truthy so that dates are always selectable
       focusedInput: !focusedInput ? 'startDate' : focusedInput,
     });
+  }
+
+  onGuestChange = (e) => {
+    this.props.postData('/res/available/', {
+      ...this.props.data.reservation,
+      guests: e.target.value
+    });
+  }
+
+  onGetCartItem = (e) => {
+
+  }
+
+  onDeleteCartItem = (e) => {
+
   }
 
   render() {
@@ -80,7 +87,7 @@ class Select extends React.Component {
             <div className="text-center">
               <CloudinaryContext cloudName={cloudName}>
                   <Image publicId={room.image} className="projectPic" >
-                      <Transformation width="250" crop="scale" radius="10"/>
+                      <Transformation width="200" crop="scale" radius="10"/>
                   </Image>
               </CloudinaryContext>
             </div>
@@ -88,7 +95,7 @@ class Select extends React.Component {
           <Col sm={6} className="columns">
             <div className="text-center">
               <h3 className="pretty">{room.title}</h3>
-              <h4 className="paragraph"><big>$</big>{`${room.cost}.`}<sup>00</sup><sub> per night</sub></h4>
+              <h4 className="paragraph"><big>$</big>{`${room.cost}.`}<sup>00</sup><sub> total</sub></h4>
               <h4 className="paragraph">{room.available}<sub> room(s) left</sub></h4>
             </div>
           </Col>
@@ -101,18 +108,33 @@ class Select extends React.Component {
 
     return (
       <div className="text-center">
-        <h4 className="content">{start.format('MMMM Do YYYY')} <i className="fa fa-arrow-right" aria-hidden="true"></i> {end.format('MMMM Do YYYY')}</h4>
-        <div className="date-picker">
-          <DayPickerRangeController
-            onDatesChange={this.onDatesChange}
-            onFocusChange={this.onFocusChange}
-            focusedInput={focusedInput}
-            startDate={start}
-            endDate={end}
-          />
-        </div>
-
-        {gallery}
+        <h4 className="black">{start.format('MMMM Do YYYY')} <i className="fa fa-arrow-right" aria-hidden="true"></i> {end.format('MMMM Do YYYY')}</h4>
+        <Row className="clear-fix content smoke">
+          <Col sm={4} className="columns">
+            <FormGroup controlId="formControlsSelectMultiple" className="guests">
+              <ControlLabel>Number of Guests</ControlLabel>
+              <FormControl componentClass="select" onChange={this.onGuestChange}>
+                {[...new Array(6)].map((a, i) => (
+                  <option value={i + 1} key={`guest${i + 1}`}>{i + 1}</option>
+                ))}
+              </FormControl>
+            </FormGroup>
+          </Col>
+          <Col sm={6} className="columns">
+            <FormGroup controlId="formControlsSelectMultiple" className="date-picker">
+              <ControlLabel>Select Dates</ControlLabel>
+              <DayPickerRangeController
+                onDatesChange={this.onDatesChange}
+                onFocusChange={this.onFocusChange}
+                focusedInput={focusedInput}
+                startDate={start}
+                endDate={end}
+              />
+            </FormGroup>
+          </Col>
+        </Row>
+        <hr />
+        <div>{(this.props.data.available.length > 0) ? gallery : <h4>Oh darn! No rooms are available for these selected days.</h4>}</div>
       </div>
     );
   }

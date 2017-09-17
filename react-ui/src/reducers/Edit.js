@@ -32,8 +32,9 @@ Edit.prototype = {
       const defaultContent = A.includes(this.modalTitle.trim());
 
       this.dataObj = (Object.keys(hash[this.modalTitle.trim()])).reduce((newObj, k) => {
-        if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : hash[this.modalTitle.trim()][k]["default"] || '';
+        if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : (hash[this.modalTitle.trim()][k]["default"] || '');
         else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
+        return newObj;
       }, {});
     }
     else{

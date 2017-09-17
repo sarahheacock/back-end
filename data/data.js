@@ -4,45 +4,6 @@ var links = ["home", "gallery", "guide", "book"];
 // var name = "test";
 
 
-//========INITIAL DATA=========================
-
-var start = new Date().setUTCHours(12, 0, 0, 0);
-var initial = {
-  "home": {},
-  "gallery": {},
-  "guide": {},
-  "book": {
-    "reservation": {
-      "start": start,
-      "end": start + 5*24*60*60*1000 - 60*1000,
-      "guests": 2,
-      "roomID": '',
-      "cost": 0
-    },
-    "available": []
-  },
-  "welcome": [],
-  "message": '',
-  "edit": {
-    "url": '',
-    "modalTitle": '',
-    "next": '',
-    "dataObj": {}
-  },
-  "user": {
-    "token": '',
-    "admin": false,
-    "_id": '',
-    "name": '',
-    "email": '',
-    "billing": '',
-    "credit": '',
-    "cart": []
-  }
-}
-
-// var initialData = [];
-
 //===============FORMS============================
 var notRequired = ['p1', 'b', 'link', "Address Line 2", 'cart'];
 
@@ -154,6 +115,12 @@ var addressData = {
     componentClass: 'input',
     default: ''
   },
+  "Send Me Text Confirmation": {
+    type: 'other',
+    placeholder: 'Admin',
+    componentClass: 'checkbox',
+    default: false
+  }
 };
 
 var currentYear = new Date().getFullYear().toString();
@@ -380,6 +347,47 @@ var messages = {
   adminContinueMessage: "Enter client's email and name to continue",
   confirmError: "Oh no! We could not confirm your reservation(s). Some of the items in your cart, are no longer available. We apologize for the inconvenience."
 };
+
+//========INITIAL DATA=========================
+var defaultAddress = (Object.keys(addressData)).map(function(k){ return addressData[k]["default"]; }).join('/');
+var defaultPayment = (Object.keys(paymentData)).map(function(k){ return paymentData[k]["default"]; }).join('/');
+
+var start = new Date().setUTCHours(12, 0, 0, 0);
+var initial = {
+  "home": {},
+  "gallery": {},
+  "guide": {},
+  "book": {
+    "reservation": {
+      "start": start,
+      "end": start + 5*24*60*60*1000 - 60*1000,
+      "guests": 2,
+      "roomID": '',
+      "cost": 0
+    },
+    "available": []
+  },
+  "welcome": [],
+  "message": '',
+  "edit": {
+    "url": '',
+    "modalTitle": '',
+    "next": '',
+    "dataObj": {}
+  },
+  "user": {
+    "token": '',
+    "admin": false,
+    "_id": '',
+    "name": '',
+    "email": '',
+    "billing": defaultAddress,
+    "credit": defaultPayment,
+    "cart": []
+  }
+}
+
+// var initialData = [];
 
 module.exports = {
   blogID: blogID,

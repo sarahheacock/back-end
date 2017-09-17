@@ -63,14 +63,15 @@ UserSchema.pre('save', function(next){
   let user = this;
 
   if(!this.userID) this.userID = makeid();
-  if(this.credit){
-    // console.log(CryptoJS.AES.decrypt(this.credit.toString(), this.userID).toString(CryptoJS.enc.Utf8));
-    // if(!CryptoJS.AES.decrypt(this.credit.toString(), this.userID).toString(CryptoJS.enc.Utf8)){
-    //   this.credit = CryptoJS.AES.encrypt(this.credit, this.userID);
-    // }
+  if(!this.cart) this.cart = []; //update cart
+
+  if(!this.credit){
+    this.credit = CryptoJS.AES.encrypt(defaultPayment, this.userID);
   }
-  //update cart
-  if(!this.cart) this.cart = [];
+  else if(!CryptoJS.AES.decrypt(this.credit.toString(), this.userID).toString(CryptoJS.enc.Utf8)){
+    this.credit = CryptoJS.AES.encrypt(this.credit, this.userID);
+  }
+
   if(this.cart.length > 0){
     let newCart = [];
     //let i = 0;

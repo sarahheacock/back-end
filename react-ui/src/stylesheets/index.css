@@ -42,6 +42,10 @@ header{
   margin: 0 auto;
 }
 
+.black {
+  color: black;
+}
+
 .headerText {
   /*padding-top: 20%;
   color: #BFD8D2;*/
@@ -115,13 +119,22 @@ b {
 }
 
 .large-icon{
-  font-size: 150%;
+  font-size: 140%;
   margin-right: 10px;
 }
 
 .brand {
   color: #cdcdc0;
   font-family: 'Pacifico';
+  overflow: hidden;
+  padding: 0;
+}
+
+.shop{
+  color: #cdcdc0;
+  width: 70px;
+  overflow: hidden;
+  white-space: nowrap;
   padding: 0;
 }
 
@@ -186,16 +199,40 @@ charcoal #3C3C3C
   border-radius: 2%;
 }
 
+.cart{
+  margin: 0;
+  padding: 0;
+}
+
+.fa-shopping-cart{
+  padding-left: 1%;
+}
+
+.smoke{
+  background-color: WhiteSmoke;
+}
+
 .row-content{
   margin-right: 4%;
   margin-left: 4%;
   margin-top: 2%;
 }
 
-.date-picker{
-  padding-left: 5%;
-  padding-right: 5%;
-  text-align: center;
+/*.date-picker{
+  padding: 5%;
+  padding-top: 0;
+  margin: 0 auto;
+}
+
+.guests{
+  width: 50%;
+  padding: 5%;
+  padding-top: 0;
+  margin: 0 auto;
+}*/
+
+.bookForm {
+  margin: 0 auto;
 }
 
 h4 {
@@ -208,6 +245,7 @@ h4 {
   margin-bottom: 5%;
   margin-left: 2%;
 }
+
 
 .service i {
   color: #F2D388;
@@ -231,6 +269,10 @@ h4 {
   flex-flow: row wrap;
   justify-content: center;
   height: auto;
+}
+
+.cart-item{
+  width: 150px;
 }
 
 .fa-info-circle{

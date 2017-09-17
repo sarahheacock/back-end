@@ -11,7 +11,7 @@ const Page = require("../models/page").Page;
 const User = require("../models/page").User;
 const jwt = require('jsonwebtoken');
 
-
+const CryptoJS = require('crypto-js');
 
 //================LOGIN==================================
 const formatOutput = (obj) => {
@@ -19,6 +19,7 @@ const formatOutput = (obj) => {
   const user = Object.keys(initialUser).reduce((user, k) => {
     if(k === 'token') user.token = jwt.sign({userID: obj.userID}, configure.secret, { expiresIn: '3h' });
     else if(k === '_id' && obj.admin) user._id = '';
+    else if(k === 'credit' && obj[k]) user[k] = CryptoJS.AES.decrypt(obj[k].toString(), obj.userID).toString(CryptoJS.enc.Utf8);
     else if(obj[k]) user[k] = obj[k];
     else user[k] = initialUser[k];
     return user;

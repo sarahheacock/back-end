@@ -9,6 +9,7 @@ import Select from './bookTabs/Select';
 import Pay from './bookTabs/Pay';
 import Bill from './bookTabs/Bill';
 import Confirm from './bookTabs/Confirm';
+import Cart from './reservation/Cart';
 
 // import EditButton from '../buttons/EditButton';
 class Book extends React.Component {
@@ -16,7 +17,9 @@ class Book extends React.Component {
     data: PropTypes.object.isRequired,
     user: PropTypes.object.isRequired,
     updateState: PropTypes.func.isRequired,
-    getData: PropTypes.func.isRequired
+    getData: PropTypes.func.isRequired,
+    putData: PropTypes.func.isRequired,
+    postData: PropTypes.func.isRequired
   }
 
   render(){
@@ -57,10 +60,12 @@ class Book extends React.Component {
 
     return (
       <div className="main-content">
+
         <PageHeader><span className="header-text">Book Your Stay</span></PageHeader>
         <div>
           <Row className="clear-fix">
             <Col sm={4} className="columns">
+              <br />
               <div className="text-center">{tabs}</div>
             </Col>
             <Col sm={8} className="columns">
@@ -71,6 +76,8 @@ class Book extends React.Component {
                   user={this.props.user}
                   updateState={this.props.updateState}
                   getData={this.props.getData}
+                  putData={this.props.putData}
+                  postData={this.props.postData}
                 /> }
               />
               <Route path={link(keys[1])} render={ () =>
@@ -104,6 +111,12 @@ class Book extends React.Component {
 }
 
 export default Book;
+
+// <Cart
+//   updateState={this.props.updateState}
+//   user={this.props.user}
+// />
+// <hr />
 
 // Book.propTypes = {
 //   data: PropTypes.object.isRequired,

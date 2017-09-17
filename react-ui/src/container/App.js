@@ -12,6 +12,7 @@ import Routes from '../components/Routes';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import WelcomeAdmin from '../components/routes/WelcomeAdmin';
+import Welcome from '../components/routes/Welcome';
 import Book from '../components/routes/Book';
 
 //data
@@ -107,18 +108,27 @@ class App extends Component {
                 data={book}
                 user={user}
                 getData={getData}
+                postData={postData}
+                putData={putData}
                 updateState={updateState}
               />)}
             />
             <Route path={"/welcome"} render={ () => (
-              (user.token)?
+              (user.token && user.admin)?
               <WelcomeAdmin
                 data={welcome}
                 user={user}
                 getData={getData}
                 updateState={updateState}
               />:
-              <Redirect to="/" />) }
+              ((user.token)?
+              <Welcome
+                data={welcome}
+                user={user}
+                getData={getData}
+                updateState={updateState}
+              /> :
+              <Redirect to="/" />)) }
             />
             <Route render={ () => (
               <Redirect to="/" />
