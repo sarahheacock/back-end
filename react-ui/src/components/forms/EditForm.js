@@ -28,6 +28,7 @@ const EditForm = (props) => {
             message={props.message}
             formChange={props.formChange}
             value={j}
+            title={props.edit.modalTitle}
           />
         ));
       }
@@ -40,6 +41,7 @@ const EditForm = (props) => {
             message={props.message}
             formChange={props.formChange}
             value={props.edit.dataObj[k]}
+            title={props.edit.modalTitle}
           />
         );
       }
@@ -63,6 +65,7 @@ const EditForm = (props) => {
           <div></div>}
       </div>
       <div className="text-center">
+        <br />
         <SubmitButtonSet
           editData={props.editData}
           updateState={props.updateState}

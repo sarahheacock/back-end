@@ -30,6 +30,7 @@ class EditModal extends React.Component {
   }
 
   onFormChange = (e) => {
+    console.log(e.target);
 
     let dataObj = {...this.props.edit.dataObj};
     const nameArr = e.target.name.split("-");
@@ -37,7 +38,10 @@ class EditModal extends React.Component {
     const index = nameArr[1]
     const value = e.target.value;
 
-    if(value === "delete"){
+    if(value === "on"){
+      dataObj[name] = !dataObj[name];
+    }
+    else if(value === "delete"){
       dataObj[name].splice(index, 1);
     }
     else {
@@ -100,7 +104,7 @@ class EditModal extends React.Component {
 
     const title = this.props.edit.modalTitle;
     let editFunc = this.props.postData;
-    if(title.includes("Edit") || title.includes("Upcoming")){
+    if(title.includes("Edit") || title.includes("Upcoming") || title.includes("Update")){
       editFunc = this.props.putData;
     }
     else if(title.includes("Delete")){

@@ -36,7 +36,13 @@ reservationRoutes.param("userID", (req, res, next, id) => {
     return next();
   }
   else{
-    User.findById(id).exec((err, doc) => {
+    User.findById(id)
+    // .populate({
+    //   path: 'cart.roomID',
+    //   model: 'Room',
+    //   select: 'image title'
+    // })
+    .exec((err, doc) => {
       if(err) return next(err);
       if(!doc){
         err = new Error("User Not Found");
@@ -130,6 +136,7 @@ reservationRoutes.post('/available/', mid.updateCart, mid.getAvailable, (req, re
   });
 });
 
+
 reservationRoutes.post('/available/:userID', auth, mid.updateCart, mid.getAvailable, (req, res, next) => {
   let newItem = {
     "start": req.start,
@@ -139,14 +146,20 @@ reservationRoutes.post('/available/:userID', auth, mid.updateCart, mid.getAvaila
     "cost": 0
   };
 
-  res.json({
-    book: {
-      reservation: newItem,
-      available: req.available
-    },
-    user: formatOutput(req.user),
-    message: req.message,
-    edit: data.initial.edit
+  User.populate(req.user, {
+    path: 'cart.roomID',
+    model: 'Room',
+    select: 'image title'
+  }, (err, user) => {
+    res.json({
+      book: {
+        reservation: newItem,
+        available: req.available
+      },
+      user: formatOutput(user, req.page),
+      message: req.message,
+      edit: data.initial.edit
+    });
   });
 });
 
@@ -160,14 +173,20 @@ reservationRoutes.post('/available/:userID/:pageID', auth, mid.updateCart, mid.g
     "cost": 0
   };
 
-  res.json({
-    book: {
-      reservation: newItem,
-      available: req.available
-    },
-    user: formatOutput(req.user, req.page),
-    message: req.message,
-    edit: data.initial.edit
+  User.populate(req.user, {
+    path: 'cart.roomID',
+    model: 'Room',
+    select: 'image title'
+  }, (err, user) => {
+    res.json({
+      book: {
+        reservation: newItem,
+        available: req.available
+      },
+      user: formatOutput(user, req.page),
+      message: req.message,
+      edit: data.initial.edit
+    });
   });
 });
 

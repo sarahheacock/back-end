@@ -54,7 +54,7 @@ class SubmitButtonSet extends React.Component {
 
   getClass = (n) => {
     let style = "";
-    if(n.includes("Edit") || n.includes("Check")) style = "orangeButton";
+    if(n.includes("Edit") || n.includes("Check") || n.includes("Update")) style = "orangeButton";
     else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
     else if(n.includes("Delete") || n.includes("Charge")) style = "yellowButton";
 

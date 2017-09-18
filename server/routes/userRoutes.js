@@ -84,12 +84,16 @@ userRoutes.post('/user', mid.checkSignUpInput, (req, res, next) => {
 });
 
 userRoutes.get('/user/:userID', mid.authorizeUser, (req, res, next) => {
-  res.json(formatOutput(req.user, null));
+  req.user.save((err, doc) => {
+    if(err) next(err);
+    res.json(formatOutput(doc, null));
+  });
 });
 
 //update page content
 userRoutes.put('/user/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
   if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  else if(req.params.userInfo === "credit") req.user[req.params.userInfo] = CryptoJS.AES.encrypt(req.newOutput, req.user.userID);
   else req.user[req.params.userInfo] = req.newOutput;
 
   req.user.save((err,user) => {
@@ -122,13 +126,17 @@ userRoutes.post('/page/:pageID', mid.authorizeUser, mid.checkSignUpInput, (req, 
 });
 
 userRoutes.get('/page/:pageID/:userID/', mid.authorizeUser, (req, res, next) => {
-  res.json(formatOutput(req.user, req.page));
+  req.user.save((err, doc) => {
+    if(err) next(err);
+    res.json(formatOutput(doc, req.page));
+  });
 });
 
 
 //update page content
 userRoutes.put('/page/:pageID/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
   if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  else if(req.params.userInfo === "credit") req.user[req.params.userInfo] = CryptoJS.AES.encrypt(req.newOutput, req.user.userID);
   else req.user[req.params.userInfo] = req.newOutput;
 
   req.user.save((err,user) => {

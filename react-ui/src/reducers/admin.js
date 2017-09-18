@@ -11,7 +11,9 @@ export default function Admin(state={}, action){
       if(Object.keys(action.newState).includes("dataObj")){ //sent by EditButton
         let edit = new Edit(action.newState.title);
         edit.setDataObj(action.newState.dataObj);
-        edit.setURL(state.user.token, action.newState.dataObj._id);
+
+        const id = (action.newState.dataObj._id) ? action.newState.dataObj._id: state.user._id
+        edit.setURL(state.user.token, id, state.user.admin);
 
         return {...state, ...edit.getEdit()}
       }

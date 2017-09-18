@@ -40,9 +40,8 @@ const Footer = (props) => {
             <EditButton
               user={props.user}
               updateState={props.updateState}
-              dataObj={{}}
+              dataObj={props.user}
               title="Send Message"
-              route="footer"
             />
           </h3>
           <br />

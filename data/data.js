@@ -5,7 +5,7 @@ var links = ["home", "gallery", "guide", "book"];
 
 
 //===============FORMS============================
-var notRequired = ['p1', 'b', 'link', "Address Line 2", 'cart'];
+var notRequired = ['p1', 'b', 'link', "Address Line 2", 'cart', "Send Me Text Confirmation", "admin"];
 
 var loginData = {
   username: {
@@ -69,9 +69,12 @@ var signUpAdminData = {
     placeholder: 'Email',
     componentClass: 'input',
     default: ''
-  },
-  //cart: []
+  }
 };
+
+var emailData = {
+  email: signUpAdminData.email
+}
 
 var addressData = {
   "Address Line 1": {
@@ -119,7 +122,7 @@ var addressData = {
     type: 'other',
     placeholder: 'Admin',
     componentClass: 'checkbox',
-    default: false
+    default: true
   }
 };
 
@@ -406,6 +409,7 @@ module.exports = {
   editData: editData,
   addressData: addressData,
   paymentData: paymentData,
+  emailData: emailData,
   homeData: homeData,
 
   messages: messages

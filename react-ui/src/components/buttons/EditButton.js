@@ -5,14 +5,14 @@ import { NavItem } from 'react-bootstrap';
 //import { name } from '../../../../data/data';
 
 const modify = (string) => {
-  if(string.includes(' ')) return string.slice(0, string.indexOf(' ') + 1)
+  if(string.includes(' ') && !string.includes('Update')) return string.slice(0, string.indexOf(' ') + 1)
   else return string;
 }
 const getClass = (n) => {
   let style = "";
-  if(n.includes("Edit") || n.includes("Check")) style = "orangeButton";
+  if(n.includes("Edit") || n.includes("Check") ||  n.includes("Update")) style = "orangeButton";
   else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
-  else if(n.includes("Delete") || n.includes("Charge")) style = "yellowButton";
+  else if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove")) style = "yellowButton";
 
   if(n === "Login" || n.includes("Sign Up")) style += " button"
   else style += " linkButton smallLink"
@@ -49,7 +49,10 @@ export default EditButton;
 
 EditButton.propTypes = {
   user: PropTypes.object.isRequired,
-  dataObj: PropTypes.object.isRequired,
+  dataObj: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.object
+  ]).isRequired,
   updateState: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired
 };

@@ -1,24 +1,35 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import PersonalInfo from '../reservation/PersonalInfo';
 
-const Pay = (props) => {
 
-  return (
-    <div>
+class Pay extends React.Component {
+  static propTypes = {
+    user: PropTypes.object.isRequired,
+    updateState: PropTypes.func.isRequired,
+  }
 
+  componentDidMount(){
+    if(this.props.user.credit.charAt(0) === "/"){
+      this.props.updateState({
+        dataObj: this.props.user.billing,
+        title: "Update Credit"
+      })
+    }
+  }
+
+  render(){
+    return(
       <div className="content">
-        Pay
+        <PersonalInfo
+          category="credit"
+          user={this.props.user}
+          updateState={this.props.updateState}
+        />
       </div>
-
-    </div>
-  );
+    );
+  }
 }
 
 export default Pay;
-
-Pay.propsTypes = {
-  data: PropTypes.object.isRequired,
-  user: PropTypes.object.isRequired,
-  updateState: PropTypes.func.isRequired
-}

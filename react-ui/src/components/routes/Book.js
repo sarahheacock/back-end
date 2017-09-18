@@ -9,7 +9,7 @@ import Select from './bookTabs/Select';
 import Pay from './bookTabs/Pay';
 import Bill from './bookTabs/Bill';
 import Confirm from './bookTabs/Confirm';
-import Cart from './reservation/Cart';
+import ContinueButton from '../buttons/ContinueButton';
 
 // import EditButton from '../buttons/EditButton';
 class Book extends React.Component {
@@ -23,16 +23,21 @@ class Book extends React.Component {
   }
 
   render(){
+    const bill = this.props.user.cart.length > 0;
+    const pay = this.props.user.billing.charAt(0) !== '/' && this.props.user.billing !== '';
+    const conf = this.props.user.credit.charAt(0) !== '/' && this.props.user.credit !== '';
+
+
     //get categories
     const categories = {
       "Select Room": true,
-      Billing: this.props.data.reservation.roomID !== '',
-      Payment: this.props.user.billing.charAt(this.props.user.billing.length - 1) !== '/' && this.props.user.billing !== '' && this.props.data.reservation.roomID !== '',
-      Confirm: this.props.user.credit.charAt(this.props.user.credit.length - 1) !== '/' && this.props.user.credit !== '' && this.props.user.billing.charAt(this.props.user.billing.length - 1) !== '/' && this.props.user.billing !== '' && this.props.data.reservation.roomID !== ''
+      Billing: bill,
+      Payment: pay && bill,
+      Confirm: conf && pay && bill,
     };
-    console.log(JSON.stringify(categories));
 
     const link = (cat) => {
+      if(cat === "Welcome") return cat.toLowerCase().trim().replace(/\s/g, "-");
       return "/book/" + cat.toLowerCase().trim().replace(/\s/g, "-");
     };
 
@@ -60,7 +65,6 @@ class Book extends React.Component {
 
     return (
       <div className="main-content">
-
         <PageHeader><span className="header-text">Book Your Stay</span></PageHeader>
         <div>
           <Row className="clear-fix">
@@ -69,6 +73,9 @@ class Book extends React.Component {
               <div className="text-center">{tabs}</div>
             </Col>
             <Col sm={8} className="columns">
+            <ContinueButton
+              categories={categories}
+            />
             <Switch>
               <Route path={link(keys[0])} render={ () =>
                 <Select
@@ -83,18 +90,24 @@ class Book extends React.Component {
               <Route path={link(keys[1])} render={ () =>
                 (categories[keys[1]]) ?
                 <Bill
+                  user={this.props.user}
+                  updateState={this.props.updateState}
                 />:
                 <Redirect to={getRedirect()} /> }
               />
               <Route path={link(keys[2])} render={ () =>
                 (categories[keys[2]]) ?
                 <Pay
+                  user={this.props.user}
+                  updateState={this.props.updateState}
                 />:
                 <Redirect to={getRedirect()} /> }
               />
               <Route path={link(keys[3])} render={ () =>
                 (categories[keys[3]]) ?
                 <Confirm
+                  user={this.props.user}
+                  updateState={this.props.updateState}
                 />:
                 <Redirect to={getRedirect()} /> }
               />

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { cloudName } from '../../../../../data/data';
+import { cloudName, blogID } from '../../../../../data/data';
 import { Row, Col, FormGroup, FormControl, ControlLabel } from 'react-bootstrap';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 
@@ -35,17 +35,28 @@ class Select extends React.Component {
   componentDidMount(){
     console.log("hi");
     //this.props.getData(`/res/available/${this.props.data.reservation.start}/${this.props.data.reservation.end}/${this.props.data.reservation.guests}`)
-    this.props.postData("/res/available", this.props.data.reservation);
+    let url = "/res/available";
+
+    if(this.props.user.token) url += `/${(this.props.user._id === '') ? 'undefined': this.props.user._id}`;
+    if(this.props.user.admin) url += `/${blogID}`;
+    url += `?token=${this.props.user.token}`;
+
+    this.props.postData(url, this.props.data.reservation);
 
   }
 
   onDatesChange({ startDate, endDate }) {
     // this.setState({ startDate, endDate });
-    console.log(startDate, endDate);
+    let url = "/res/available";
+
+    if(this.props.user.token) url += `/${(this.props.user._id === '') ? 'undefined': this.props.user._id}`;
+    if(this.props.user.admin) url += `/${blogID}`;
+    url += `?token=${this.props.user.token}`;
+
     const start = (startDate !== null) ? new Date(startDate._d).setUTCHours(12, 0, 0, 0) : this.props.data.reservation.start;
     const end = (endDate !== null) ? new Date(endDate._d).setUTCHours(11, 59, 0, 0) : this.props.data.reservation.end;
 
-    this.props.postData('/res/available/', {
+    this.props.postData(url, {
       ...this.props.data.reservation,
       start: start,
       end: end
@@ -67,7 +78,20 @@ class Select extends React.Component {
   }
 
   onGetCartItem = (e) => {
+    const value = JSON.parse(e.target.value);
+    let url = "/res/available";
 
+    if(this.props.user.token) url += `/${this.props.user._id || 'undefined'}`;
+    if(this.props.user.admin) url += `/${blogID}`;
+    url += `?token=${this.props.user.token}`;
+
+    this.props.postData(url, {
+      start: this.props.data.reservation.start,
+      end: this.props.data.reservation.end,
+      guests: this.props.data.reservation.guests,
+      roomID: value._id,
+      cost: value.cost
+    });
   }
 
   onDeleteCartItem = (e) => {
@@ -97,6 +121,7 @@ class Select extends React.Component {
               <h3 className="pretty">{room.title}</h3>
               <h4 className="paragraph"><big>$</big>{`${room.cost}.`}<sup>00</sup><sub> total</sub></h4>
               <h4 className="paragraph">{room.available}<sub> room(s) left</sub></h4>
+              <button className="button orangeButton" onClick={this.onGetCartItem} value={JSON.stringify(room)}>Add to Cart</button>
             </div>
           </Col>
         </Row>

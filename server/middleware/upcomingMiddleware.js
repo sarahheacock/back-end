@@ -191,7 +191,7 @@ const updateCart = (req, res, next) => {
         message: data.messages.adminContinueMessage,
         edit: {
           url: '/user/page/' + req.page._id + '?token=' + token,
-          modalTitle: 'Login',
+          modalTitle: 'Find Client',
           next: '#',
           dataObj: dataObj
         },
@@ -262,6 +262,7 @@ const getAvailable = (req, res, next) => {
         else a[b.roomID] = a[b.roomID] + 1;
         return a;
       }, {});
+      console.log(resObj);
 
       const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
       const result = rooms.filter((room) => {

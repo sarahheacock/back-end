@@ -30,12 +30,21 @@ const checkSize = (obj, form) => {
 
 const formatNum = (num) => {
   const newNum = num.replace(/[^0-9]/gi, '');
-  return (newNum.length < 11) ? "+1" + newNum : "+" + newNum;
+  if(newNum.length === 11){
+    return "+" + newNum;
+  }
+  else if(newNum.length === 10){
+    return "+1" + newNum;
+  }
+  else {
+    return newNum;
+  }
 };
 
 const checkPhone = (newNum) => {
   //make sure num has <= 11 digits but >= 10 digits
-  return /^([0-9]{10}|(1|0)[0-9]{10})$/.test(newNum);
+  //newNum.replace("+", "");
+  return /^[+]{1}([0-9]{10}|(1|0)[0-9]{10})$/.test(newNum);
 };
 
 const checkEmail = (mail) => {
@@ -219,62 +228,58 @@ const checkUserInput = (req, res, next) => {
     cForm = checkForm(req.body, paymentData);
     cSize = checkSize(req.body, paymentData);
   }
-  else {
+  
+  if(req.params.userInfo !== "credit" && req.params.userInfo !== "billing") {
     req.newOutput = req.body[req.params.userInfo];
     next();
   }
-
-  if(!cForm){
-    res.json({message: messages.inputError})
-  }
-  else if(!cSize){
-    let err = new Error("Invalid entry");
-    err.status = 400;
-    return next(err);
-  }
-  else {
-    let message = '';
-    if(req.body.phone){
-      const phone = formatNum(req.body.phone);
-      const cPhone = checkPhone(phone);
-      if(!cPhone) message = messages.phoneError;
+  else{
+    if(!cForm){
+      res.json({message: messages.inputError})
     }
-    if(req.body["Expiration Month"]){
-      const cDate = checkDate(req.body["Expiration Month"], req.body["Expiration Year"]);
-      if(!cDate) message = messages.creditExpError;
-
-      const num = formatNum(req.body.number);
-      const cCredit = checkCredit(num);
-      if(!cCredit) message = messages.creditNumError;
-
-      const cvv = formatNum(req.body.CVV);
-      const ccvv = checkCVV(cvv, num);
-      if(!ccvv) message = messages.cvvError;
-    }
-
-    if(message){
-      res.json({message: message})
+    else if(!cSize){
+      let err = new Error("Invalid entry");
+      err.status = 400;
+      return next(err);
     }
     else {
-      let keys = Object.keys(req.body);
-      keys.splice(keys.indexOf("token"), 1);
-      req.newOutput = keys.map((k) => {
-        if(k === "number" || k === "CVV") return formatNum(req.body[k]);
-        else return req.body[k];
-      }).join('/');
-      next();
+      let message = '';
+      if(req.body.phone){
+        const phone = formatNum(req.body.phone);
+        const cPhone = checkPhone(phone);
+        if(!cPhone) message = messages.phoneError;
+      }
+      if(req.body["Expiration Month"]){
+        const cDate = checkDate(req.body["Expiration Month"], req.body["Expiration Year"]);
+        if(!cDate) message = messages.creditExpError;
+
+        const num = formatNum(req.body.number);
+        const cCredit = checkCredit(num);
+        if(!cCredit) message = messages.creditNumError;
+
+        const cvv = formatNum(req.body.CVV);
+        const ccvv = checkCVV(cvv, num);
+        if(!ccvv) message = messages.cvvError;
+      }
+
+      if(message){
+        res.json({message: message})
+      }
+      else {
+        let keys = Object.keys(req.body);
+        if(keys.includes("token")) keys.splice(keys.indexOf("token"), 1);
+        req.newOutput = keys.map((k) => {
+          if(k === "number" || k === "CVV" || k === "phone") return formatNum(req.body[k]);
+          else return req.body[k].toString();
+        }).join('/');
+        next();
+      }
     }
   }
 }
 
 // verifies token after login
 const authorizeUser = (req, res, next) => {
-  // super specific for reservation route
-  // helps check for availability before signing in
-  // if(req.page === false && req.user === false){
-  //   next();
-  // }
-
   // check header or url parameters or post parameters for token
   const token = req.body.token || req.query.token || req.headers['x-access-token'];
   if (token) { // decode token

@@ -1,4 +1,4 @@
-import { blogID, loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData } from '../../../data/data';
+import { blogID, loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData, emailData } from '../../../data/data';
 
 const hash = {
   "Login": loginData,
@@ -10,6 +10,9 @@ const hash = {
   "Edit Guide": localGuideData,
   "Edit Home": homeData,
   "Add Guide": localGuideData,
+  "Update Credit": paymentData,
+  "Update Billing": addressData,
+  "Update Email": emailData
 };
 
 const Edit = function(title){
@@ -28,23 +31,40 @@ const Edit = function(title){
 Edit.prototype = {
   setDataObj: function(dataObj){
     if(!this.modalTitle.includes("Delete")){
-      const A = ["Add Room", "Add Guide", "Sign Up", "Send Message", "Login"];
+      const A = ["Add Room", "Add Guide", "Sign Up", "Login"];
       const defaultContent = A.includes(this.modalTitle.trim());
 
-      this.dataObj = (Object.keys(hash[this.modalTitle.trim()])).reduce((newObj, k) => {
-        if(defaultContent) newObj[k] = (k === "admin") ? hash[this.modalTitle.trim()][k]["default"] : (hash[this.modalTitle.trim()][k]["default"] || '');
-        else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
-        return newObj;
-      }, {});
+      if(typeof dataObj === 'string'){ //when editing user info
+        const arr = dataObj.split('/');
+        let i = 0;
+
+        this.dataObj = (Object.keys(hash[this.modalTitle.trim()])).reduce((newObj, k) => {
+          if(k === "Send Me Text Confirmation") newObj[k] = true;
+          else newObj[k] = arr[i];
+          i++;
+          return newObj;
+        }, {});
+      }
+      else { //everything else
+        this.dataObj = (Object.keys(hash[this.modalTitle.trim()])).reduce((newObj, k) => {
+          if(defaultContent && k === "admin") newObj[k] = false;
+          else if(defaultContent) newObj[k] = (hash[this.modalTitle.trim()][k]["default"] || '');
+          else newObj[k] = dataObj[k] || hash[this.modalTitle.trim()][k]["default"];
+          return newObj;
+        }, {});
+      }
+
     }
     else{
       this.dataObj = dataObj;
     }
   },
 
-  setURL: function(token, id){
+  setURL: function(token, id, admin){
     console.log("location", this.location[0]);
     const title = this.modalTitle;
+    const space = title.indexOf(' ') + 1;
+
     let url = "";
     if(title.includes("Send Message")) url = "/sayHello";
     if(title.includes("Login")) url = "/login";
@@ -52,13 +72,15 @@ Edit.prototype = {
     if(title.includes("Room")) url = "/room";
     if(title.includes("Guide")) url = "/guide";
     if(title.includes("Reservation")) url = "/cancel";
+    if(title.includes("Update") && admin) url = `/user/page/${blogID}/${id}/${title.toLowerCase().slice(space)}`;
+    if(title.includes("Update") && !admin) url = `/user/user/${id}/${title.toLowerCase().slice(space)}`;
     if(title.includes("Edit Content") || title.includes("Edit Home")) url = `/${this.location[0]}`;
     if((title.includes("Room") || title.includes("Guide")) && (title.includes("Edit") || title.includes("Delete"))) url += `/${id}`;
 
-    if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) url = `/page/${blogID}${url}?token=${token}`;
+    if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) url = `/page/${blogID}${url}`;
     if(title === "Delete Reservation") url = "/res" + url;
 
-    this.url = url;
+    this.url = `${url}?token=${token}`;
   },
 
   getEdit: function(){
