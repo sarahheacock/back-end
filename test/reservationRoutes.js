@@ -128,6 +128,8 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
+          console.log(res.body);
+
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
@@ -141,7 +143,7 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"];
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -166,7 +168,7 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] + 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -175,6 +177,7 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
+          console.log(res.body);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(2);
@@ -190,7 +193,7 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] - 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -214,7 +217,7 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] + 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -238,7 +241,7 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"] - 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -262,7 +265,7 @@ describe('Reservation', () => {
         const newEnd = user.cart[0]["end"];
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -305,7 +308,7 @@ describe('Reservation', () => {
 
       it('should return availability with guest request less', (done) => {
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: start,
           end: end,
@@ -326,7 +329,7 @@ describe('Reservation', () => {
         let newEnd = end + (24*60*60*1000);
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: start,
           end: newEnd,
@@ -351,7 +354,7 @@ describe('Reservation', () => {
         let newStart = reservation.start - (24*60*60*1000);
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -374,7 +377,7 @@ describe('Reservation', () => {
         let newStart = reservation.end;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -395,7 +398,7 @@ describe('Reservation', () => {
         let newEnd = reservation.end + 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: reservation.start,
           end: newEnd,
@@ -404,6 +407,7 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
+          console.log(res.body);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
@@ -416,7 +420,7 @@ describe('Reservation', () => {
         let newStart = reservation.start - 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: reservation.end,
@@ -438,7 +442,7 @@ describe('Reservation', () => {
         let newStart = reservation.end - 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -460,7 +464,7 @@ describe('Reservation', () => {
         let newStart = reservation.end + 24*60*60*1000;
 
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: newStart,
           end: newEnd,
@@ -469,6 +473,7 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
+          console.log(res.body);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(1);
@@ -479,7 +484,7 @@ describe('Reservation', () => {
 
       it('should not return room if reserved and guest request too high', (done) => {
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: reservation.start,
           end: reservation.end,
@@ -498,7 +503,7 @@ describe('Reservation', () => {
 
       it('should not return room if reserved and guest request too high with admin', (done) => {
         chai.request(server)
-        .post('/res/available/' + user.id + "/" + page.id + "?token=" + pageToken)
+        .post('/res/available/page/' + page.id + "/" + user.id + "?token=" + pageToken)
         .send({
           start: reservation.start,
           end: reservation.end,
@@ -517,7 +522,7 @@ describe('Reservation', () => {
 
       it('should not return room if reserved and guest request too high with admin and without user', (done) => {
         chai.request(server)
-        .post('/res/available/undefined/' + page.id + "?token=" + pageToken)
+        .post('/res/available/page/' + page.id + "?token=" + pageToken)
         .send({
           start: reservation.start,
           end: reservation.end,
@@ -526,6 +531,7 @@ describe('Reservation', () => {
           cost: 0
         })
         .end((err, res) => {
+          console.log(res.body.user.cart);
           res.should.have.status(200);
           res.body.should.be.a('object')
           res.body.book.available.should.be.a('array').length(0);
@@ -555,7 +561,7 @@ describe('Reservation', () => {
         newRes.save((err, doc) => {
           newNewRes.save((err, newDoc) => {
             chai.request(server)
-            .post('/res/available/' + user.id + "?token=" + userToken)
+            .post('/res/available/user/' + user.id + "?token=" + userToken)
             .send({
               start: start + 5*24*60*60*1000,
               end: end + 6*24*60*60*1000,
@@ -590,7 +596,7 @@ describe('Reservation', () => {
 
       it("should return larger cart if user defined", (done) => {
         chai.request(server)
-        .post('/res/available/' + user.id + "?token=" + userToken)
+        .post('/res/available/user/' + user.id + "?token=" + userToken)
         .send({
           start: start + 5*24*60*60*1000,
           end: end + 8*24*60*60*1000,
@@ -610,7 +616,7 @@ describe('Reservation', () => {
 
       it("should return larger cart if user and page defined", (done) => {
         chai.request(server)
-        .post('/res/available/' + user.id + "/" + page.id + "?token=" + pageToken)
+        .post('/res/available/page/' + page.id + "/" + user.id + "?token=" + pageToken)
         .send({
           start: start + 300*24*60*60*1000,
           end: end + 305*24*60*60*1000,
@@ -643,7 +649,7 @@ describe('Reservation', () => {
 
         newRes.save((err, doc) => {
           chai.request(server)
-          .post('/res/available/' + user.id + "/" + page.id + "?token=" + pageToken)
+          .post('/res/available/page/' + page.id + "/" + user.id + "?token=" + pageToken)
           .send({
             start: start + 2*24*60*60*1000,
             end: end + 6*24*60*60*1000,
@@ -686,7 +692,7 @@ describe('Reservation', () => {
 
       it("should return email modal if page defined but user undefined", (done) => {
         chai.request(server)
-        .post('/res/available/undefined/' + page.id + '?token=' + pageToken)
+        .post('/res/available/page/' + page.id + '?token=' + pageToken)
         .send({
           start: start + 2*24*60*60*1000,
           end: end + 6*24*60*60*1000,
@@ -759,8 +765,7 @@ describe('Reservation', () => {
           .post('/res/user/' + user.id + "?token=" + token)
           .send({})
           .end((err, res) => {
-            res.body.user.cart.should.be.a('array').length(0);
-            res.body.user.name.should.eql(user.name);
+            res.header['location'].should.include('/welcome');
             done();
           });
         });
@@ -811,9 +816,7 @@ describe('Reservation', () => {
         .post('/res/page/' + page.id + "/" + user.id + "?token=" + token)
         .send({})
         .end((err, res) => {
-          console.log(res.body);
-          res.body.user.cart.should.be.a('array').length(0);
-          res.body.user.name.should.eql(page.name);
+          res.header['location'].should.include('/welcome');
           done();
         });
       });

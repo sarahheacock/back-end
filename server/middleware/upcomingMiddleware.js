@@ -170,7 +170,7 @@ const updateCart = (req, res, next) => {
       cartSize += 1;
       req.user.cart.push(obj);
     }
-    else if(req.page){
+    else if(!req.user && req.page){
       const dataObj = (Object.keys(data.signUpAdminData)).reduce((a, b) => {
         a[b] = data.signUpAdminData[b]["default"];
         return a;
@@ -198,7 +198,7 @@ const updateCart = (req, res, next) => {
         user: user
       });
     }
-    else{
+    else if(!req.user && !req.page){
       const dataObj = (Object.keys(data.loginData)).reduce((a, b) => {
         a[b] = data.loginData[b]["default"];
         return a;
@@ -215,6 +215,8 @@ const updateCart = (req, res, next) => {
       });
     }
   }
+
+  console.log("upcoming", req.user);
 
   if(req.user){
     req.user.save((err, doc) => {
@@ -337,6 +339,18 @@ const deleteRes = (req, res, next) => {
   });
 };
 
+const getCalendar = (req, res, next) => {
+  const date = (req.params.start) ? new Date(parseInt(req.params.start)) : new Date();
+  const month = (date.getMonth() + 1).toString();
+  const year = date.getFullYear().toString();
+  Reservation.findMonth(month, year, (err, reservations) => {
+    if(err) next(err);
+    req.welcome = reservations;
+    next();
+    //res.json(format(reservations, req.message));
+  });
+};
+
 // const chargeClient = (req, res, next) => {
 //   let source = {object: 'card'};
 //
@@ -372,6 +386,7 @@ module.exports = {
   createRes: createRes,
   deleteRes: deleteRes,
   getAvailable: getAvailable,
+  getCalendar: getCalendar,
   updateCart: updateCart,
   sendMessage: sendMessage,
 };

@@ -228,7 +228,7 @@ const checkUserInput = (req, res, next) => {
     cForm = checkForm(req.body, paymentData);
     cSize = checkSize(req.body, paymentData);
   }
-  
+
   if(req.params.userInfo !== "credit" && req.params.userInfo !== "billing") {
     req.newOutput = req.body[req.params.userInfo];
     next();
@@ -272,6 +272,7 @@ const checkUserInput = (req, res, next) => {
           if(k === "number" || k === "CVV" || k === "phone") return formatNum(req.body[k]);
           else return req.body[k].toString();
         }).join('/');
+        console.log(req.newOutput);
         next();
       }
     }

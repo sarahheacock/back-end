@@ -13,7 +13,7 @@ class Pay extends React.Component {
   componentDidMount(){
     if(this.props.user.credit.charAt(0) === "/"){
       this.props.updateState({
-        dataObj: this.props.user.billing,
+        dataObj: this.props.user.credit,
         title: "Update Credit"
       })
     }

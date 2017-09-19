@@ -64,13 +64,12 @@ UserSchema.pre('save', function(next){
 
   if(!this.userID) this.userID = makeid();
   if(!this.cart) this.cart = []; //update cart
-
-  if(!this.credit){
+  if(!this.credit || this.credit === defaultPayment){
     this.credit = CryptoJS.AES.encrypt(defaultPayment, this.userID);
   }
-  else if(!CryptoJS.AES.decrypt(this.credit.toString(), this.userID).toString(CryptoJS.enc.Utf8)){
-    this.credit = CryptoJS.AES.encrypt(this.credit, this.userID);
-  }
+  // else if(!CryptoJS.AES.decrypt(this.credit.toString(), this.userID).toString(CryptoJS.enc.Utf8)){
+  //   this.credit = CryptoJS.AES.encrypt(this.credit, this.userID);
+  // }
 
   if(this.cart.length > 0){
     let newCart = [];
@@ -130,64 +129,6 @@ UserSchema.pre('save', function(next){
   }
 });
 
-UserSchema.methods.updateCart = function(obj, callback){
-  //iterate through cart to find conflicting reservations or newCart []
-  // let user = this;
-  // user.cart.push(obj);
-  //
-  // let newCart = [];
-  // let i = 0;
-  // const limit = new Date().setUTCHours(12, 0, 0, 0);
-  // console.log(user);
-  //
-  // user.cart.forEach((b) => {
-  //   const start = b.start;
-  //   const end = b.end;
-  //   if(start < limit) return a; //if the start time is current
-  //
-  //   Reservation.find({
-  //     $and: [
-  //       {$or:[
-  //         {"start": {$gt: start-1, $lt: end+1}},
-  //         {"end": {$gt: start-1, $lt: end+1}},
-  //         {"end": {$lt: start+1}, "start": {$gt: end-1}}
-  //       ]},
-  //       {roomID: b.roomID}
-  //     ]
-  //   }).exec((err, reservation) => {
-  //     if(err) callback(err);
-  //     const reserved = newCart.reduce((c, d) => {
-  //       const inRange = ((d.start >= start && b.start <= end) || (d.end >= start && d.end <= end) || (d.start <= start && d.end >= end));
-  //       if(inRange) c + 1;
-  //       return c;
-  //     }, 0) + reservation.length;
-  //
-  //     Room.findById(b.roomID, {available: 1}).exec((err, room) => {
-  //       if(reserved < room["available"]){
-  //         newCart.push({
-  //           start: start,
-  //           end: end,
-  //           roomID: b.roomID,
-  //           cost: b.cost,
-  //           guests: b.guests
-  //         });
-  //       }
-  //       i++;
-  //       if(i >= user.cart.length - 1){
-  //         user.cart = newCart;
-  //         console.log(user.cart);
-  //         user.save(callback);
-  //       }
-  //     });
-  //   });
-  // });
-
-  //if
-
-    //there are no conflicting reservations
-    //no conflicting new Cart[] items
-      //add cart item to new Cart[]
-};
 
 // authenticate input against database documents
 UserSchema.statics.authenticate = (username, password, callback) => {

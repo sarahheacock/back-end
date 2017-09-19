@@ -18,7 +18,12 @@ class Confirm extends React.Component {
   }
 
   componentDidMount(){
-
+    if(this.props.user.cart.length > 0){
+      this.props.updateState({
+        title: "Confirm Reservation",
+        dataObj: {}
+      });
+    }
   }
 
 
@@ -26,9 +31,20 @@ class Confirm extends React.Component {
 
     return(
       <div className="main-content">
+        <h3 className="pretty text-center">Shopping Cart <i className="fa fa-shopping-cart"></i> {this.props.user.cart.length}</h3>
+        {(this.props.user.cart.length > 0) ?
+          <Cart
+            updateState={this.props.updateState}
+            user={this.props.user}
+            cart={this.props.user.cart}
+            remove={true}
+          />:
+          <h4 className="content text-center">You currently have no items in your cart.</h4>}
+
+        <hr />
         <Row className="clear-fix">
           <Col sm={6} className="columns text-center">
-            <h3 className="pretty text-center">Shopping Cart <i className="fa fa-shopping-cart"></i> {this.props.user.cart.length}</h3>
+            <h4><b>Total:</b></h4>
           </Col>
           <Col sm={6} className="columns text-center">
             {(this.props.user.cart.length >= 0) ?
@@ -42,15 +58,8 @@ class Confirm extends React.Component {
             <div></div>}
           </Col>
         </Row>
-        {(this.props.user.cart.length > 0) ?
-          <Cart
-            updateState={this.props.updateState}
-            user={this.props.user}
-            cart={this.props.user.cart}
-            remove={true}
-          />:
-          <h4 className="content text-center">You currently have no items in your cart.</h4>}
         <hr />
+        <br />
 
         <h3 className="pretty text-center">Personal Information</h3>
         <div className="content text-center">

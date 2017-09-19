@@ -10,8 +10,8 @@ import { cloudName } from '../../../../../data/data';
 
 const Cart = (props) => {
   const cart = props.cart.map((item, i) => {
-    const start = moment(new Date(item.start)).add(6, 'hours').format('MMMM Do YYYY, h:mm a');
-    const end = moment(new Date(item.end)).add(3, 'hours').add(1, 'minutes').format('MMMM Do YYYY, h:mm a');
+    const start = moment(new Date(item.start)).add(6, 'hours').format('MMM Do YYYY, h:mm a');
+    const end = moment(new Date(item.end)).add(3, 'hours').add(1, 'minutes').format('MMM Do YYYY, h:mm a');
     return (
       <div className="content" key={`${i}cart`}>
         <h3 className="pretty text-center">{item.roomID.title}</h3>
@@ -61,7 +61,7 @@ export default Cart;
 Cart.propTypes = {
   user: PropTypes.object.isRequired,
   cart: PropTypes.array.isRequired,
-  updateState: PropTypes.func.isRequired,
+  updateState: PropTypes.func,
   remove: PropTypes.bool.isRequired
 }
 

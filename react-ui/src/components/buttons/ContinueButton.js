@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 
+import EditButton from './EditButton';
+
 const getClass = (cat) => {
   const path = window.location.pathname;
   //cat[i] equal path and cat[i + 1] has to be treu;
@@ -22,9 +24,17 @@ const ContinueButton = (props) => {
     <div className="text-center">
       <br />
       <NavLink to={`/book/${keys[keys.length - 1].toLowerCase().replace(' ', '-')}`}>
+      {(window.location.pathname.includes("confirm")) ?
+        <EditButton
+          user={props.user}
+          dataObj={{}}
+          updateState={props.updateState}
+          title="Confirm Reservation"
+        /> :
         <button className={getClass(props.categories)}>
           Continue <i className="fa fa-hand-o-right" aria-hidden="true"></i>
         </button>
+      }
       </NavLink>
     </div>
   );
@@ -33,5 +43,7 @@ const ContinueButton = (props) => {
 export default ContinueButton;
 
 ContinueButton.propTypes = {
-  categories: PropTypes.object.isRequired
+  categories: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
+  updateState: PropTypes.func.isRequired
 }

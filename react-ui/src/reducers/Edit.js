@@ -30,11 +30,14 @@ const Edit = function(title){
 
 Edit.prototype = {
   setDataObj: function(dataObj){
-    if(!this.modalTitle.includes("Delete")){
-      const A = ["Add Room", "Add Guide", "Sign Up", "Login"];
+    if(this.modalTitle.includes("Confirm")){
+      this.dataObj = {action: "confirm"};
+    }
+    else if(!this.modalTitle.includes("Delete")){
+      const A = ["Add Room", "Add Guide", "Sign Up", "Login", "Update Credit"];
       const defaultContent = A.includes(this.modalTitle.trim());
 
-      if(typeof dataObj === 'string'){ //when editing user info
+      if(this.modalTitle.includes("Billing")){ //when editing user info
         const arr = dataObj.split('/');
         let i = 0;
 
@@ -71,14 +74,16 @@ Edit.prototype = {
     if(title.includes("Sign Up")) url = "/user";
     if(title.includes("Room")) url = "/room";
     if(title.includes("Guide")) url = "/guide";
-    if(title.includes("Reservation")) url = "/cancel";
+    if(title.includes("Delete Reservation")) url = "/cancel";
+    if(title.includes("Confirm") && admin) url = `/page/${blogID}/${id}`;
+    if(title.includes("Confirm") && !admin) url = `/user/${id}`;
     if(title.includes("Update") && admin) url = `/user/page/${blogID}/${id}/${title.toLowerCase().slice(space)}`;
     if(title.includes("Update") && !admin) url = `/user/user/${id}/${title.toLowerCase().slice(space)}`;
     if(title.includes("Edit Content") || title.includes("Edit Home")) url = `/${this.location[0]}`;
     if((title.includes("Room") || title.includes("Guide")) && (title.includes("Edit") || title.includes("Delete"))) url += `/${id}`;
 
     if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) url = `/page/${blogID}${url}`;
-    if(title === "Delete Reservation") url = "/res" + url;
+    if(title.includes("Reservation")) url = "/res" + url;
 
     this.url = `${url}?token=${token}`;
   },

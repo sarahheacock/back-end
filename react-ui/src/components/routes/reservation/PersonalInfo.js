@@ -30,14 +30,7 @@ const pretty = (info, cat) => {
   }
   else if(cat === "credit"){
     if(info.includes('//')) return [`${cap(cat)} not provided yet.`];
-    return info.split('/').slice(0, -1).reduce((a, b) => {
-      const num = parseInt(b);
-      if(num >= Math.pow(10, 13)) a.push(`xxxx xxxx xxxx ${b.slice(-4)}`);
-      else if(a.length === 3) a[2] = a[2] + " - " + b;
-      else a.push(b);
-
-      return a;
-    }, []);
+    return info.split('/');
   }
 }
 
@@ -48,9 +41,11 @@ const PersonalInfo = (props) => {
         <h4><b>{`${cap(props.category)}: `}</b></h4>
       </Col>
       <Col sm={8}>
-        {pretty(props.user[props.category], props.category).map((c, i) => (
-          <h4 key={`${props.category}info${i}`} className='text-center'>{c}</h4>
-        ))}
+        {pretty(props.user[props.category], props.category).map((c, i) => {
+          if(c.includes("*")) return <p key={`${props.category}info${i}`} className='text-center'>{c}</p>;
+          else if(c.includes("fa ")) return <div key={`${props.category}info${i}`} className="text-center"><i className={`${c} fa-2x`} aria-hidden="true"></i></div>
+          else return <h4 key={`${props.category}info${i}`} className='text-center'>{c}</h4>;
+        })}
         <div className="text-center">
           <EditButton
             user={props.user}

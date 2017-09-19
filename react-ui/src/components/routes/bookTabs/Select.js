@@ -37,8 +37,10 @@ class Select extends React.Component {
     //this.props.getData(`/res/available/${this.props.data.reservation.start}/${this.props.data.reservation.end}/${this.props.data.reservation.guests}`)
     let url = "/res/available";
 
-    if(this.props.user.token) url += `/${(this.props.user._id === '') ? 'undefined': this.props.user._id}`;
-    if(this.props.user.admin) url += `/${blogID}`;
+    if(this.props.user.token && this.props.user._id && !this.props.user.admin) url += `/user/${this.props.user._id}`;
+    if(this.props.user.token && !this.props.user._id && this.props.user.admin) url += `/page/${blogID}`;
+    if(this.props.user.token && this.props.user._id && this.props.user.admin) url += `/page/${blogID}/${this.props.user._id}`;
+
     url += `?token=${this.props.user.token}`;
 
     this.props.postData(url, this.props.data.reservation);
@@ -49,8 +51,10 @@ class Select extends React.Component {
     // this.setState({ startDate, endDate });
     let url = "/res/available";
 
-    if(this.props.user.token) url += `/${(this.props.user._id === '') ? 'undefined': this.props.user._id}`;
-    if(this.props.user.admin) url += `/${blogID}`;
+    if(this.props.user.token && this.props.user._id && !this.props.user.admin) url += `/user/${this.props.user._id}`;
+    if(this.props.user.token && !this.props.user._id && this.props.user.admin) url += `/page/${blogID}`;
+    if(this.props.user.token && this.props.user._id && this.props.user.admin) url += `/page/${blogID}/${this.props.user._id}`;
+
     url += `?token=${this.props.user.token}`;
 
     const start = (startDate !== null) ? new Date(startDate._d).setUTCHours(12, 0, 0, 0) : this.props.data.reservation.start;
@@ -81,8 +85,10 @@ class Select extends React.Component {
     const value = JSON.parse(e.target.value);
     let url = "/res/available";
 
-    if(this.props.user.token) url += `/${this.props.user._id || 'undefined'}`;
-    if(this.props.user.admin) url += `/${blogID}`;
+    if(this.props.user.token && this.props.user._id && !this.props.user.admin) url += `/user/${this.props.user._id}`;
+    if(this.props.user.token && !this.props.user._id && this.props.user.admin) url += `/page/${blogID}`;
+    if(this.props.user.token && this.props.user._id && this.props.user.admin) url += `/page/${blogID}/${this.props.user._id}`;
+
     url += `?token=${this.props.user.token}`;
 
     this.props.postData(url, {
@@ -130,6 +136,7 @@ class Select extends React.Component {
 
     const start = moment(this.props.data.reservation.start);
     const end = moment(this.props.data.reservation.end);
+    const empty = (this.props.data.available.length > 0) ? this.props.data.available[0]["cost"] > 0 : false;
 
     return (
       <div className="text-center">
@@ -159,7 +166,7 @@ class Select extends React.Component {
           </Col>
         </Row>
         <hr />
-        <div>{(this.props.data.available.length > 0) ? gallery : <h4>Oh darn! No rooms are available for these selected days.</h4>}</div>
+        <div>{(empty) ? gallery : <h4>Oh darn! No rooms are available for these selected days.</h4>}</div>
       </div>
     );
   }

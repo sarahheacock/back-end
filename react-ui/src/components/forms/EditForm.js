@@ -5,6 +5,7 @@ import { Form } from 'react-bootstrap';
 
 import EditFormComponents from './EditFormComponents';
 import EditFormText from './EditFormText';
+import ConfirmForm from './ConfirmForm';
 import SubmitButtonSet from '../buttons/SubmitButtonSet';
 
 const EditForm = (props) => {
@@ -17,6 +18,11 @@ const EditForm = (props) => {
       title={props.edit.modalTitle}
       dataObj={props.edit.dataObj}
     />:
+    (props.edit.modalTitle.includes("Confirm")) ?
+    <ConfirmForm
+      user={props.user}
+      title={props.edit.modalTitle}
+    /> :
     Object.keys(props.edit.dataObj).map(k => {
       if(k === "carousel"){
         console.log(props.edit.dataObj[k]);

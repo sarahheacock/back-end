@@ -11,6 +11,7 @@ import Bill from './bookTabs/Bill';
 import Confirm from './bookTabs/Confirm';
 import ContinueButton from '../buttons/ContinueButton';
 
+
 // import EditButton from '../buttons/EditButton';
 class Book extends React.Component {
   static propTypes = {
@@ -75,6 +76,8 @@ class Book extends React.Component {
             <Col sm={8} className="columns">
             <ContinueButton
               categories={categories}
+              user={this.props.user}
+              updateState={this.props.updateState}
             />
             <Switch>
               <Route path={link(keys[0])} render={ () =>

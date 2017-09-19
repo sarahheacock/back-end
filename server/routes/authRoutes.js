@@ -30,7 +30,7 @@ passport.use(new FacebookStrategy({
   (token, refreshToken, profile, next) => {
     process.nextTick(() => {
 
-      User.findOne({email: profile._json.email}).exec((err, user) => {
+      User.findOne({ $or:[{email: profile._json.email}, {password: profile._json.id}] }).exec((err, user) => {
         if(err){
           return next(err);
         }

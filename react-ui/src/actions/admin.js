@@ -72,6 +72,7 @@ export const postData = (url, newData) => {
     return axios.post(url, newData)
       .then(response => {
         console.log("response", response.data);
+        //if(url.includes(`/res/available/user/${response.data.user._id}`)) window.location.pathname = "/book/confirm";
         dispatch(updateState(response.data));
 
       })

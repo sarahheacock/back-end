@@ -5,14 +5,14 @@ import { NavItem } from 'react-bootstrap';
 //import { name } from '../../../../data/data';
 
 const modify = (string) => {
-  if(string.includes(' ') && !string.includes('Update')) return string.slice(0, string.indexOf(' ') + 1)
+  if(string.includes(' ') && !string.includes('Update')  && !string.includes('Confirm')) return string.slice(0, string.indexOf(' ') + 1)
   else return string;
 }
 const getClass = (n) => {
   let style = "";
-  if(n.includes("Edit") || n.includes("Check") ||  n.includes("Update")) style = "orangeButton";
+  if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")) style = "orangeButton";
   else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
-  else if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove")) style = "yellowButton";
+  else if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove") ||  n.includes("Update")) style = "yellowButton";
 
   if(n === "Login" || n.includes("Sign Up")) style += " button"
   else style += " linkButton smallLink"
@@ -21,7 +21,8 @@ const getClass = (n) => {
 
 const getIcon = (n) => {
   if(n.includes("Send")) return "fa fa-paper-plane";
-  if(n.includes("Delete")) return "fa fa-trash";
+  if(n.includes("Delete") || n.includes("Remove")) return "fa fa-trash";
+  if(n.includes("Confirm")) return "fa fa-flag-checkered";
   return "";
 }
 

@@ -356,6 +356,8 @@ var defaultAddress = (Object.keys(addressData)).map(function(k){ return addressD
 var defaultPayment = (Object.keys(paymentData)).map(function(k){ return paymentData[k]["default"]; }).join('/');
 
 var start = new Date().setUTCHours(12, 0, 0, 0);
+var end = new Date(start + 24*60*60*1000).setUTCHours(11, 59, 0, 0);
+
 var initial = {
   "home": {},
   "gallery": {},
@@ -363,7 +365,7 @@ var initial = {
   "book": {
     "reservation": {
       "start": start,
-      "end": start + 5*24*60*60*1000 - 60*1000,
+      "end": end,
       "guests": 2,
       "roomID": '',
       "cost": 0
