@@ -23,7 +23,7 @@ const Edit = function(title){
   this.message = '';
   this.location = location;
   this.url = '';
-  this.next = '#';
+  this.next = (!path.includes("confirm")) ? '#' : "/welcome";
   this.modalTitle = title;
   this.dataObj = {};
 }
@@ -31,9 +31,9 @@ const Edit = function(title){
 Edit.prototype = {
   setDataObj: function(dataObj){
     if(this.modalTitle.includes("Confirm")){
-      this.dataObj = {action: "confirm"};
+      this.dataObj = {message: "confirm"};
     }
-    else if(!this.modalTitle.includes("Delete")){
+    else if(!this.modalTitle.includes("Delete") && !this.modalTitle.includes("Cart")){
       const A = ["Add Room", "Add Guide", "Sign Up", "Login", "Update Credit"];
       const defaultContent = A.includes(this.modalTitle.trim());
 
@@ -75,17 +75,24 @@ Edit.prototype = {
     if(title.includes("Room")) url = "/room";
     if(title.includes("Guide")) url = "/guide";
     if(title.includes("Delete Reservation")) url = "/cancel";
-    if(title.includes("Confirm") && admin) url = `/page/${blogID}/${id}`;
-    if(title.includes("Confirm") && !admin) url = `/user/${id}`;
+    if(title.includes("Confirm") && admin) url = `/res/page/${blogID}/${id}`;
+    if(title.includes("Confirm") && !admin) url = `/res/user/${id}`;
     if(title.includes("Update") && admin) url = `/user/page/${blogID}/${id}/${title.toLowerCase().slice(space)}`;
     if(title.includes("Update") && !admin) url = `/user/user/${id}/${title.toLowerCase().slice(space)}`;
     if(title.includes("Edit Content") || title.includes("Edit Home")) url = `/${this.location[0]}`;
+    if(title.includes("Remove") && admin) url = `/user/page/${blogID}/${id}/cart`;
+    if(title.includes("Remove") && !admin) url = `/user/user/${id}/cart`;
+    if(title.includes("Add to Cart") && !token) url = "/res/available/";
+    if(title.includes("Add to Cart") && token && id && !admin) url = `/res/available/user/${id}`; //user
+    if(title.includes("Add to Cart") && token && !id && admin) url = `/res/available/page/${blogID}`; //admin without user
+    if(title.includes("Add to Cart") && token && id && admin) url = `/res/available/page/${blogID}/${id}`; //admin with user
     if((title.includes("Room") || title.includes("Guide")) && (title.includes("Edit") || title.includes("Delete"))) url += `/${id}`;
 
-    if(title.includes("Edit") || title.includes("Add") || title.includes("Delete")) url = `/page/${blogID}${url}`;
-    if(title.includes("Reservation")) url = "/res" + url;
+    if((title.includes("Edit") || title.includes("Add") || title.includes("Delete")) && !title.includes("Cart")) url = `/page/${blogID}${url}`;
+    //if(title.includes("Reservation")) url = "/res" + url;
 
-    this.url = `${url}?token=${token}`;
+    if(token) this.url = `${url}?token=${token}`;
+    else this.url = url;
   },
 
   getEdit: function(){

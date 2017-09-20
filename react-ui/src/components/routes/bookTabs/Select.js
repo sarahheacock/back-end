@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { NavLink } from 'react-router-dom';
 
+import EditButton from '../../buttons/EditButton.js';
 import { cloudName, blogID } from '../../../../../data/data';
 import { Row, Col, FormGroup, FormControl, ControlLabel } from 'react-bootstrap';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
@@ -47,6 +49,10 @@ class Select extends React.Component {
 
   }
 
+  // componentDidUpdate(prevProps, prevState){
+  //   if(this.props.user.cart.length > prevProps.user.cart.length) history.pushState(null, null, "/book/confirm");
+  // }
+
   onDatesChange({ startDate, endDate }) {
     // this.setState({ startDate, endDate });
     let url = "/res/available";
@@ -81,28 +87,26 @@ class Select extends React.Component {
     });
   }
 
-  onGetCartItem = (e) => {
-    const value = JSON.parse(e.target.value);
-    let url = "/res/available";
+  // onGetCartItem = (e) => {
+  //   if(e) e.preventDefault();
+  //   const value = JSON.parse(e.target.value);
+  //   let url = "/res/available";
+  //
+  //   if(this.props.user.token && this.props.user._id && !this.props.user.admin) url += `/user/${this.props.user._id}`;
+  //   if(this.props.user.token && !this.props.user._id && this.props.user.admin) url += `/page/${blogID}`;
+  //   if(this.props.user.token && this.props.user._id && this.props.user.admin) url += `/page/${blogID}/${this.props.user._id}`;
+  //
+  //   url += `?token=${this.props.user.token}`;
+  //
+  //   this.props.postData(url, {
+  //     start: this.props.data.reservation.start,
+  //     end: this.props.data.reservation.end,
+  //     guests: this.props.data.reservation.guests,
+  //     roomID: value._id,
+  //     cost: value.cost
+  //   });
+  // }
 
-    if(this.props.user.token && this.props.user._id && !this.props.user.admin) url += `/user/${this.props.user._id}`;
-    if(this.props.user.token && !this.props.user._id && this.props.user.admin) url += `/page/${blogID}`;
-    if(this.props.user.token && this.props.user._id && this.props.user.admin) url += `/page/${blogID}/${this.props.user._id}`;
-
-    url += `?token=${this.props.user.token}`;
-
-    this.props.postData(url, {
-      start: this.props.data.reservation.start,
-      end: this.props.data.reservation.end,
-      guests: this.props.data.reservation.guests,
-      roomID: value._id,
-      cost: value.cost
-    });
-  }
-
-  onDeleteCartItem = (e) => {
-
-  }
 
   render() {
     const { focusedInput } = this.state;
@@ -127,7 +131,20 @@ class Select extends React.Component {
               <h3 className="pretty">{room.title}</h3>
               <h4 className="paragraph"><big>$</big>{`${room.cost}.`}<sup>00</sup><sub> total</sub></h4>
               <h4 className="paragraph">{room.available}<sub> room(s) left</sub></h4>
-              <button className="button orangeButton" onClick={this.onGetCartItem} value={JSON.stringify(room)}>Add to Cart</button>
+              <EditButton
+                user={this.props.user}
+                dataObj={{
+                  start: this.props.data.reservation.start,
+                  end: this.props.data.reservation.end,
+                  guests: this.props.data.reservation.guests,
+                  roomID: room._id,
+                  cost: room.cost,
+                  image: room.image,
+                  title: room.title
+                }}
+                updateState={this.props.updateState}
+                title="Add to Cart"
+              />
             </div>
           </Col>
         </Row>

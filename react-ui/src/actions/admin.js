@@ -34,7 +34,7 @@ export const uploadFile = (newData, file) => {
 
 export const getData = (url) => {
   return (dispatch) => {
-
+    console.log(url);
     return axios.get(url)
       .then(response => {
         console.log("response", response.data);
@@ -49,9 +49,9 @@ export const getData = (url) => {
 };
 
 export const putData = (url, newData) => {
-
+  console.log(url);
   return (dispatch) => {
-
+    console.log(url);
     return axios.put(url, newData)
     .then(response => {
       console.log("response", response.data);
@@ -68,7 +68,7 @@ export const putData = (url, newData) => {
 
 export const postData = (url, newData) => {
   return (dispatch) => {
-
+    console.log(url);
     return axios.post(url, newData)
       .then(response => {
         console.log("response", response.data);
@@ -86,7 +86,7 @@ export const postData = (url, newData) => {
 
 export const deleteData = (url) => {
   return (dispatch) => {
-
+    console.log(url);
     return axios.delete(url)
     .then(response => {
       console.log("response", response.data);

@@ -3,11 +3,15 @@ import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 import { cloudName } from '../../../../data/data';
+import moment from 'moment';
 
 const EditFormText = (props) => {
   let content = "reservation";
   if(window.location.pathname.includes("gallery")) content = "room";
   if(window.location.pathname.includes("guide")) content = "content";
+
+  // const start = ;
+  // const end = ;
 
   return(
     <div>
@@ -21,6 +25,12 @@ const EditFormText = (props) => {
               <h4 className="paragraph">{props.dataObj.userID.name || props.dataObj.userID.email}</h4>
               <p className="paragraph">{props.dataObj.userID.credit || ""}</p>
               <p className="paragraph">{props.dataObj.userID.billing || ""}</p>
+            </span>:
+            <div></div>}
+            {(props.dataObj.start) ?
+            <span>
+              <h4><b>{`${moment(new Date(props.dataObj.start)).add(6, 'hours').format('MMM Do YYYY, h:mm a')} -`}</b></h4>
+              <h4><b>{moment(new Date(props.dataObj.end)).add(3, 'hours').add(1, 'minutes').format('MMM Do YYYY, h:mm a')}</b></h4>
             </span>:
             <div></div>}
             <h4 className="paragraph"><big>{(props.dataObj.address) ? "" : "$"}</big>{props.dataObj.address || props.dataObj.cost || props.dataObj.userID.cost}<sup>{(props.dataObj.address) ? "" : ".00"}</sup></h4>

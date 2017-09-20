@@ -10,9 +10,9 @@ const modify = (string) => {
 }
 const getClass = (n) => {
   let style = "";
-  if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")) style = "orangeButton";
+  if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove") ||  n.includes("Update") || n.includes("Cart")) style = "yellowButton";
+  else if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")) style = "orangeButton";
   else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
-  else if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove") ||  n.includes("Update")) style = "yellowButton";
 
   if(n === "Login" || n.includes("Sign Up")) style += " button"
   else style += " linkButton smallLink"
@@ -22,13 +22,14 @@ const getClass = (n) => {
 const getIcon = (n) => {
   if(n.includes("Send")) return "fa fa-paper-plane";
   if(n.includes("Delete") || n.includes("Remove")) return "fa fa-trash";
+  if(n.includes("Add to Cart")) return "fa fa-shopping-cart";
   if(n.includes("Confirm")) return "fa fa-flag-checkered";
   return "";
 }
 
 const EditButton = (props) => {
   //hide buttons that should only be used by admin
-  const adminAuth = props.title.includes("Edit") || props.title.includes("Add") || props.title.includes("Delete");
+  const adminAuth = (props.title.includes("Edit") || props.title.includes("Add") || props.title.includes("Delete")) && !props.title.includes("Cart");
 
   const button = (!props.user.admin && adminAuth) ?
     <div></div> :

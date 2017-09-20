@@ -46,23 +46,26 @@ class WelcomeAdmin extends React.Component {
   }
 
   handleSelect = (event) => {
-    this.props.updateState({
-      edit: {
-        ...initial.edit,
-        url: `/res/page/${blogID}/reminder/${event.event._id}?token=${this.props.user.token}`,
-        modalTitle: "Upcoming Stay",
-        dataObj: event.event
-      }
-    })
-
+    // "/page/:pageID/charge/:userID/:start"
+    // "/page/:pageID/:task/:userID/:resID/"
+    // this.props.updateState({
+    //   edit: {
+    //     ...initial.edit,
+    //     url: `/res/page/${blogID}/reminder/${event._id}?token=${this.props.user.token}`,
+    //     modalTitle: "Upcoming Stay",
+    //     dataObj: event
+    //   }
+    // })
+    console.log(event);
+    window.location.pathname = `/welcome/${event.event.user}`
   }
 
   getClassName = (event) => {
     let style = "blueButton";
 
-    //if(event.event.reminded) style = "blueButton";
-    if(event.event.checkedIn) style = "orangeButton";
-    if(event.event.charged) style = "yellowButton";
+    //if(event.reminded) style = "blueButton";
+    if(event.checkedIn) style = "orangeButton";
+    if(event.charged) style = "yellowButton";
 
     const end = new Date(event.end).getTime();
     if(end < Date.now()) style += " old";

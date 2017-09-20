@@ -54,9 +54,9 @@ class SubmitButtonSet extends React.Component {
 
   getClass = (n) => {
     let style = "";
-    if(n.includes("Edit") || n.includes("Check") || n.includes("Update")  || n.includes("Confirm")) style = "orangeButton";
+    if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Update") || n.includes("Cart")) style = "yellowButton";
+    else if(n.includes("Edit") || n.includes("Check") || n.includes("Update")  || n.includes("Confirm")) style = "orangeButton";
     else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
-    else if(n.includes("Delete") || n.includes("Charge")) style = "yellowButton";
 
     if(n === "Login" || n.includes("Sign Up")) style += " button"
     else style += " linkButton smallLink"
@@ -65,9 +65,10 @@ class SubmitButtonSet extends React.Component {
 
   getIcon = (n) => {
     if(n.includes("Send")) return "fa fa-paper-plane";
-    if(n.includes("Delete")) return "fa fa-trash";
+    if(n.includes("Delete") || n.includes("Remove")) return "fa fa-trash";
     if(n.includes("Check")) return "fa fa-check";
     if(n.includes("Charge")) return "fa fa-usd";
+    if(n.includes("Add to Cart")) return "fa fa-shopping-cart";
     if(n.includes("Confirm")) return "fa fa-flag-checkered";
     return "";
   }

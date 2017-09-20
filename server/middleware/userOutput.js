@@ -59,7 +59,7 @@ const formatOutput = (req, res, next) => {
       return a;
     }, {});
   }
-  else if(page){ //spit out admin if there is no user;
+  else if(!userP && page){ //spit out admin if there is no user;
     if(req.page){
       user.admin = true;
       user.token = jwt.sign({userID: req.page.userID}, configure.secret, { expiresIn: '1h' });
@@ -70,7 +70,7 @@ const formatOutput = (req, res, next) => {
       if(b === "token") a.token = jwt.sign({userID: req.page.userID}, configure.secret, { expiresIn: '1h' });
       else if(b === "name") a.name = req.page.name;
       else if(b === "admin") a.admin = true;
-      else if(req.user[b]) a[b] = req.user[b];
+      //else if(req.user[b]) a[b] = req.user[b];
       else a[b] = data.initial.user[b];
       return a;
     }, {});
@@ -88,30 +88,61 @@ const formatOutput = (req, res, next) => {
     book.available = req.available;
   }
 
-  if(req.welcome && page){
+  if(req.welcome && page && !userP){
     welcome = req.welcome.map((r) => {
-      let credit = formatCredit(r.userID.credit, r.userID.userID);
-      delete r.userID.userID;
-
-      return{
+      return {
         start: new Date(r.start),
         end: new Date(r.end),
-        title: r.userID.name || r.userID.email,
-        event: r
+        title: r.userID.email,
+        event: {
+          user: r.userID._id,
+          checkedIn: r.charged,
+          reminded: r.reminded,
+          charged: r.charged
+        }
       };
     });
+    // .reduce((b) => {
+    //   console.log(b);
+    //   const title = b.userID.email;
+    //   const start = new Date(b.start);
+    //   const end = new Date(b.end);
+    //
+    //   let obj = b;
+    //
+    //   obj.userID.credit = formatCredit(b.userID.credit, b.userID.userID);
+    //   obj.roomID = [b.roomID];
+    //
+    //   delete obj.userID.userID;
+    //
+    //   return {
+    //     start: start,
+    //     end: end,
+    //     title: title,
+    //     event: obj
+    //   };
+    // });
   }
   else if(req.welcome && userP){
     welcome = req.welcome;
   }
 
-  res.json({
-    user: user,
-    message: message,
-    edit: data.initial.edit,
-    welcome: welcome,
-    book: book,
-  });
+  if(!page && !userP){
+    res.json({
+      message: message,
+      edit: data.initial.edit,
+      book: book,
+    });
+  }
+  else {
+    res.json({
+      user: user,
+      message: message,
+      edit: data.initial.edit,
+      welcome: welcome,
+      book: book,
+    });
+  }
 };
 
 const pop = (req, res, next) => {

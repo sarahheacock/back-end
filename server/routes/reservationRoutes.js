@@ -7,9 +7,7 @@ const Page = require("../models/page").Page;
 const Room = require("../models/page").Room;
 const User = require("../models/page").User;
 
-// const CryptoJS = require('crypto-js');
-// const configure = require('../configure/config');
-// const jwt = require('jsonwebtoken');
+// const { URL } = require('url');
 
 const mid = require('../middleware/upcomingMiddleware');
 const auth = require('../middleware/middleware').authorizeUser;
@@ -45,16 +43,17 @@ reservationRoutes.param("userID", (req, res, next, id) => {
   });
 });
 
-reservationRoutes.param("start", (req, res, next, id) => {
-  const start = new Date(parseInt(id)).setUTCHours(12, 0, 0, 0);
-  Reservation.find({userID: req.params.userID, start: start}).populate({
+reservationRoutes.param("end", (req, res, next, id) => {
+  const start = new Date(parseInt(req.params.start)).setUTCHours(12, 0, 0, 0);
+  const end = new Date(parseInt(id)).setUTCHours(11, 59, 0, 0);
+  Reservation.find({userID: req.params.userID, start: start, end: end}).populate({
     path: 'roomID',
     model: 'Room',
     select: 'image title'
   }).populate({
     path: 'userID',
     model: 'User',
-    select: 'credit billing name email'
+    select: 'credit billing name email userID'
   }).exec((err, doc) => {
     if(err) next(err);
     if(!doc){
@@ -74,9 +73,9 @@ reservationRoutes.post('/available/', mid.updateCart, mid.getAvailable, formatOu
 
 reservationRoutes.post('/available/user/:userID', auth, mid.updateCart, mid.getAvailable, formatOutput.pop, formatOutput.formatOutput);
 
+//if userID is not defined and client tries to item to cart, modal requesting email will pop up
 reservationRoutes.post('/available/page/:pageID', auth, mid.updateCart, mid.getAvailable, formatOutput.formatOutput);
 
-//if userID is not defined and client tries to item to cart, modal requesting email will pop up
 reservationRoutes.post('/available/page/:pageID/:userID', auth, mid.updateCart, mid.getAvailable, formatOutput.pop, formatOutput.formatOutput);
 
 //===============RESERVATIONS THAT REQUIRE USER AUTH==============
@@ -99,7 +98,7 @@ reservationRoutes.get('/user/:userID', auth, (req, res, next) => {
 reservationRoutes.post('/user/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
   //CHANGE TO REDIRECT TO WELCOME
   //WELCOME WILL CALL GET /USER/USER/:USERID
-  res.redirect('/welcome');
+  res.json(req.body);
 });
 
 //===============RESERVATIONS THAT REQUIRE ADMIN AUTH==================
@@ -121,7 +120,8 @@ reservationRoutes.get('/page/:pageID/:userID', auth, (req, res, next) => {
 reservationRoutes.post('/page/:pageID/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
   //CHANGE TO REDIRECT TO WELCOME
   //WELCOME WILL CALL GET /USER/PAGE/:PAGEID/:MONTH/:YEAR
-  res.redirect('/welcome');
+  //res.redirect('/welcome');
+  res.json(req.body);
 });
 
 //get reservations by month
@@ -133,8 +133,12 @@ reservationRoutes.get('/page/:pageID/:month/:year', auth, (req, res, next) => {
   });
 }, formatOutput.formatOutput);
 
+//cancel reservations
+//task = "cancel"
+reservationRoutes.delete("/page/:pageID/:task/:userID/:resID/", auth, mid.deleteRes, mid.sendMessage, mid.getCalendar, formatOutput.pop, formatOutput.formatOutput);
+
 //charge client
-reservationRoutes.put("/page/:pageID/charge/:userID/:start", auth, (req, res, next) => {
+reservationRoutes.put("/page/:pageID/charge/:userID/:start/:end", auth, (req, res, next) => {
   let i = 1;
   async.each(req.reservations, (reservation) => {
     reservation.charged = true; //change later
@@ -152,7 +156,7 @@ reservationRoutes.put("/page/:pageID/charge/:userID/:start", auth, (req, res, ne
 
 //send reminder message => task === "reminder"
 //send checked in message => task === "checkIn"
-reservationRoutes.put("/page/:pageID/:task/:userID/:start", auth, (req, res, next) => {
+reservationRoutes.put("/page/:pageID/:task/:userID/:start/:end", auth, (req, res, next) => {
   //const change = (req.params.task === "checkIn") ? {checkedIn: true} : {reminded: true};
   let i = 0;
   async.each(req.reservations, (reservation) => {
@@ -169,9 +173,7 @@ reservationRoutes.put("/page/:pageID/:task/:userID/:start", auth, (req, res, nex
   });
 }, mid.sendMessage, mid.getCalendar, formatOutput.pop, formatOutput.formatOutput);
 
-//cancel reservations
-//task = "cancel"
-reservationRoutes.delete("/page/:pageID/:task/:userID/:resID/", auth, mid.deleteRes, mid.sendMessage, mid.getCalendar, formatOutput.pop, formatOutput.formatOutput);
+
 
 
 

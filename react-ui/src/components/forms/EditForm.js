@@ -13,7 +13,7 @@ const EditForm = (props) => {
   //======ALL OF THE FORM GROUPS===================================
 
   // console.log(Object.keys(props.edit.dataObj));
-  const formGroups = (props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Upcoming")) ?
+  const formGroups = (props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Cart") || props.edit.modalTitle.includes("Upcoming")) ?
     <EditFormText
       title={props.edit.modalTitle}
       dataObj={props.edit.dataObj}
@@ -60,7 +60,7 @@ const EditForm = (props) => {
     <Form className="content">
       {formGroups}
       <div className="text-center">
-        {((Object.keys(props.edit.dataObj).includes("carousel") || Object.keys(props.edit.dataObj).includes("image")) && !props.edit.modalTitle.includes("Delete")) ?
+        {((Object.keys(props.edit.dataObj).includes("carousel") || Object.keys(props.edit.dataObj).includes("image")) && !props.edit.modalTitle.includes("Delete") && !props.edit.modalTitle.includes("Cart")) ?
           <Dropzone
             multiple={false}
             accept={"image/*"}

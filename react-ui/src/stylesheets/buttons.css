@@ -34,6 +34,10 @@ peach--#FEDCD2
   border-width: 0px;
 }
 
+.linkButton i{
+  padding-left: 2%;
+}
+
 .smallLink {
   margin: 1%;
 }

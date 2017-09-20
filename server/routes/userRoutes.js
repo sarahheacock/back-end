@@ -44,6 +44,7 @@ userRoutes.param("userID", (req, res, next, id) => {
   });
 });
 
+
 //===================USER SECTIONS================================
 userRoutes.post('/user', mid.checkSignUpInput, (req, res, next) => {
   let user = new User(req.body);
@@ -73,7 +74,8 @@ userRoutes.get('/user/:userID', mid.authorizeUser, (req, res, next) => {
 
 //update page content
 userRoutes.put('/user/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
-  if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  //if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  if(req.params.userInfo === "cart") req.user.cart.splice(req.user.cart.indexOf(req.body), 1);
   else if(req.params.userInfo === "credit") req.user[req.params.userInfo] = CryptoJS.AES.encrypt(req.newOutput, req.user.userID);
   else req.user[req.params.userInfo] = req.newOutput;
 
@@ -105,8 +107,9 @@ userRoutes.post('/page/:pageID', mid.authorizeUser, mid.checkSignUpInput, (req, 
       });
     }
     else {
-      req.user = doc;
-      next();
+      // req.user = doc;
+      // next();
+      //ASK FOR PERMISSION
       // res.json(formatOutput(doc, req.page));
     }
   });
@@ -124,7 +127,7 @@ userRoutes.get('/page/:pageID/:userID/', mid.authorizeUser, (req, res, next) => 
 
 //update page content
 userRoutes.put('/page/:pageID/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput, (req, res, next) => {
-  if(Array.isArray(req.user[req.params.userInfo])) req.user.cart.push(req.newOutput);
+  if(req.params.userInfo === "cart") req.user.cart.splice(req.user.cart.indexOf(req.body), 1);
   else if(req.params.userInfo === "credit") req.user[req.params.userInfo] = CryptoJS.AES.encrypt(req.newOutput, req.user.userID);
   else req.user[req.params.userInfo] = req.newOutput;
 
@@ -136,6 +139,18 @@ userRoutes.put('/page/:pageID/:userID/:userInfo/', mid.authorizeUser, mid.checkU
     // res.json(formatOutput(user, req.page));
   });
 }, formatOutput);
+
+userRoutes.post('/:pageID/', mid.authorizeUser, (req, res, next) => {
+  const id = req.body.find;
+  User.find({
+    $or: [
+      { "email": { "$regex": id, "$options": "i" } },
+      { "name": { "$regex": id, "$options": "i" } }
+    ]
+  }, {email: 1, name: 1}).exec((err, doc) => {
+    res.json(doc);
+  });
+});
 
 
 

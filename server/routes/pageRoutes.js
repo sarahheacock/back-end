@@ -32,7 +32,7 @@ pageRoutes.param("pageID", (req, res, next, id) => {
   });
 });
 
-const formatOutput = (obj) => {
+const format = (obj) => {
   let newObj = {edit: initialEdit, message: initialMessage};
   const arr = ["home", "gallery", "guide"];
 
@@ -74,7 +74,7 @@ pageRoutes.post('/', (req, res, next) => {
 //get page
 pageRoutes.get('/:pageID', (req, res, next) => {
   res.status(200);
-  res.json(formatOutput(req.page));
+  res.json(format(req.page));
 });
 
 
@@ -90,7 +90,7 @@ pageRoutes.post('/:pageID/room', mid.authorizeUser, mid.checkRoomInput, (req, re
         return next(err);
       }
       res.status(201);
-      res.json(formatOutput(page));
+      res.json(format(page));
     });
   });
 });
@@ -106,7 +106,7 @@ pageRoutes.post('/:pageID/guide', mid.authorizeUser, mid.checkGuideInput, (req, 
       next(err)
     }
     res.status(201);
-    res.json(formatOutput(page));
+    res.json(format(page));
   });
 });
 
@@ -128,7 +128,7 @@ pageRoutes.put('/:pageID/:section/', mid.authorizeUser, mid.checkEditInput, (req
       return next(err);
     }
     res.status(200);
-    res.json(formatOutput(page));
+    res.json(format(page));
   });
 })
 
@@ -150,7 +150,7 @@ pageRoutes.put('/:pageID/room/:roomID', mid.authorizeUser, mid.checkRoomInput, (
           return next(err);
         }
         res.status(200);
-        res.json(formatOutput(page));
+        res.json(format(page));
       });
     });
 
@@ -173,7 +173,7 @@ pageRoutes.put('/:pageID/guide/:guideID', mid.authorizeUser, mid.checkGuideInput
       return next(err);
     }
     res.status(200);
-    res.json(formatOutput(page));
+    res.json(format(page));
   });
 })
 
@@ -193,7 +193,7 @@ pageRoutes.delete("/:pageID/room/:roomID", mid.authorizeUser, (req, res) => {
           err.status = 404;
           return next(err);
         }
-        res.json(formatOutput(page));
+        res.json(format(page));
       });
     });
 
@@ -213,7 +213,7 @@ pageRoutes.delete("/:pageID/:guide/:guideID", mid.authorizeUser, (req, res) => {
       if(err){
         return next(err);
       }
-      res.json(formatOutput(page));
+      res.json(format(page));
     });
   });
 });

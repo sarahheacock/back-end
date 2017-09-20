@@ -24,8 +24,27 @@ class Welcome extends React.Component {
   }
 
   componentDidMount(){
-    const url = `/res/user/${this.props.user._id}?token=${this.props.user.token}`;
+    const location = window.location.pathname.split('/').reduce((a, b) => {
+      if(b.length > 16) return b;
+      else return a;
+    }, '');
+    console.log(location);
+
+    const url = (this.props.user.admin) ?  `/res/page/${blogID}/${location}?token=${this.props.user.token}` : `/res/user/${this.props.user._id}?token=${this.props.user.token}`;
     this.props.getData(url);
+  }
+
+  componentDidUpdate(prevProps, prevState){
+    const location = window.location.pathname.split('/').reduce((a, b) => {
+      if(b.length > 16) return b;
+      else return a;
+    }, '');
+    console.log(location);
+
+    if(prevProps.user.cart.length > this.props.user.cart.length){
+      const url = (this.props.user.admin) ?  `/res/page/${blogID}/${location}?token=${this.props.user.token}` : `/res/user/${this.props.user._id}?token=${this.props.user.token}`;
+      this.props.getData(url);
+    }
   }
 
   logout = (e) => {
@@ -37,36 +56,9 @@ class Welcome extends React.Component {
     return(
       <div className="main-content">
         <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}</span></PageHeader>
-
-        <Row className="clear-fix">
-          <Col sm={4} className="columns">
-            <div className="text-center">
-              <h3 className="pretty">Shopping Cart <i className="fa fa-shopping-cart"></i> {this.props.user.cart.length}</h3>
-              {(this.props.user.cart.length >= 0) ?
-              <div>
-                <NavLink to="/book/confirm">
-                  <button className="linkButton blueButton">Book Now</button>
-                </NavLink>
-                <h4><big>$</big>{this.props.user.cart.reduce((a, b) => {
-                  return a + b.cost;
-                }, 0)}<sup>{".00"}</sup><br />{this.props.user.cart.reduce((a, b) => {
-                  return a + b.guests;
-                }, 0)}<sub> guest(s)</sub></h4>
-              </div>:
-              <div></div>}
-            </div>
-          </Col>
-          <Col sm={8} className="columns">
-            {(this.props.user.cart.length > 0) ?
-              <Cart
-                updateState={this.props.updateState}
-                user={this.props.user}
-                cart={this.props.user.cart}
-                remove={true}
-              />:
-              <h4 className="content text-center">You currently have no items in your cart.</h4>}
-          </Col>
-        </Row>
+        <div className="text-center">
+          <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
+        </div>
         <hr />
 
         <Row className="clear-fix">
@@ -101,6 +93,37 @@ class Welcome extends React.Component {
 
         <Row className="clear-fix">
           <Col sm={4} className="columns">
+            <div className="text-center">
+              <h3 className="pretty">Shopping Cart <i className="fa fa-shopping-cart"></i> {this.props.user.cart.length}</h3>
+              {(this.props.user.cart.length > 0) ?
+              <div>
+                <NavLink to="/book/confirm">
+                  <button className="linkButton blueButton">Book Now</button>
+                </NavLink>
+                <h4><big>$</big>{this.props.user.cart.reduce((a, b) => {
+                  return a + b.cost;
+                }, 0)}<sup>{".00"}</sup><br />{this.props.user.cart.reduce((a, b) => {
+                  return a + b.guests;
+                }, 0)}<sub> guest(s)</sub></h4>
+              </div>:
+              <div></div>}
+            </div>
+          </Col>
+          <Col sm={8} className="columns">
+            {(this.props.user.cart.length > 0) ?
+              <Cart
+                updateState={this.props.updateState}
+                user={this.props.user}
+                cart={this.props.user.cart}
+                remove={true}
+              />:
+              <h4 className="content text-center">You currently have no items in your cart.</h4>}
+          </Col>
+        </Row>
+        <hr />
+
+        <Row className="clear-fix">
+          <Col sm={4} className="columns">
             <h3 className="pretty text-center">Personal Information</h3>
           </Col>
           <Col sm={8} className="columns">
@@ -128,9 +151,6 @@ class Welcome extends React.Component {
         </Row>
         <hr />
 
-        <div className="text-center">
-          <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
-        </div>
       </div>);
   }
 }

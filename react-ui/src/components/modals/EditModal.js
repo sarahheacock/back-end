@@ -104,7 +104,7 @@ class EditModal extends React.Component {
 
     const title = this.props.edit.modalTitle;
     let editFunc = this.props.postData;
-    if(title.includes("Edit") || title.includes("Upcoming") || title.includes("Update")){
+    if(title.includes("Edit") || title.includes("Upcoming") || title.includes("Update") || title.includes("Remove")){
       editFunc = this.props.putData;
     }
     else if(title.includes("Delete")){

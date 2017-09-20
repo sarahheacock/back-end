@@ -113,7 +113,7 @@ class App extends Component {
                 updateState={updateState}
               />)}
             />
-            <Route path={"/welcome"} render={ () => (
+            <Route exact path={"/welcome"} render={ () => (
               (user.token && user.admin)?
               <WelcomeAdmin
                 data={welcome}
@@ -130,6 +130,18 @@ class App extends Component {
               /> :
               <Redirect to="/" />)) }
             />
+
+            <Route exact path={"/welcome/:userID"} render={ () => (
+              (user.token && user.admin)?
+              <Welcome
+                data={welcome}
+                user={user}
+                getData={getData}
+                updateState={updateState}
+              />:
+              <Redirect to="/" />) }
+            />
+
             <Route render={ () => (
               <Redirect to="/" />
             )} />

@@ -7,6 +7,7 @@ export default function Admin(state={}, action){
   switch (action.type) {
 
     case AdminActionTypes.UPDATE_STATE: {
+      if(action.newState.message === "confirm") window.location.pathname = "/welcome";
 
       if(Object.keys(action.newState).includes("dataObj")){ //sent by EditButton
         let edit = new Edit(action.newState.title);
