@@ -10,7 +10,7 @@ import { initialMessage, initialEdit, initialUser, messages } from '../../../../
 import AlertMessage from './AlertMessage';
 import EditButton from './EditButton';
 
-const names = ["Send Reminder", "Check In", "Charge Client"];
+
 
 //SUBMIT ADMIN EDITTING, USER PROFILE EDIT, CREATE USER, RESERVE, AND CANCEL RESERVATION
 class SubmitButtonSet extends React.Component {
@@ -40,17 +40,17 @@ class SubmitButtonSet extends React.Component {
     else this.props.editData(edit.url, edit.dataObj);
   }
 
-  editRes = (e) => {
-    e.preventDefault();
-    const edit = this.props.edit;
-
-    let url = edit.url; //send reminder
-    if(e.target.name === names[1]) url.replace("reminder", "charge"); //charge client
-    else if(e.target.name === names[2]) url.replace("reminder", "checkIn"); //check in
-    console.log(url);
-
-    this.props.editData(url);
-  }
+  // editRes = (e) => {
+  //   e.preventDefault();
+  //   const edit = this.props.edit;
+  //
+  //   let url = edit.url; //send reminder
+  //   if(e.target.name === names[1]) url.replace("reminder", "charge"); //charge client
+  //   else if(e.target.name === names[2]) url.replace("reminder", "checkIn"); //check in
+  //   console.log(url);
+  //
+  //   this.props.editData(url);
+  // }
 
   getClass = (n) => {
     let style = "";
@@ -88,19 +88,7 @@ class SubmitButtonSet extends React.Component {
             <div>
               {(edit.modalTitle.includes("Upcoming")) ?
               <div>
-                {names.map((n) => (
-                <div key={n}>
-                  <button className={this.getClass(n)}>
-                    {n}<i className={this.getIcon(n)} aria-hidden="true"></i>
-                  </button>
-                </div>
-                ))}
-                <EditButton
-                  user={this.props.user}
-                  updateState={this.props.updateState}
-                  dataObj={edit.dataObj}
-                  title="Delete Reservation"
-                />
+
               </div>:
               <button className={style} onClick={this.submit}>
                 {edit.modalTitle} <i className={this.getIcon(edit.modalTitle)} aria-hidden="true"></i>
@@ -116,7 +104,7 @@ class SubmitButtonSet extends React.Component {
                   />
                   <br />
                   <br />
-                  <a className="btn btn-primary" href="http://localhost:5000/auth/facebook"><i className="fa fa-facebook"></i> Login with Facebook</a>
+                  <a href="http://localhost:5000/auth/facebook"><button className="linkButton facebook"><i className="fa fa-facebook"></i> Login with Facebook</button></a>
                 </span>:
                 <div></div>}
             </div> :
@@ -141,3 +129,17 @@ export default SubmitButtonSet;
 //   e.preventDefault();
 //   this.props.getData("/login/facebook");
 // }}>Facebook</button>
+
+// {names.map((n) => (
+// <div key={n}>
+//   <button className={this.getClass(n)}>
+//     {n}<i className={this.getIcon(n)} aria-hidden="true"></i>
+//   </button>
+// </div>
+// ))}
+// <EditButton
+//   user={this.props.user}
+//   updateState={this.props.updateState}
+//   dataObj={edit.dataObj}
+//   title="Delete Reservation"
+// />

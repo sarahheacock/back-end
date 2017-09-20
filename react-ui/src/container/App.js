@@ -13,6 +13,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import WelcomeAdmin from '../components/routes/WelcomeAdmin';
 import Welcome from '../components/routes/Welcome';
+import WelcomeSearch from '../components/routes/WelcomeSearch';
 import Book from '../components/routes/Book';
 
 //data
@@ -129,6 +130,17 @@ class App extends Component {
                 updateState={updateState}
               /> :
               <Redirect to="/" />)) }
+            />
+
+            <Route exact path={"/welcome/search"} render={ () => (
+              (user.token && user.admin)?
+              <WelcomeSearch
+                data={welcome}
+                user={user}
+                postData={postData}
+                getData={getData}
+              />:
+              <Redirect to="/" />) }
             />
 
             <Route exact path={"/welcome/:userID"} render={ () => (

@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { PageHeader } from 'react-bootstrap';
+import { PageHeader, Form } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 import { Row, Col } from 'react-bootstrap';
 
 import Cart from './reservation/Cart';
 import PersonalInfo from './reservation/PersonalInfo';
 import EditButton from '../buttons/EditButton.js';
+// import { NavLink } from 'react-router-dom';
 import { blogID, initial } from '../../../../data/data';
 
 
@@ -21,6 +22,14 @@ class Welcome extends React.Component {
 
   constructor(props){
     super(props);
+    // const selected = props.data.map((m) => {
+    //     m.selected = false;
+    //     return m;
+    // });
+    //
+    // this.state = {
+    //   selected: selected
+    // }
   }
 
   componentDidMount(){
@@ -28,7 +37,6 @@ class Welcome extends React.Component {
       if(b.length > 16) return b;
       else return a;
     }, '');
-    console.log(location);
 
     const url = (this.props.user.admin) ?  `/res/page/${blogID}/${location}?token=${this.props.user.token}` : `/res/user/${this.props.user._id}?token=${this.props.user.token}`;
     this.props.getData(url);
@@ -39,7 +47,6 @@ class Welcome extends React.Component {
       if(b.length > 16) return b;
       else return a;
     }, '');
-    console.log(location);
 
     if(prevProps.user.cart.length > this.props.user.cart.length){
       const url = (this.props.user.admin) ?  `/res/page/${blogID}/${location}?token=${this.props.user.token}` : `/res/user/${this.props.user._id}?token=${this.props.user.token}`;
@@ -58,13 +65,23 @@ class Welcome extends React.Component {
         <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}</span></PageHeader>
         <div className="text-center">
           <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
+          {(this.props.user.admin) ?
+          <span>
+            <NavLink to="/welcome">
+              <button className="linkButton orangeButton">Go to Calendar <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
+            </NavLink>
+            <NavLink to="/welcome/search">
+              <button className="linkButton orangeButton">Search for Client <i className="fa fa-search" aria-hidden="true"></i></button>
+            </NavLink>
+          </span>:
+          <div></div>}
         </div>
         <hr />
 
         <Row className="clear-fix">
           <Col sm={4} className="columns">
             <h3 className="pretty text-center">Upcoming Stays</h3>
-            {(this.props.data.length >= 0) ?
+            {(this.props.user.admin === false) ?
               <div className='text-center'><h4>Click on a</h4>
               <h3>
                 <EditButton
@@ -75,17 +92,44 @@ class Welcome extends React.Component {
                 />
               </h3>
               <h4>or call the number below if you would like to cancel or change your reservation(s).</h4></div>:
-              <div></div>
+              <div className="text-center">
+                <EditButton
+                  user={this.props.user}
+                  updateState={this.props.updateState}
+                  dataObj={this.props.data}
+                  title="Send Reminder"
+                />
+                <EditButton
+                  user={this.props.user}
+                  updateState={this.props.updateState}
+                  dataObj={this.props.data}
+                  title="Check-In"
+                />
+                <EditButton
+                  user={this.props.user}
+                  updateState={this.props.updateState}
+                  dataObj={this.props.data}
+                  title="Charge Client"
+                />
+                <EditButton
+                  user={this.props.user}
+                  updateState={this.props.updateState}
+                  dataObj={this.props.data}
+                  title="Delete Reservation"
+                />
+              </div>
             }
           </Col>
           <Col sm={8} className="columns">
             {(this.props.data.length > 0) ?
-              <Cart
-                updateState={this.props.updateState}
-                user={this.props.user}
-                cart={this.props.data}
-                remove={false}
-              />:
+              <Form>
+                <Cart
+                  updateState={this.props.updateState}
+                  user={this.props.user}
+                  cart={this.props.data || []}
+                  remove={false}
+                />
+              </Form>:
               <h4 className="content text-center">You currently have no upcoming reservations.</h4>}
           </Col>
         </Row>

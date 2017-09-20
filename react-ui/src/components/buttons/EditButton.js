@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { NavItem } from 'react-bootstrap';
 
 //import { name } from '../../../../data/data';
+//const names = ["Send Reminder", "Check-In", "Charge Client", "Delete Reservation" ];
 
 const modify = (string) => {
   if(string.includes(' ') && !string.includes('Update')  && !string.includes('Confirm')) return string.slice(0, string.indexOf(' ') + 1)
@@ -14,8 +15,12 @@ const getClass = (n) => {
   else if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")) style = "orangeButton";
   else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
 
-  if(n === "Login" || n.includes("Sign Up")) style += " button"
-  else style += " linkButton smallLink"
+  if(n === "Login" || n.includes("Sign Up")) style += " button";
+  else style += " linkButton smallLink";
+
+  // if(names.includes(n)){
+  //   style += " old";
+  // }
   return style;
 }
 
@@ -24,6 +29,8 @@ const getIcon = (n) => {
   if(n.includes("Delete") || n.includes("Remove")) return "fa fa-trash";
   if(n.includes("Add to Cart")) return "fa fa-shopping-cart";
   if(n.includes("Confirm")) return "fa fa-flag-checkered";
+  if(n.includes("Check")) return "fa fa-check";
+  if(n.includes("Charge")) return "fa fa-usd";
   return "";
 }
 
@@ -49,11 +56,16 @@ const EditButton = (props) => {
 
 export default EditButton;
 
+//DATAOBJ
+//string is used to editing user info
+//array is for admin checking, reminding, or charging multiple reservations
+//object is for everything else
 EditButton.propTypes = {
   user: PropTypes.object.isRequired,
   dataObj: PropTypes.oneOfType([
     PropTypes.string,
-    PropTypes.object
+    PropTypes.object,
+    PropTypes.array
   ]).isRequired,
   updateState: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired

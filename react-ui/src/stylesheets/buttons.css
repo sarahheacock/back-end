@@ -18,9 +18,21 @@ peach--#FEDCD2
   color: #626d71;
 }
 
+.yellow{
+  color: #BCB239
+}
+
+.orange{
+  color: #DF744A
+}
+
+.fa-circle{
+  padding-right: 2%;
+}
+
 .button:hover{
   background-color: #a5a58d;
-  color: WhiteSmoke;
+  /*color: WhiteSmoke;*/
 }
 
 .linkButton {
@@ -40,6 +52,16 @@ peach--#FEDCD2
 
 .smallLink {
   margin: 1%;
+}
+
+.facebook{
+  background-color: #3b5998;
+  color: White;
+}
+
+.facebook:hover{
+  background-color: #324b81;
+  color: White;
 }
 
 .orangeButton {

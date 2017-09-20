@@ -148,7 +148,7 @@ userRoutes.post('/:pageID/', mid.authorizeUser, (req, res, next) => {
       { "name": { "$regex": id, "$options": "i" } }
     ]
   }, {email: 1, name: 1}).exec((err, doc) => {
-    res.json(doc);
+    res.json({welcome: doc});
   });
 });
 

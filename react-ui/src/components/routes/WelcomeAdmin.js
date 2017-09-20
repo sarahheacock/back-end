@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { PageHeader, Row, Col } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
+
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
@@ -13,9 +16,7 @@ BigCalendar.setLocalizer(
 class WelcomeAdmin extends React.Component {
   static propTypes = {
     user: PropTypes.object.isRequired,
-    data: PropTypes.array.isRequired,
-    getData: PropTypes.func.isRequired,
-    updateState: PropTypes.func.isRequired,
+    data: PropTypes.array.isRequired
   }
 
   constructor(props){
@@ -46,16 +47,6 @@ class WelcomeAdmin extends React.Component {
   }
 
   handleSelect = (event) => {
-    // "/page/:pageID/charge/:userID/:start"
-    // "/page/:pageID/:task/:userID/:resID/"
-    // this.props.updateState({
-    //   edit: {
-    //     ...initial.edit,
-    //     url: `/res/page/${blogID}/reminder/${event._id}?token=${this.props.user.token}`,
-    //     modalTitle: "Upcoming Stay",
-    //     dataObj: event
-    //   }
-    // })
     console.log(event);
     window.location.pathname = `/welcome/${event.event.user}`
   }
@@ -64,8 +55,8 @@ class WelcomeAdmin extends React.Component {
     let style = "blueButton";
 
     //if(event.reminded) style = "blueButton";
-    if(event.checkedIn) style = "orangeButton";
-    if(event.charged) style = "yellowButton";
+    if(event.checkedIn || event.charged) style = "orangeButton";
+    if(event.reminded) style = "yellowButton";
 
     const end = new Date(event.end).getTime();
     if(end < Date.now()) style += " old";
@@ -76,10 +67,21 @@ class WelcomeAdmin extends React.Component {
   render(){
 
     return(
-      <div>
+      <div className="main-content">
+        <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}</span></PageHeader>
+
         <div className="text-center">
-          <button className="button blueButton" onClick={this.logout}>Logout</button>
+          <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
+          <NavLink to="/welcome/search">
+            <button className="linkButton orangeButton">Search for Client <i className="fa fa-search" aria-hidden="true"></i></button>
+          </NavLink>
         </div>
+
+        <div className="search text-center">
+          <h4><i className="fa fa-circle yellow" aria-hidden="true"></i>  Sent Reminder Message</h4>
+          <h4><i className="fa fa-circle orange" aria-hidden="true"></i>  Charged or Checked-In</h4>
+        </div>
+
         <div className="content">
           <BigCalendar
             events={this.props.data}

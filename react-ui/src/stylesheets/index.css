@@ -16,6 +16,10 @@ body {
   color: #3C3C3C;
 }
 
+.big-check{
+  width: 50px;
+}
+
 header{
   /*background-color: #07889B;*/
   top: 0;
@@ -24,6 +28,11 @@ header{
   /*margin: 0 auto;*/
   /*margin-bottom: 3%;*/
   z-index: -1;
+}
+
+.welcomeCheck{
+  color: #446f65;
+  padding-right: 3%;
 }
 
 .carousel-content {
@@ -55,7 +64,7 @@ header{
   margin-top: 15%;
   padding-bottom: 0px;
   margin-bottom: 15%;
-
+  padding-left: 1%;
 
   /*margin-top: -150px;*/
   text-align: center;
@@ -99,6 +108,7 @@ header{
     opacity: 0.0;
   }
 }
+
 
 
 p {
@@ -197,6 +207,32 @@ charcoal #3C3C3C
   padding: 5%;
   background-color: White;
   border-radius: 2%;
+}
+
+.search{
+  margin: 5%;
+  padding: 2%;
+  padding-left: 5%;
+  padding-right: 5%;
+  /*background-color: White;
+  border-radius: 2%;*/
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.result{
+  padding: 2%;
+  padding-left: 5%;
+  padding-right: 5%;
+  background-color: White;
+  border-radius: 2%;
+  max-width: 650px;
+  margin: 0 auto;
+  margin-bottom: 20px;
+}
+
+.result:hover{
+  box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.5);
 }
 
 .cart{
