@@ -22,14 +22,6 @@ class Welcome extends React.Component {
 
   constructor(props){
     super(props);
-    // const selected = props.data.map((m) => {
-    //     m.selected = false;
-    //     return m;
-    // });
-    //
-    // this.state = {
-    //   selected: selected
-    // }
   }
 
   componentDidMount(){
@@ -54,8 +46,45 @@ class Welcome extends React.Component {
     }
   }
 
+  componentWillUnmount(){
+    if(this.props.user.admin){
+      this.props.updateState({
+        user: {
+          ...initial.user,
+          name: this.props.user.name,
+          token: this.props.user.token,
+          admin: true
+        }
+      });
+    }
+  }
+
+  check = (e) => {
+    if(e) e.preventDefault();
+
+    if(this.props.data.length > 0){
+      const newState = this.props.data.map((state) => {
+        state.notes = (state.notes === false || state.notes === '');
+        return state;
+      });
+
+      this.props.updateState({
+        welcome: newState
+      });
+    }
+  }
+
   logout = (e) => {
     this.props.getData('/auth/logout');
+  }
+
+  valid = (key) => {
+    return this.props.data.reduce((a, b) => {
+      if(b.notes){
+        if(b[key] === false || key === "delete") a.push(b);
+      }
+      return a;
+    }, []);
   }
 
   render(){
@@ -96,25 +125,25 @@ class Welcome extends React.Component {
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
-                  dataObj={this.props.data}
+                  dataObj={this.valid("reminded")}
                   title="Send Reminder"
                 />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
-                  dataObj={this.props.data}
+                  dataObj={this.valid("checkedIn")}
                   title="Check-In"
                 />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
-                  dataObj={this.props.data}
+                  dataObj={this.valid("charged")}
                   title="Charge Client"
                 />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
-                  dataObj={this.props.data}
+                  dataObj={this.valid("delete")}
                   title="Delete Reservation"
                 />
               </div>
@@ -123,10 +152,16 @@ class Welcome extends React.Component {
           <Col sm={8} className="columns">
             {(this.props.data.length > 0) ?
               <Form>
+                <div className="text-center">
+                  {(this.props.user.admin && this.props.data.length > 0) ?
+                    <button className="linkButton blueButton" onClick={this.check}>{(this.props.data[0]["notes"] === true) ? "Uncheck All" : "Check All"}</button>:
+                    <div></div>
+                  }
+                </div>
                 <Cart
                   updateState={this.props.updateState}
                   user={this.props.user}
-                  cart={this.props.data || []}
+                  cart={this.props.data}
                   remove={false}
                 />
               </Form>:
@@ -141,9 +176,11 @@ class Welcome extends React.Component {
               <h3 className="pretty">Shopping Cart <i className="fa fa-shopping-cart"></i> {this.props.user.cart.length}</h3>
               {(this.props.user.cart.length > 0) ?
               <div>
+                {(!this.props.user.admin) ?
                 <NavLink to="/book/confirm">
                   <button className="linkButton blueButton">Book Now</button>
-                </NavLink>
+                </NavLink>:
+                <div></div>}
                 <h4><big>$</big>{this.props.user.cart.reduce((a, b) => {
                   return a + b.cost;
                 }, 0)}<sup>{".00"}</sup><br />{this.props.user.cart.reduce((a, b) => {

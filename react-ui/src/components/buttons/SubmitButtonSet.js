@@ -35,9 +35,17 @@ class SubmitButtonSet extends React.Component {
   submit = (e) => {
     e.preventDefault();
 
-    const edit = this.props.edit;
-    if(edit.modalTitle.includes("Delete")) this.props.editData(edit.url);
-    else this.props.editData(edit.url, edit.dataObj);
+    if(this.props.edit.modalTitle.includes("Delete Reservation")){
+      const arr = this.props.edit.dataObj.reservations.map((r) => r._id.toString());
+      console.log(this.props.edit.url, {reservations: arr});
+      this.props.editData(this.props.edit.url, {reservations: arr});
+    }
+    else if(this.props.edit.modalTitle.includes("Delete")){
+      this.props.editData(this.props.edit.url);
+    }
+    else {
+      this.props.editData(this.props.edit.url, this.props.edit.dataObj);
+    }
   }
 
   // editRes = (e) => {
@@ -104,7 +112,7 @@ class SubmitButtonSet extends React.Component {
                   />
                   <br />
                   <br />
-                  <a href="http://localhost:5000/auth/facebook"><button className="linkButton facebook"><i className="fa fa-facebook"></i> Login with Facebook</button></a>
+                  <button className="linkButton facebook"><a href="http://localhost:5000/auth/facebook" className="face"><i className="fa fa-facebook"></i> Login with Facebook</a></button>
                 </span>:
                 <div></div>}
             </div> :

@@ -30,7 +30,11 @@ const Edit = function(title){
 
 Edit.prototype = {
   setDataObj: function(dataObj){
-    if(this.modalTitle.includes("Confirm")){
+    //const names = ["Send Reminder", "Check-In", "Charge Client", "Delete Reservation" ];
+    if(Array.isArray(dataObj)){
+      this.dataObj = {reservations: dataObj};
+    }
+    else if(this.modalTitle.includes("Confirm")){
       this.dataObj = {message: "confirm"};
     }
     else if(!this.modalTitle.includes("Delete") && !this.modalTitle.includes("Cart")){
@@ -74,7 +78,12 @@ Edit.prototype = {
     if(title.includes("Sign Up")) url = "/user";
     if(title.includes("Room")) url = "/room";
     if(title.includes("Guide")) url = "/guide";
-    if(title.includes("Delete Reservation")) url = "/cancel";
+
+    if(title.includes("Delete Reservation")) url = `/cancel/${id}`;
+    if(title.includes("Charge")) url = `/charge/${id}`;
+    if(title.includes("Check-In")) url = `/checkIn/${id}`;
+    if(title.includes("Reminder")) url = `/reminder/${id}`;
+
     if(title.includes("Confirm") && admin) url = `/res/page/${blogID}/${id}`;
     if(title.includes("Confirm") && !admin) url = `/res/user/${id}`;
     if(title.includes("Update") && admin) url = `/user/page/${blogID}/${id}/${title.toLowerCase().slice(space)}`;
@@ -88,7 +97,8 @@ Edit.prototype = {
     if(title.includes("Add to Cart") && token && id && admin) url = `/res/available/page/${blogID}/${id}`; //admin with user
     if((title.includes("Room") || title.includes("Guide")) && (title.includes("Edit") || title.includes("Delete"))) url += `/${id}`;
 
-    if((title.includes("Edit") || title.includes("Add") || title.includes("Delete")) && !title.includes("Cart")) url = `/page/${blogID}${url}`;
+    if(title.includes("Delete Reservation") || title.includes("Send Reminder") || title.includes("Check-In") || title.includes("Charge")) url = `/res/page/${blogID}${url}`;
+    else if((title.includes("Edit") || title.includes("Add") || title.includes("Delete")) && !title.includes("Add to Cart")) url = `/page/${blogID}${url}`;
     //if(title.includes("Reservation")) url = "/res" + url;
 
     if(token) this.url = `${url}?token=${token}`;

@@ -6,15 +6,24 @@ import Cart from '../routes/reservation/Cart';
 import { Row, Col } from 'react-bootstrap';
 
 const ConfirmForm = (props) => {
+  console.log(props.reservations)
   return(
     <div>
-      <h4 className="text-center">{props.user.email}</h4>
-
       <Cart
         user={props.user}
-        cart={props.user.cart}
+        cart={props.reservations || props.user.cart}
         remove={false}
       />
+      <hr />
+
+      <Row className="clear-fix">
+        <Col sm={6} className="columns">
+          <h4><b>Email: </b></h4>
+        </Col>
+        <Col sm={6} className="columns">
+          <h4 className="text-center">{props.user.email}</h4>
+        </Col>
+      </Row>
       <hr />
 
       <Row className="clear-fix">
@@ -42,7 +51,7 @@ const ConfirmForm = (props) => {
           }, 0)}<sub> guest(s)</sub></h4>
         </Col>
       </Row>
-      <hr />
+      <br />
       <br />
 
     </div>

@@ -9,6 +9,7 @@ const formatOutput = require('../middleware/userOutput').formatOutput;
 const configure = require('../configure/config');
 const bcrypt = require('bcrypt');
 const CryptoJS = require('crypto-js');
+const jwt = require('jsonwebtoken');
 
 
 userRoutes.param("pageID", (req, res, next, id) => {
@@ -66,7 +67,7 @@ userRoutes.post('/user', mid.checkSignUpInput, (req, res, next) => {
 userRoutes.get('/user/:userID', mid.authorizeUser, (req, res, next) => {
   req.user.save((err, doc) => {
     if(err) next(err);
-    req.user = doc;
+    //req.user = doc;
     next();
     // res.json(formatOutput(doc, null));
   });
@@ -107,10 +108,25 @@ userRoutes.post('/page/:pageID', mid.authorizeUser, mid.checkSignUpInput, (req, 
       });
     }
     else {
-      // req.user = doc;
-      // next();
       //ASK FOR PERMISSION
-      // res.json(formatOutput(doc, req.page));
+      const token = jwt.sign({userID: req.page.userID}, configure.secret, { expiresIn: '1h' });
+      const billing = doc.billing.split('/').reduce((a, b) => {
+        if(b !== "true" && b !== "false"){
+          if(isNaN(a.charAt(a.length - 1) && isNaN(b.charAt(0)))) a = a + ", " + b;
+          else return a = a + " " + b;
+        }
+        return a;
+      }, '');
+
+      res.json({
+        edit: {
+          url: '/user/page/' + req.page._id + "/" + doc._id + '?token=' + token,
+          modalTitle: 'Continue',
+          next: '#',
+          dataObj: req.body
+        },
+        message: "This email already has an account associated with it. Continue with this account: " + billing + " ?"
+      })
     }
   });
 }, formatOutput);

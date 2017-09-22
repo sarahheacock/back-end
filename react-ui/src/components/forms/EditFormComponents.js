@@ -17,7 +17,8 @@ const hash = {
   "Update Credit": paymentData,
   "Update Billing": addressData,
   "Update Email": emailData,
-  "Find Client": signUpAdminData
+  "Submit": signUpAdminData,
+  "Continue": signUpAdminData
 };
 
 const upper = (label) => {

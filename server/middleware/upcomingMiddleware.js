@@ -77,54 +77,62 @@ const createMessage = (reservations, task, name) => {
 
 //send email and text message if client elects
 const sendMessage = (req, res, next) => {
-  const name = (req.user.name) ? req.user.name : req.user.email;
-  const messageObj = createMessage(req.reservations, req.params.task, name);
+  if(!req.message){
+    const name = (req.user.name) ? req.user.name : req.user.email;
+    // const idList = (req.body.reservations) ? req.body.reservations.map((r) => String(r._id)) : [];
+    const reservations = req.reservations || req.welcome.filter((w) => { if(req.body.reservations.includes(String(w._id))) return w; });
 
-  nodemailerMailgun.sendMail({
-    from: 'sheacock@kent.edu',
-    to: req.user.email, // An array if you have multiple recipients.
-    subject: messageObj.subject,
-    //You can use "html:" to send HTML email content. It's magic!
-    html: messageObj.html,
-  },
-  (err, info) => {
-    let newMessage = (err) ? data.messages.emailError : '';
+    const messageObj = createMessage(reservations, req.params.task, name);
 
-    if(req.user.billing){
-      const phone = req.user.billing.split('/').reduce((a, b) => {
-        if(b.includes('+')) return b;
-        else if(b === "false") return false;
-        else return a;
-      }, false);
-      console.log(phone);
+    nodemailerMailgun.sendMail({
+      from: 'sheacock@kent.edu',
+      to: req.user.email, // An array if you have multiple recipients.
+      subject: messageObj.subject,
+      //You can use "html:" to send HTML email content. It's magic!
+      html: messageObj.html,
+    },
+    (err, info) => {
+      let newMessage = (err) ? data.messages.emailError : '';
 
-      if(phone !== false){
-        textClient.messages.create({
-          from: '+16156453672',
-          to: phone,
-          body: messageObj.body
-        }, (error, message) => {
-          console.log(error);
-          if(error){
-            if(newMessage !== '') req.message = newMessage + " " + data.messages.phoneError;
-            else req.message = data.messages.phoneError
-          }
-          else{
-            req.message = newMessage;
-          }
+      if(req.user.billing){
+        const phone = req.user.billing.split('/').reduce((a, b) => {
+          if(b.includes('+')) return b;
+          else if(b === "false") return false;
+          else return a;
+        }, false);
+        console.log(phone);
+
+        if(phone !== false){
+          textClient.messages.create({
+            from: '+16156453672',
+            to: phone,
+            body: messageObj.body
+          }, (error, message) => {
+            console.log(error);
+            if(error){
+              if(newMessage !== '') req.message = newMessage + " " + data.messages.phoneError;
+              else req.message = data.messages.phoneError
+            }
+            else{
+              req.message = newMessage;
+            }
+            next();
+          });
+        }
+        else{
+          req.message = newMessage;
           next();
-        });
+        }
       }
       else{
         req.message = newMessage;
         next();
       }
-    }
-    else{
-      req.message = newMessage;
-      next();
-    }
-  });
+    });
+  }
+  else {
+    next();
+  }
 };
 
 //=====================================================================
@@ -191,7 +199,7 @@ const updateCart = (req, res, next) => {
         message: data.messages.adminContinueMessage,
         edit: {
           url: '/user/page/' + req.page._id + '?token=' + token,
-          modalTitle: 'Find Client',
+          modalTitle: 'Submit',
           next: '#',
           dataObj: dataObj
         },
@@ -215,8 +223,6 @@ const updateCart = (req, res, next) => {
       });
     }
   }
-
-  console.log("upcoming", req.user);
 
   if(req.user){
     req.user.save((err, doc) => {
@@ -264,7 +270,6 @@ const getAvailable = (req, res, next) => {
         else a[b.roomID] = a[b.roomID] + 1;
         return a;
       }, {});
-      console.log(resObj);
 
       const days = Math.ceil((dateTwo - dateOne) / (24 * 60 * 60 * 1000));
       const result = rooms.filter((room) => {
@@ -286,9 +291,8 @@ const getAvailable = (req, res, next) => {
 
 const createRes = (req, res, next) => {
   if(req.message === data.messages.available){
-    res.json({
-      message: data.messages.confirmError
-    });
+    req.message = data.messages.confirmError;
+    next();
   }
   else {
     let result = [];
@@ -323,33 +327,33 @@ const createRes = (req, res, next) => {
 };
 
 
-const deleteRes = (req, res, next) => {
-  Reservation.findById(req.params.resID).populate({
-    path: 'roomID',
-    model: 'Room',
-    select: 'image title'
-  }).exec((err, doc) => {
-    if(err) next(err);
-    req.reservations = [doc];
-    doc.remove((err, stay) => {
-      if(err) next(err);
-      console.log(req.reservations);
-      next();
-    });
-  });
-};
+// const deleteRes = (req, res, next) => {
+//   Reservation.findById(req.params.resID).populate({
+//     path: 'roomID',
+//     model: 'Room',
+//     select: 'image title'
+//   }).exec((err, doc) => {
+//     if(err) next(err);
+//     req.reservations = [doc];
+//     doc.remove((err, stay) => {
+//       if(err) next(err);
+//       console.log(req.reservations);
+//       next();
+//     });
+//   });
+// };
 
-const getCalendar = (req, res, next) => {
-  const date = (req.params.start) ? new Date(parseInt(req.params.start)) : new Date();
-  const month = (date.getMonth() + 1).toString();
-  const year = date.getFullYear().toString();
-  Reservation.findMonth(month, year, (err, reservations) => {
-    if(err) next(err);
-    req.welcome = reservations;
-    next();
-    //res.json(format(reservations, req.message));
-  });
-};
+// const getCalendar = (req, res, next) => {
+//   const date = (req.params.start) ? new Date(parseInt(req.params.start)) : new Date();
+//   const month = (date.getMonth() + 1).toString();
+//   const year = date.getFullYear().toString();
+//   Reservation.findMonth(month, year, (err, reservations) => {
+//     if(err) next(err);
+//     req.welcome = reservations;
+//     next();
+//     //res.json(format(reservations, req.message));
+//   });
+// };
 
 // const chargeClient = (req, res, next) => {
 //   let source = {object: 'card'};
@@ -384,9 +388,9 @@ const getCalendar = (req, res, next) => {
 
 module.exports = {
   createRes: createRes,
-  deleteRes: deleteRes,
+  // deleteRes: deleteRes,
   getAvailable: getAvailable,
-  getCalendar: getCalendar,
+  // getRes: getRes,
   updateCart: updateCart,
   sendMessage: sendMessage,
 };

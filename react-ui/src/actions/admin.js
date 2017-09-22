@@ -84,10 +84,12 @@ export const postData = (url, newData) => {
 };
 
 
-export const deleteData = (url) => {
+export const deleteData = (url, newData) => {
   return (dispatch) => {
-    console.log(url);
-    return axios.delete(url)
+    console.log(url, newData);
+    return axios.delete(url, {
+      data: newData
+    })
     .then(response => {
       console.log("response", response.data);
       dispatch(updateState(response.data));

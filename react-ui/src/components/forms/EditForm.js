@@ -13,13 +13,14 @@ const EditForm = (props) => {
   //======ALL OF THE FORM GROUPS===================================
 
   // console.log(Object.keys(props.edit.dataObj));
-  const formGroups = (props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Cart") || props.edit.modalTitle.includes("Upcoming")) ?
+  const formGroups = ((props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Cart")) && !props.edit.modalTitle.includes("Reservation")) ?
     <EditFormText
       title={props.edit.modalTitle}
       dataObj={props.edit.dataObj}
     />:
-    (props.edit.modalTitle.includes("Confirm")) ?
+    (props.edit.modalTitle.includes("Confirm") || props.edit.dataObj.reservations) ?
     <ConfirmForm
+      reservations={props.edit.dataObj.reservations}
       user={props.user}
       title={props.edit.modalTitle}
     /> :

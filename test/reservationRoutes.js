@@ -721,11 +721,10 @@ describe('Reservation', () => {
       it('should book cart reservations if they are available', (done) => {
         chai.request(server)
         .post('/res/user/' + user.id + "?token=" + token)
-        .send({})
+        .send({message: "hi"})
         .end((err, res) => {
           console.log(res.body);
-          res.body.user.cart.should.be.a('array').length(0);
-          res.body.user.name.should.eql(user.name);
+          res.body.message.should.eql("hi");
           done();
         });
       });
@@ -735,24 +734,22 @@ describe('Reservation', () => {
         user.save((err, doc) => {
           chai.request(server)
           .post('/res/user/' + user.id + "?token=" + token)
-          .send({})
+          .send({message: "hi"})
           .end((err, res) => {
-            res.body.user.cart.should.be.a('array').length(0);
-            res.body.user.name.should.eql(user.name);
+            res.body.message.should.eql("hi");
             done();
           });
         });
       })
 
       it('should post confirmation even if text does not send', (done) => {
-        user.billing = "55555/true";
+        user.billing = "+55555/true";
         user.save((err, doc) => {
           chai.request(server)
           .post('/res/user/' + user.id + "?token=" + token)
-          .send({})
+          .send({message: "hi"})
           .end((err, res) => {
-            res.body.user.cart.should.be.a('array').length(0);
-            res.body.user.name.should.eql(user.name);
+            res.body.message.should.eql("hi");
             done();
           });
         });
@@ -763,9 +760,9 @@ describe('Reservation', () => {
         user.save((err, doc) => {
           chai.request(server)
           .post('/res/user/' + user.id + "?token=" + token)
-          .send({})
+          .send({message: "hi"})
           .end((err, res) => {
-            res.header['location'].should.include('/welcome');
+            res.body.message.should.eql("hi");
             done();
           });
         });
@@ -793,8 +790,10 @@ describe('Reservation', () => {
           newNewRes.save((err, newDoc) => {
             chai.request(server)
             .post('/res/user/' + user.id + "?token=" + token)
-            .send({})
+            .send({message: "hi"})
             .end((err, res) => {
+              console.log(res.body);
+              res.body.user.cart.should.be.a('array').length(0);
               res.body.message.should.eql(messages.confirmError);
               done();
             });
@@ -814,9 +813,9 @@ describe('Reservation', () => {
       it('should book cart reservations if they are available', (done) => {
         chai.request(server)
         .post('/res/page/' + page.id + "/" + user.id + "?token=" + token)
-        .send({})
+        .send({message: "hi"})
         .end((err, res) => {
-          res.header['location'].should.include('/welcome');
+          res.body.message.should.eql("hi");
           done();
         });
       });
@@ -846,6 +845,8 @@ describe('Reservation', () => {
             .post('/res/page/' + page.id + "/" + user.id + "?token=" + token)
             .send({})
             .end((err, res) => {
+              console.log(res.body);
+              res.body.user.cart.should.be.a('array').length(0);
               res.body.message.should.eql(messages.confirmError);
               done();
             });
@@ -916,24 +917,69 @@ describe('Reservation', () => {
 
       it('should check in client', (done) => {
         chai.request(server)
-        .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
-        .send({})
+        .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+        .send({reservations: [reservation]})
         .end((err, res) => {
           console.log(res.body);
           res.body.message.should.eql('');
-          res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+          res.body.welcome[0]["checkedIn"].should.eql(true);
           done();
         });
       });
 
       it('should remind client', (done) => {
         chai.request(server)
-        .put('/res/page/' + page.id + "/reminder/" + user.id + "/" + reservation.start + "?token=" + token)
-        .send({})
+        .put('/res/page/' + page.id + "/reminder/" + user.id + "?token=" + token)
+        .send({reservations: [reservation]})
         .end((err, res) => {
+          console.log(res.body);
           res.body.message.should.eql('');
-          res.body.welcome[0]["event"]["reminded"].should.eql(true);
+          res.body.welcome[0]["reminded"].should.eql(true);
           done();
+        });
+      });
+
+      it('should remind both', (done) => {
+        let newRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+        newRes.save((err, r) => {
+          console.log(r);
+          chai.request(server)
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+          .send({reservations: [reservation, r]})
+          .end((err, res) => {
+            console.log(res.body);
+            res.body.welcome[0]["checkedIn"].should.eql(true);
+            res.body.welcome[1]["checkedIn"].should.eql(true);
+            done();
+          });
+        });
+      });
+
+      it('should remind one', (done) => {
+        let newRes = new Reservation({
+          start: start + 5*24*60*60*1000,
+          end: end + 8*24*60*60*1000,
+          cost: 100,
+          guests: 2,
+          roomID: room2.id,
+          userID: user.id
+        });
+        newRes.save((r) => {
+          chai.request(server)
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+          .send({reservations: [reservation]})
+          .end((err, res) => {
+            console.log(res.body);
+            res.body.welcome[0]["checkedIn"].should.eql(true);
+            done();
+          });
         });
       });
 
@@ -941,12 +987,27 @@ describe('Reservation', () => {
         user.email = "sarah@gmail.com";
         user.save((err, doc) => {
           chai.request(server)
-          .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
-          .send({})
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+          .send({reservations: [reservation]})
           .end((err, res) => {
-            console.log(user);
+            console.log(res.body);
             res.body.message.should.eql(messages.emailError);
-            res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+            res.body.welcome[0]["checkedIn"].should.eql(false);
+            done();
+          });
+        });
+      });
+
+      it('should send error message and not remind if email wrong', (done) => {
+        user.email = "sarah@gmail.com";
+        user.save((err, doc) => {
+          chai.request(server)
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+          .send({reservations: [reservation]})
+          .end((err, res) => {
+            console.log(res.body);
+            res.body.message.should.eql(messages.emailError);
+            res.body.welcome[0]["reminded"].should.eql(false);
             done();
           });
         });
@@ -956,11 +1017,12 @@ describe('Reservation', () => {
         user.billing = "+456789/true";
         user.save((err, doc) => {
           chai.request(server)
-          .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
-          .send({})
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+          .send({reservations: [reservation]})
           .end((err, res) => {
+            console.log(res.body);
             res.body.message.should.eql(messages.phoneError);
-            res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+            res.body.welcome[0]["checkedIn"].should.eql(true);
             done();
           });
         });
@@ -972,11 +1034,11 @@ describe('Reservation', () => {
 
         user.save((err, doc) => {
           chai.request(server)
-          .put('/res/page/' + page.id + "/checkIn/" + user.id + "/" + reservation.start + "?token=" + token)
-          .send({})
+          .put('/res/page/' + page.id + "/checkIn/" + user.id + "?token=" + token)
+          .send({reservations: [reservation]})
           .end((err, res) => {
             res.body.message.should.eql(messages.emailError + " " + messages.phoneError);
-            res.body.welcome[0]["event"]["checkedIn"].should.eql(true);
+            res.body.welcome[0]["checkedIn"].should.eql(false);
             done();
           });
         });
@@ -1006,8 +1068,8 @@ describe('Reservation', () => {
 
       it('should delete reservation and return calendar', (done) => {
         chai.request(server)
-        .delete('/res/page/' + page.id + "/cancel/" + user.id + "/" + reservation.id + "?token=" + token)
-        .send({})
+        .delete('/res/page/' + page.id + "/cancel/" + user.id + "?token=" + token)
+        .send({reservations: [reservation]})
         .end((err, res) => {
           console.log(res.body);
           res.body.message.should.eql('');

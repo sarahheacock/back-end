@@ -1,6 +1,6 @@
 const express = require("express");
 const reservationRoutes = express.Router();
-// const data = require('../../data/data');
+const messages = require('../../data/data').messages;
 
 const Reservation = require("../models/page").Reservation;
 const Page = require("../models/page").Page;
@@ -43,28 +43,42 @@ reservationRoutes.param("userID", (req, res, next, id) => {
   });
 });
 
-reservationRoutes.param("end", (req, res, next, id) => {
-  const start = new Date(parseInt(req.params.start)).setUTCHours(12, 0, 0, 0);
-  const end = new Date(parseInt(id)).setUTCHours(11, 59, 0, 0);
-  Reservation.find({userID: req.params.userID, start: start, end: end}).populate({
+reservationRoutes.param("task", (req, res, next, id) => {
+  Reservation.find({
+    userID: req.params.userID
+  }).populate({
     path: 'roomID',
     model: 'Room',
     select: 'image title'
-  }).populate({
-    path: 'userID',
-    model: 'User',
-    select: 'credit billing name email userID'
   }).exec((err, doc) => {
     if(err) next(err);
-    if(!doc){
-      err = new Error("Reservation Not Found");
-      err.status = 404;
-      return next(err);
-    }
-    req.reservations = doc;
+    req.welcome = doc;
     next();
   });
 });
+
+// reservationRoutes.param("end", (req, res, next, id) => {
+//   const start = new Date(parseInt(req.params.start)).setUTCHours(12, 0, 0, 0);
+//   const end = new Date(parseInt(id)).setUTCHours(11, 59, 0, 0);
+//   Reservation.find({userID: req.params.userID, start: start, end: end}).populate({
+//     path: 'roomID',
+//     model: 'Room',
+//     select: 'image title'
+//   }).populate({
+//     path: 'userID',
+//     model: 'User',
+//     select: 'credit billing name email userID'
+//   }).exec((err, doc) => {
+//     if(err) next(err);
+//     if(!doc){
+//       err = new Error("Reservation Not Found");
+//       err.status = 404;
+//       return next(err);
+//     }
+//     req.reservations = doc;
+//     next();
+//   });
+// });
 
 //===================RESERVATIONS================================
 //this route is for when user's token is not defined yet
@@ -98,8 +112,9 @@ reservationRoutes.get('/user/:userID', auth, (req, res, next) => {
 reservationRoutes.post('/user/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
   //CHANGE TO REDIRECT TO WELCOME
   //WELCOME WILL CALL GET /USER/USER/:USERID
-  res.json(req.body);
-});
+  if(req.message !== messages.confirmError) res.json(req.body);
+  else next();
+}, formatOutput.pop, formatOutput.formatOutput);
 
 //===============RESERVATIONS THAT REQUIRE ADMIN AUTH==================
 reservationRoutes.get('/page/:pageID/:userID', auth, (req, res, next) => {
@@ -120,58 +135,93 @@ reservationRoutes.get('/page/:pageID/:userID', auth, (req, res, next) => {
 reservationRoutes.post('/page/:pageID/:userID', auth, mid.updateCart, mid.createRes, mid.sendMessage, (req, res, next) => {
   //CHANGE TO REDIRECT TO WELCOME
   //WELCOME WILL CALL GET /USER/PAGE/:PAGEID/:MONTH/:YEAR
-  //res.redirect('/welcome');
-  res.json(req.body);
-});
+  if(req.message !== messages.confirmError) res.json(req.body);
+  else next();
+}, formatOutput.pop, formatOutput.formatOutput);
 
 //get reservations by month
 reservationRoutes.get('/page/:pageID/:month/:year', auth, (req, res, next) => {
   Reservation.findMonth(req.params.month, req.params.year, (err, reservations) => {
     if(err) next(err);
-    req.welcome = reservations;
+    req.welcome = reservations.map((r) => {
+      return {
+        start: new Date(r.start),
+        end: new Date(r.end),
+        title: r.userID.email,
+        event: {
+          user: r.userID._id,
+          checkedIn: r.charged,
+          reminded: r.reminded,
+          charged: r.charged
+        }
+      };
+    });
     next();
   });
 }, formatOutput.formatOutput);
 
-//cancel reservations
-//task = "cancel"
-reservationRoutes.delete("/page/:pageID/:task/:userID/:resID/", auth, mid.deleteRes, mid.sendMessage, mid.getCalendar, formatOutput.pop, formatOutput.formatOutput);
 
 //charge client
-reservationRoutes.put("/page/:pageID/charge/:userID/:start/:end", auth, (req, res, next) => {
-  let i = 1;
-  async.each(req.reservations, (reservation) => {
-    reservation.charged = true; //change later
-    //reservation.checkedIn = true;
-    reservation.save((err, doc) => {
-      if(err) next(err);
-      i++;
-      if(i === req.reservations.length){
-        next();
-      }
-    });
-  });
-}, mid.getCalendar, formatOutput.pop, formatOutput.formatOutput);
-
-
 //send reminder message => task === "reminder"
 //send checked in message => task === "checkIn"
-reservationRoutes.put("/page/:pageID/:task/:userID/:start/:end", auth, (req, res, next) => {
-  //const change = (req.params.task === "checkIn") ? {checkedIn: true} : {reminded: true};
+reservationRoutes.put("/page/:pageID/:task/:userID/", auth, mid.sendMessage, (req, res, next) => {
   let i = 0;
-  async.each(req.reservations, (reservation) => {
-    if(req.params.task === "checkIn")reservation.checkedIn = true; //change later
-    if(req.params.task === "reminder")reservation.reminded = true;
+  console.log(req.message);
+  // const idList = req.body.reservations.map((r) => String(r._id));
+  console.log(idList);
 
-    reservation.save((err, doc) => {
-      if(err) next(err);
+  async.each(req.welcome, (doc) => {
+    console.log(doc._id);
+    if(req.body.reservations.includes(String(doc._id)) && !req.message.includes("email")){
+      console.log("YAY");
+      if(req.params.task === "checkIn") doc.checkedIn = true; //change later
+      if(req.params.task === "reminder") doc.reminded = true;
+      if(req.params.task === "charge") doc.charged = true;
+
+      doc.save((err, old) => {
+        if(err) next(err);
+        i++;
+        if(i === req.welcome.length) next();
+      });
+    }
+    else{
       i++;
-      if(req.reservations.length === i){
+      if(i === req.welcome.length) next();
+    }
+  });
+
+}, formatOutput.pop, formatOutput.formatOutput);
+
+//cancel reservations
+//task = "cancel"
+reservationRoutes.delete("/page/:pageID/:task/:userID/", auth, mid.sendMessage, (req, res, next) => {
+  let i = 0;
+  const end = req.welcome.length;
+  let result = [];
+  // const idList = req.body.reservations.map((r) => String(r._id));
+
+  async.each(req.welcome, (doc) => {
+    if(req.body.reservations.includes(String(doc._id)) && !req.message.includes("email")){
+      console.log(doc._id);
+      doc.remove((err, old) => {
+        if(err) next(err);
+        i++;
+        if(i >= end){
+          //req.welcome = result;
+          next();
+        }
+      });
+    }
+    else{
+      i++;
+      //result.push(doc);
+      if(i >= end){
+        //req.welcome = result;
         next();
       }
-    });
+    }
   });
-}, mid.sendMessage, mid.getCalendar, formatOutput.pop, formatOutput.formatOutput);
+}, formatOutput.pop, formatOutput.formatOutput);
 
 
 

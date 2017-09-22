@@ -20,6 +20,14 @@ body {
   width: 50px;
 }
 
+.face{
+  color: White;
+}
+
+.face:hover{
+  color: White;
+}
+
 header{
   /*background-color: #07889B;*/
   top: 0;

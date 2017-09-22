@@ -19,7 +19,7 @@ const cardType = (num) => {
 }
 
 const formatCredit = (str, userID) => {
-  console.log(str);
+  //console.log(str);
   if(!str) return data.intitial.user.credit;
 
   let credit = CryptoJS.AES.decrypt(str.toString(), userID).toString(CryptoJS.enc.Utf8);
@@ -37,7 +37,7 @@ const formatCredit = (str, userID) => {
 
 
 const formatOutput = (req, res, next) => {
-  console.log("output", req.user);
+  //console.log("output", req.user);
 
   let welcome = data.initial.welcome;
   let user = {};
@@ -88,61 +88,18 @@ const formatOutput = (req, res, next) => {
     book.available = req.available;
   }
 
-  if(req.welcome && page && !userP){
-    welcome = req.welcome.map((r) => {
-      return {
-        start: new Date(r.start),
-        end: new Date(r.end),
-        title: r.userID.email,
-        event: {
-          user: r.userID._id,
-          checkedIn: r.charged,
-          reminded: r.reminded,
-          charged: r.charged
-        }
-      };
-    });
-    // .reduce((b) => {
-    //   console.log(b);
-    //   const title = b.userID.email;
-    //   const start = new Date(b.start);
-    //   const end = new Date(b.end);
-    //
-    //   let obj = b;
-    //
-    //   obj.userID.credit = formatCredit(b.userID.credit, b.userID.userID);
-    //   obj.roomID = [b.roomID];
-    //
-    //   delete obj.userID.userID;
-    //
-    //   return {
-    //     start: start,
-    //     end: end,
-    //     title: title,
-    //     event: obj
-    //   };
-    // });
-  }
-  else if(req.welcome && userP){
-    welcome = req.welcome;
-  }
+  if(req.welcome) welcome = req.welcome;
+  //else if(req.reservations) welcome = req.reservations;
+  let obj = {
+    message: message,
+    welcome: welcome,
+    book: book
+  };
 
-  if(!page && !userP){
-    res.json({
-      message: message,
-      edit: data.initial.edit,
-      book: book,
-    });
-  }
-  else {
-    res.json({
-      user: user,
-      message: message,
-      edit: data.initial.edit,
-      welcome: welcome,
-      book: book,
-    });
-  }
+  if(!message) obj.edit = data.initial.edit;
+  if(page || userP) obj.user = user;
+
+  res.json(obj);
 };
 
 const pop = (req, res, next) => {

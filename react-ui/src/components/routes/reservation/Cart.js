@@ -25,10 +25,9 @@ const Cart = (props) => {
 
     return (
       <div className={(item.start < limit) ? "content old" : "content"} key={`${i}cart`}>
-        <h3 className="pretty text-center">{item.roomID.title}</h3>
         <Row className="clear-fix">
           <Col sm={1} className="columns">
-            {(props.user.admin && props.remove === false) ?
+            {(props.user.admin && props.remove === false && props.updateState) ?
               <FormGroup className="text-center">
                 <Checkbox
                   className="text-center big-check"
@@ -52,6 +51,7 @@ const Cart = (props) => {
           </Col>
           <Col sm={5} className="columns">
             <div className="text-center">
+              <h3 className="pretty text-center">{item.roomID.title}</h3>
               <h4><b>{start}<br />{`${startTime} -`}</b></h4>
               <h4><b>{end}<br />{endTime}</b></h4>
               <h4 className="paragraph"><big>$</big>{item.cost}<sup>{".00"}</sup></h4>

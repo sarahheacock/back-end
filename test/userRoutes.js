@@ -191,7 +191,7 @@ describe('User', () => {
           res.body.user.should.have.property('email').eql(user.email);
           res.body.user.should.have.property('name').eql(user.name);
           res.body.user.should.have.property('token');
-          res.body.user.should.have.property('credit').eql("test/xxxx xxxx xxxx 0000/01 - 2050");
+          res.body.user.should.have.property('credit').eql("test/fa fa-cc-amex/xxxx xxxx xxxx 0000/01 - 2050");
           done();
         });
       });
@@ -361,11 +361,12 @@ describe('User', () => {
         .send(newUser)
         .end((err, res) => {
           res.body.should.be.a('object');
-          res.body.user.should.have.property('email').eql(user.email);
-          res.body.user.should.have.property('billing').eql(user.billing);
-          res.body.user.should.have.property('name').eql(page.name);
-          res.body.user.should.have.property('token');
-          res.body.user.should.have.property('_id').eql(user.id);
+          res.body.edit.modalTitle.should.eql("Continue")
+          // res.body.user.should.have.property('email').eql(user.email);
+          // res.body.user.should.have.property('billing').eql(user.billing);
+          // res.body.user.should.have.property('name').eql(page.name);
+          // res.body.user.should.have.property('token');
+          // res.body.user.should.have.property('_id').eql(user.id);
           done();
         });
       });
