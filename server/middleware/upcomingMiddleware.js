@@ -81,7 +81,6 @@ const sendMessage = (req, res, next) => {
     const name = (req.user.name) ? req.user.name : req.user.email;
     // const idList = (req.body.reservations) ? req.body.reservations.map((r) => String(r._id)) : [];
     const reservations = req.reservations || req.welcome.filter((w) => { if(req.body.reservations.includes(String(w._id))) return w; });
-
     const messageObj = createMessage(reservations, req.params.task, name);
 
     nodemailerMailgun.sendMail({

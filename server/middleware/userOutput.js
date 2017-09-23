@@ -39,7 +39,7 @@ const formatCredit = (str, userID) => {
 const formatOutput = (req, res, next) => {
   //console.log("output", req.user);
 
-  let welcome = data.initial.welcome;
+  //let welcome = data.initial.welcome;
   let user = {};
   let book = data.initial.book;
 
@@ -88,16 +88,17 @@ const formatOutput = (req, res, next) => {
     book.available = req.available;
   }
 
-  if(req.welcome) welcome = req.welcome;
+  //if(req.welcome) welcome = req.welcome;
   //else if(req.reservations) welcome = req.reservations;
   let obj = {
     message: message,
-    welcome: welcome,
     book: book
   };
 
   if(!message) obj.edit = data.initial.edit;
   if(page || userP) obj.user = user;
+  if(req.welcome) obj.welcome = req.welcome;
+  if(req.available) obj.welcome = data.initial.welcome;
 
   res.json(obj);
 };

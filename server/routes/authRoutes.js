@@ -73,7 +73,7 @@ authRoutes.get('/facebook/callback',
     const token = jwt.sign({userID: req.user.userID}, configure.secret, {
       expiresIn: '3h' //expires in three hour
     });
-    res.redirect('http://localhost:3000/book/select-room/#register/?token=' + token + '/?id=' + req.user._id);
+    res.redirect('https://sarahbb.herokuapp.com/book/select-room/#register/?token=' + token + '/?id=' + req.user._id);
   });
 
 authRoutes.get('/logout', (req, res) => {

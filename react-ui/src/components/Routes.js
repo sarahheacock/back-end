@@ -5,9 +5,9 @@ import { PageHeader } from 'react-bootstrap';
 import Home from './routes/Home';
 import Gallery from './routes/Gallery';
 import LocalGuide from './routes/LocalGuide';
-import Book from './routes/Book';
+// import Book from './routes/Book';
 import Room from './routes/Room';
-import WelcomeAdmin from './routes/WelcomeAdmin';
+// import WelcomeAdmin from './routes/WelcomeAdmin';
 // import EditButton from './buttons/EditButton';
 
 const title = (s) => {
@@ -27,9 +27,11 @@ const Routes = (props) => {
           <div></div>))))
 
   return (
-    <div className={(props.section === "home" || props.section === "gallery/:room") ? "" : "main-content"}>
-      {(props.section === "home" || props.section === "gallery/:room") ? <div></div> : <PageHeader><span className="header-text">{title(props.section)}</span></PageHeader>}
-      <div>{(Object.keys(props.data).length > 0) ? section : '' }</div>
+    <div>
+      <div className="tool-bar">{(props.section === "home" || props.section === "gallery/:room") ? <div></div> : <PageHeader><span className="header-text">{title(props.section)}<hr /></span></PageHeader>}</div>
+      <div className={(props.section === "home" || props.section === "gallery/:room") ? "" : "main-content"}>
+        <div>{(Object.keys(props.data).length > 0) ? section : '' }</div>
+      </div>
     </div>
   );
 };

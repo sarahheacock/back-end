@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Nav, Navbar, NavItem } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
+// import { NavLink } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import EditButton from './buttons/EditButton';
-import { blogID, initial } from '../../../data/data';
+import { blogID } from '../../../data/data';
 
 class Header extends React.Component {
   static propTypes = {
@@ -52,7 +52,7 @@ class Header extends React.Component {
 
 
     return (
-        <Navbar className="navigation" id="navigation" inverse>
+        <Navbar className="navigation navbar-fixed-top" id="navigation" inverse>
           <Navbar.Header>
             <Navbar.Brand>
               <div><i className="fa fa-coffee"></i><span className="brand">{" B&B"}</span></div>
@@ -65,9 +65,18 @@ class Header extends React.Component {
               {navItems}
             </Nav>
             <Nav className="" navbar pullRight>
-              <LinkContainer to={(this.props.user.token) ? "/welcome": "#"}>
+              <LinkContainer to={(this.props.user.token) ? ((this.props.user._id && this.props.user.admin) ? `/welcome/${this.props.user._id}` : "/welcome"): "#"}>
                 {(!(!this.props.user.token))?
-                  <NavItem><span className="shop">{`${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))} `}<i className="fa fa-shopping-cart large-icon" aria-hidden="true"></i>{this.props.user.cart.length}</span></NavItem> :
+                  <NavItem>
+                    <span className="shop sign-out">
+                    {`${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))} `}
+                    {(this.props.user.admin && !this.props.user._id) ?
+                      <span></span>:
+                      <span><i className="fa fa-shopping-cart large-icon" aria-hidden="true"></i>
+                      {this.props.user.cart.length}</span>
+                    }
+                    </span>
+                  </NavItem> :
                   <EditButton
                     user={this.props.user}
                     dataObj={{}}

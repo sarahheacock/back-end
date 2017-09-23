@@ -57,29 +57,6 @@ reservationRoutes.param("task", (req, res, next, id) => {
   });
 });
 
-// reservationRoutes.param("end", (req, res, next, id) => {
-//   const start = new Date(parseInt(req.params.start)).setUTCHours(12, 0, 0, 0);
-//   const end = new Date(parseInt(id)).setUTCHours(11, 59, 0, 0);
-//   Reservation.find({userID: req.params.userID, start: start, end: end}).populate({
-//     path: 'roomID',
-//     model: 'Room',
-//     select: 'image title'
-//   }).populate({
-//     path: 'userID',
-//     model: 'User',
-//     select: 'credit billing name email userID'
-//   }).exec((err, doc) => {
-//     if(err) next(err);
-//     if(!doc){
-//       err = new Error("Reservation Not Found");
-//       err.status = 404;
-//       return next(err);
-//     }
-//     req.reservations = doc;
-//     next();
-//   });
-// });
-
 //===================RESERVATIONS================================
 //this route is for when user's token is not defined yet
 //if user tries to add cart item, login modal will pop up
@@ -168,7 +145,6 @@ reservationRoutes.put("/page/:pageID/:task/:userID/", auth, mid.sendMessage, (re
   let i = 0;
   console.log(req.message);
   // const idList = req.body.reservations.map((r) => String(r._id));
-  console.log(idList);
 
   async.each(req.welcome, (doc) => {
     console.log(doc._id);

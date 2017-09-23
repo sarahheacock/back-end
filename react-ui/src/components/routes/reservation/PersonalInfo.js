@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { Row, Col } from 'react-bootstrap';
 import EditButton from '../../buttons/EditButton.js';
-import { initial } from '../../../../../data/data';
+// import { initial } from '../../../../../data/data';
 
 const cap = (s) => {
   return `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
@@ -19,7 +19,7 @@ const pretty = (info, cat) => {
       //if(b === '') return a;
 
       if(b === "true") input = "*Send me reservation confirmation through text message.";
-      if(b === "false") "*Do NOT send me reservation confirmation through text message.";
+      if(b === "false") input = "*Do NOT send me reservation confirmation through text message.";
 
       if(input.includes("*") || input.includes("+") || a.length < 3) a.push(input);
       else if(!isNaN(a[a.length - 1].slice(-1)) || !isNaN(b.charAt(0))) a[a.length - 1] = a[a.length - 1] + " " + b;

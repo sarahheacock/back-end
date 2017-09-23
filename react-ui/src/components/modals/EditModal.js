@@ -110,7 +110,7 @@ class EditModal extends React.Component {
     else if(title.includes("Delete")){
       editFunc = this.props.deleteData;
     }
-    else if(title.includes("Continue")){
+    else if(title.includes("Continue") || title.includes("Logout")){
       editFunc = this.props.getData;
     }
 
@@ -137,8 +137,8 @@ class EditModal extends React.Component {
 
           <Modal.Footer>
             <div className="text-center">
-              <button className="button linkButton" onClick={this.pop}>
-                {(this.props.message === messages.messageSent) ? "Close" : "Cancel"}
+              <button className="buttonLarge cancel" onClick={this.pop}>
+                {(this.props.message === messages.messageSent || this.props.message === "logged out") ? "Close" : "Cancel"} <i className="fa fa-times" aria-hidden="true"></i>
               </button>
             </div>
             *Fill out required fields

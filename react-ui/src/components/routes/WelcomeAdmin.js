@@ -1,14 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { PageHeader, Row, Col } from 'react-bootstrap';
+import { PageHeader } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
 
-import { blogID, initial } from '../../../../data/data';
+import { blogID } from '../../../../data/data';
+
 BigCalendar.setLocalizer(
   BigCalendar.momentLocalizer(moment)
 ); // or globalizeLocalizer
@@ -67,13 +68,15 @@ class WelcomeAdmin extends React.Component {
   render(){
 
     return(
+      <div>
+      <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}<hr /></span></PageHeader>
       <div className="main-content">
-        <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}</span></PageHeader>
 
         <div className="text-center">
-          <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
+          <br />
+          <button className="buttonLarge blueButton" onClick={this.logout}>Logout <i className="fa fa-sign-out" aria-hidden="true"></i></button>
           <NavLink to="/welcome/search">
-            <button className="linkButton orangeButton">Search for Client <i className="fa fa-search" aria-hidden="true"></i></button>
+            <button className="buttonLarge orangeButton">Search for Client <i className="fa fa-search" aria-hidden="true"></i></button>
           </NavLink>
         </div>
 
@@ -92,6 +95,7 @@ class WelcomeAdmin extends React.Component {
 
           />
         </div>
+      </div>
       </div>);
   }
 }

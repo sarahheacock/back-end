@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { NavLink } from 'react-router-dom';
+// import { NavLink } from 'react-router-dom';
 
 import EditButton from '../../buttons/EditButton.js';
 import { cloudName, blogID } from '../../../../../data/data';
@@ -8,7 +8,7 @@ import { Row, Col, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 
 import moment from 'moment';
-import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
+import { DayPickerRangeController } from 'react-dates';
 
 
 class Select extends React.Component {

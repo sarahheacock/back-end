@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import moment from 'moment';
-import { Row, Col, ControlLabel, FormGroup, FormControl, Checkbox } from 'react-bootstrap';
+import { Row, Col, FormGroup, Checkbox } from 'react-bootstrap';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 
 import EditButton from '../../buttons/EditButton.js';

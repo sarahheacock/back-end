@@ -20,9 +20,9 @@ class Welcome extends React.Component {
     updateState: PropTypes.func.isRequired,
   }
 
-  constructor(props){
-    super(props);
-  }
+  // constructor(props){
+  //   super(props);
+  // }
 
   componentDidMount(){
     const location = window.location.pathname.split('/').reduce((a, b) => {
@@ -59,6 +59,12 @@ class Welcome extends React.Component {
     }
   }
 
+  logout = (e) => {
+    if(e) e.preventDefault();
+    window.location.pathname = "/welcome";
+  }
+
+
   check = (e) => {
     if(e) e.preventDefault();
 
@@ -74,9 +80,13 @@ class Welcome extends React.Component {
     }
   }
 
-  logout = (e) => {
-    this.props.getData('/auth/logout');
-  }
+  // logout = (e) => {
+  //   //this.props.getData('/auth/logout');
+  //   this.props.updateState({
+  //     url: '/auth/logout',
+  //     dataObj:
+  //   });
+  // }
 
   valid = (key) => {
     return this.props.data.reduce((a, b) => {
@@ -90,17 +100,37 @@ class Welcome extends React.Component {
   render(){
 
     return(
+      <div>
+      <PageHeader>
+        <Row className="clear-fix">
+          <Col sm={6}>
+            <span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}! `}</span>
+          </Col>
+          <Col sm={6} className="admin">
+            {(this.props.user.admin) ?
+              <a className="sign-out" href="#" onClick={this.logout}>{`Sign Out ${this.props.user.email}`} <i className="fa fa-sign-out"></i></a>:
+              <span></span>}
+          </Col>
+        </Row>
+        <hr />
+      </PageHeader>
+
       <div className="main-content">
-        <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}</span></PageHeader>
         <div className="text-center">
-          <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
+          <br />
+          <EditButton
+            user={this.props.user}
+            dataObj={{}}
+            updateState={this.props.updateState}
+            title="Logout"
+          />
           {(this.props.user.admin) ?
           <span>
             <NavLink to="/welcome">
-              <button className="linkButton orangeButton">Go to Calendar <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
+              <button className="buttonLarge orangeButton">Go to Calendar <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
             </NavLink>
             <NavLink to="/welcome/search">
-              <button className="linkButton orangeButton">Search for Client <i className="fa fa-search" aria-hidden="true"></i></button>
+              <button className="buttonLarge orangeButton">Search for Client <i className="fa fa-search" aria-hidden="true"></i></button>
             </NavLink>
           </span>:
           <div></div>}
@@ -111,7 +141,7 @@ class Welcome extends React.Component {
           <Col sm={4} className="columns">
             <h3 className="pretty text-center">Upcoming Stays</h3>
             {(this.props.user.admin === false) ?
-              <div className='text-center'><h4>Click on a</h4>
+              <div className='text-center paragraph'><h4>Need to cancel or change a reservation? Click on a</h4>
               <h3>
                 <EditButton
                   user={this.props.user}
@@ -120,26 +150,30 @@ class Welcome extends React.Component {
                   title="Send Message"
                 />
               </h3>
-              <h4>or call the number below if you would like to cancel or change your reservation(s).</h4></div>:
+              <h4>or call the number below.</h4></div>:
               <div className="text-center">
+                <br />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
                   dataObj={this.valid("reminded")}
                   title="Send Reminder"
                 />
+                <br />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
                   dataObj={this.valid("checkedIn")}
                   title="Check-In"
                 />
+                <br />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
                   dataObj={this.valid("charged")}
                   title="Charge Client"
                 />
+                <br />
                 <EditButton
                   user={this.props.user}
                   updateState={this.props.updateState}
@@ -154,7 +188,10 @@ class Welcome extends React.Component {
               <Form>
                 <div className="text-center">
                   {(this.props.user.admin && this.props.data.length > 0) ?
-                    <button className="linkButton blueButton" onClick={this.check}>{(this.props.data[0]["notes"] === true) ? "Uncheck All" : "Check All"}</button>:
+                    <div>
+                      <br />
+                      <button className="button blueButton" onClick={this.check}>{(this.props.data[0]["notes"] === true) ? "Uncheck All" : "Check All"}</button>
+                    </div>:
                     <div></div>
                   }
                 </div>
@@ -178,7 +215,7 @@ class Welcome extends React.Component {
               <div>
                 {(!this.props.user.admin) ?
                 <NavLink to="/book/confirm">
-                  <button className="linkButton blueButton">Book Now</button>
+                  <button className="buttonLarge blueButton">Book Now <i className="fa fa-book" aria-hidden="true"></i></button>
                 </NavLink>:
                 <div></div>}
                 <h4><big>$</big>{this.props.user.cart.reduce((a, b) => {
@@ -232,6 +269,7 @@ class Welcome extends React.Component {
         </Row>
         <hr />
 
+      </div>
       </div>);
   }
 }

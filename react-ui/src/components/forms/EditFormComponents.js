@@ -2,10 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 import { Button, Row, Col, ControlLabel, FormGroup, FormControl, Checkbox } from 'react-bootstrap';
-import { loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData, emailData, notRequired, messages, cloudName, signUpAdminData } from '../../../../data/data';
+import { loginData, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData, emailData, notRequired, messages, cloudName, signUpAdminData } from '../../../../data/data';
 
 const hash = {
   "Login": loginData,
+  "Login Again": loginData,
   "Sign Up": signUpData,
   "Send Message": messageData,
   "Edit Content": editData,

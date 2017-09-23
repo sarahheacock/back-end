@@ -8,10 +8,10 @@ import { Image, CloudinaryContext, Transformation } from 'cloudinary-react';
 
 import { cloudName } from '../../../../data/data';
 import EditButton from '../buttons/EditButton.js';
-import Room from './Room';
+//import Room from './Room';
 
 const link = (cat) => {
-  return cat.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s/g, "-");
+  return cat.toLowerCase().trim().replace(/\W/g,"").replace(/\s/g, "-");
 }
 
 const Gallery = (props) => {
@@ -44,10 +44,10 @@ const Gallery = (props) => {
             <br />
             <div>
               <NavLink to={`/gallery/${link(room.title)}`}>
-                <button className="button blueButton">More Info</button>
+                <button className="button blueButton">More Info <i className="fa fa-info" aria-hidden="true"></i></button>
               </NavLink>
               <NavLink to="/book">
-                <button className="button orangeButton">Book Now</button>
+                <button className="button orangeButton">Check <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
               </NavLink>
             </div>
             <br />
@@ -72,7 +72,7 @@ const Gallery = (props) => {
   ));
 
   return (
-    <div>
+    <div className="text-center">
       <h3 className="pretty">{props.data.title}</h3>
       <p><b className="paragraph">{props.data.b}</b></p>
       <p className="paragraph">{props.data.p1}</p>
@@ -84,6 +84,7 @@ const Gallery = (props) => {
           title="Edit Content"
         />
       </div>
+      <br />
       <div>{gallery}</div>
       <div className="text-center">
         <EditButton

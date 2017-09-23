@@ -13,16 +13,17 @@ const EditForm = (props) => {
   //======ALL OF THE FORM GROUPS===================================
 
   // console.log(Object.keys(props.edit.dataObj));
-  const formGroups = ((props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Cart")) && !props.edit.modalTitle.includes("Reservation")) ?
+  const formGroups = (props.edit.modalTitle.includes("Logout")) ?
+  <h3 className="text-center">{(!props.message.includes("logged")) ? `Are you sure you would like to logout, ${props.user.name || props.user.email}?` : ""}</h3>:
+  ((props.edit.modalTitle.includes("Delete") || props.edit.modalTitle.includes("Cart")) && !props.edit.modalTitle.includes("Reservation")) ?
     <EditFormText
       title={props.edit.modalTitle}
       dataObj={props.edit.dataObj}
     />:
     (props.edit.modalTitle.includes("Confirm") || props.edit.dataObj.reservations) ?
     <ConfirmForm
-      reservations={props.edit.dataObj.reservations}
+      reservations={props.edit.dataObj.reservations || props.user.cart}
       user={props.user}
-      title={props.edit.modalTitle}
     /> :
     Object.keys(props.edit.dataObj).map(k => {
       if(k === "carousel"){
@@ -93,7 +94,6 @@ EditForm.propTypes = {
   formChange: PropTypes.func.isRequired,
   formAdd: PropTypes.func.isRequired,
   drop: PropTypes.func.isRequired,
-  formChange: PropTypes.func.isRequired,
 
   editData: PropTypes.func.isRequired,
   updateState: PropTypes.func.isRequired,

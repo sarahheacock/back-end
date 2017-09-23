@@ -81,6 +81,7 @@ userRoutes.put('/user/:userID/:userInfo/', mid.authorizeUser, mid.checkUserInput
   else req.user[req.params.userInfo] = req.newOutput;
 
   req.user.save((err,user) => {
+    if(err && req.params.userInfo === "email") res.json({message: "This new email already has another account associated with it."})
     if(err) return next(err);
     req.user = user;
     next();
@@ -148,6 +149,7 @@ userRoutes.put('/page/:pageID/:userID/:userInfo/', mid.authorizeUser, mid.checkU
   else req.user[req.params.userInfo] = req.newOutput;
 
   req.user.save((err,user) => {
+    if(err && req.params.userInfo === "email") res.json({message: "This new email already has another account associated with it."});
     if(err) return next(err);
     req.user = user;
     next();

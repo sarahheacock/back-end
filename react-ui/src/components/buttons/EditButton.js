@@ -6,17 +6,18 @@ import { NavItem } from 'react-bootstrap';
 const names = ["Send Reminder", "Check-In", "Charge Client", "Delete Reservation" ];
 
 const modify = (string) => {
-  if(string.includes(' ') && !string.includes('Update')  && !string.includes('Confirm')) return string.slice(0, string.indexOf(' ') + 1)
+  if(string.includes(' ') && !string.includes('Confirm') && !string.includes('Sign Up')) return string.slice(0, string.indexOf(' ') + 1)
   else return string;
 }
 const getClass = (n, valid) => {
   let style = "";
   if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove") ||  n.includes("Update") || n.includes("Cart")) style = "yellowButton";
-  else if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")) style = "orangeButton";
-  else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
+  else if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")  || n.includes("Sign Up")) style = "orangeButton";
+  else style = "blueButton";
 
-  if(n === "Login" || n.includes("Sign Up")) style += " button";
-  else style += " linkButton smallLink";
+  if(n.includes("Confirm")) style += " linkButton smallLink";
+  else if(n.includes("Logout") || n.includes("Sign Up")) style += " buttonLarge"
+  else style += " button";
 
   if(names.includes(n) && !valid){
     style += " old";
@@ -31,6 +32,14 @@ const getIcon = (n) => {
   if(n.includes("Confirm")) return "fa fa-flag-checkered";
   if(n.includes("Check")) return "fa fa-check";
   if(n.includes("Charge")) return "fa fa-usd";
+  if(n.includes("Credit")) return "fa fa-credit-card";
+  if(n.includes("Billing")) return "fa fa-address-card-o";
+  if(n.includes("Email")) return "fa fa-envelope-o";
+  if(n.includes("Edit")) return "fa fa-pencil";
+  if(n.includes("Add")) return "fa fa-plus-circle";
+  if(n.includes("Logout")) return "fa fa-sign-out";
+  if(n.includes("Login")) return "fa fa-sign-in";
+  if(n.includes("Sign Up")) return "fa fa-user-plus";
   return "";
 }
 
@@ -46,7 +55,7 @@ const EditButton = (props) => {
         <i className="fa fa-envelope env" aria-hidden="true"></i>
       </a> :
       ((props.title === "Login") ?
-        <NavItem onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }} ><span className="login">{modify(props.title)}</span></NavItem> :
+        <NavItem onClick={(e) => { if(e) e.preventDefault(); props.updateState({dataObj: props.dataObj, title: props.title}); }} ><span className="login">{modify(props.title)} <i className={getIcon(props.title)} aria-hidden="true"></i></span></NavItem> :
         <button className={getClass(props.title, valid)} onClick={(e) => { if(e) e.preventDefault(); if(valid) props.updateState({dataObj: props.dataObj, title: props.title}); }}>
           {modify(props.title)}<i className={getIcon(props.title)} aria-hidden="true"></i>
         </button>))

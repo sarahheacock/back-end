@@ -1,7 +1,8 @@
-import { blogID, loginData, initial, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData, emailData } from '../../../data/data';
+import { blogID, loginData, signUpData, addressData, paymentData, messageData, galleryData, localGuideData, editData, homeData, emailData } from '../../../data/data';
 
 const hash = {
   "Login": loginData,
+  "Login Again": loginData,
   "Sign Up": signUpData,
   "Send Message": messageData,
   "Edit Content": editData,
@@ -34,14 +35,14 @@ Edit.prototype = {
     if(Array.isArray(dataObj)){
       this.dataObj = {reservations: dataObj};
     }
-    else if(this.modalTitle.includes("Confirm")){
+    else if(this.modalTitle.includes("Confirm") || this.modalTitle.includes("Logout")){
       this.dataObj = {message: "confirm"};
     }
     else if(!this.modalTitle.includes("Delete") && !this.modalTitle.includes("Cart")){
       const A = ["Add Room", "Add Guide", "Sign Up", "Login", "Update Credit"];
       const defaultContent = A.includes(this.modalTitle.trim());
 
-      if(this.modalTitle.includes("Billing")){ //when editing user info
+      if(this.modalTitle.includes("Billing") || this.modalTitle.includes("Email")){ //when editing user info
         const arr = dataObj.split('/');
         let i = 0;
 
@@ -101,7 +102,8 @@ Edit.prototype = {
     else if((title.includes("Edit") || title.includes("Add") || title.includes("Delete")) && !title.includes("Add to Cart")) url = `/page/${blogID}${url}`;
     //if(title.includes("Reservation")) url = "/res" + url;
 
-    if(token) this.url = `${url}?token=${token}`;
+    if(title === "Logout") this.url = "/auth/logout"
+    else if(token) this.url = `${url}?token=${token}`;
     else this.url = url;
   },
 

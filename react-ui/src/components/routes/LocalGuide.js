@@ -10,7 +10,7 @@ import { Row, Col } from 'react-bootstrap';
 
 
 const link = (cat) => {
-  return "/guide/" + cat.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s/g, "-");
+  return "/guide/" + cat.toLowerCase().trim().replace(/\W/g,"").replace(/\s/g, "-");
 }
 
 const LocalGuide = (props) => {
@@ -54,7 +54,7 @@ const LocalGuide = (props) => {
 
       <Row className="clear-fix">
         <Col sm={4} className="columns">
-          <div className="text-center">{tabs}</div>
+          <div className="text-center tabs">{tabs}</div>
         </Col>
         <Col sm={8} className="columns">
           <Switch>

@@ -32,10 +32,16 @@ header{
   /*background-color: #07889B;*/
   top: 0;
   background-position: center;
+  /*background-color: #626d71;*/
+  /*padding-bottom: 3%;*/
   position: fixed;
   /*margin: 0 auto;*/
   /*margin-bottom: 3%;*/
   z-index: -1;
+}
+
+.navbar{
+  border-radius: 0px;
 }
 
 .welcomeCheck{
@@ -73,8 +79,6 @@ header{
   padding-bottom: 0px;
   margin-bottom: 15%;
   padding-left: 1%;
-
-  /*margin-top: -150px;*/
   text-align: center;
 
   color: White;
@@ -156,6 +160,28 @@ b {
   padding: 0;
 }
 
+.admin{
+  text-align: right;
+  padding-top: 3%;
+  font-size: 50%;
+}
+
+.admin a:hover{
+  color: #81b1a6;
+}
+
+.sign-in{
+  color: #2f3537;
+}
+
+.sign-out{
+  color: #BFD8D2;
+}
+
+.sign-out:hover{
+  color: #81b1a6;
+}
+
 .brand:hover{
   color: WhiteSmoke;
 }
@@ -171,8 +197,43 @@ a:hover{
 }
 
 .header-text{
-  color: #b38867;
+  /*color: #b38867;*/
+  color: WhiteSmoke;
+  margin: 0;
+  padding: 0;
+  max-width: 900px;
+  text-align: left;
+  /*padding-top: 15%*/
+  /*padding: 3%;*/
 }
+
+/*.header-text hr{
+  border-top: 1px solid #cdcdc0;
+}*/
+
+.page-header{
+  background-color: #626d71;
+  /*padding-top: 5%;*/
+  padding-top: 3%;
+  padding-left: 7%;
+  padding-right: 7%;
+  margin: 30px 0 0 0;
+  width: 100%;
+}
+
+.home-header{
+  height: 70%;
+}
+
+/*.page{
+  background-color: #626d71;
+  margin-right: -15px;
+  margin-left: -15px;
+  padding-top: 4%;
+  padding-left: 4%;
+  padding-right: 4%;
+  margin-top: -35px;
+}*/
 
 /* ==COLOR SCHEME===
 terracotta #945D60
@@ -198,20 +259,22 @@ charcoal #3C3C3C
 .home{
   /*max-width: 1000px;*/
   width: 100%;
-  padding: 2%;
-  padding-top: 1%;
+  /*padding: 2%;*/
+  padding: 1%;
   background-color: WhiteSmoke;
   /*border-radius: 2%;*/
   /*border-style: solid;
   border-color: #626E60;
   border-width: medium;*/
-  padding-bottom: 5%;
+  /*padding-bottom: 5%;*/
   margin: 0 auto;
-  margin-top: 5%;
+  /*margin-top: 5%;*/
 }
 
 .content{
   margin: 3%;
+  /*margin-right: 3%;
+  margin-h: 3%;*/
   padding: 5%;
   background-color: White;
   border-radius: 2%;
@@ -250,6 +313,7 @@ charcoal #3C3C3C
 
 .fa-shopping-cart{
   padding-left: 1%;
+  padding-right: 1%;
 }
 
 .smoke{

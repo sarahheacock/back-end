@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 
 import { PageHeader } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-import { Row, Col } from 'react-bootstrap';
+// import { Row, Col } from 'react-bootstrap';
 import { Form, FormGroup, FormControl, ControlLabel } from 'react-bootstrap';
 
-import { blogID, initial } from '../../../../data/data';
+import { blogID } from '../../../../data/data';
 
 
 class WelcomeSearch extends React.Component {
@@ -34,11 +34,10 @@ class WelcomeSearch extends React.Component {
   }
 
   handleChange = (e) => {
-    this.state.name = e.target.value;
     this.setState(this.state, () => {
       if(this.state.name.length >= 3){
         this.props.postData(`/user/${blogID}?token=${this.props.user.token}`, {
-          find: this.state.name
+          find: e.target.value
         });
       }
     });
@@ -57,12 +56,14 @@ class WelcomeSearch extends React.Component {
       <div></div>
 
     return(
+      <div>
+      <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}<hr /></span></PageHeader>
       <div className="main-content">
-        <PageHeader><span className="header-text">{`Welcome, ${this.props.user.name || this.props.user.email.slice(0, this.props.user.email.indexOf('@'))}!`}</span></PageHeader>
         <div className="text-center">
-          <button className="linkButton blueButton" onClick={this.logout}>Logout</button>
+          <br />
+          <button className="buttonLarge blueButton" onClick={this.logout}>Logout <i className="fa fa-sign-out" aria-hidden="true"></i></button>
           <NavLink to="/welcome">
-            <button className="linkButton orangeButton">Go to Calendar <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
+            <button className="buttonLarge orangeButton">Go to Calendar <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
           </NavLink>
         </div>
         <br />
@@ -80,6 +81,7 @@ class WelcomeSearch extends React.Component {
         </Form>
 
         {result}
+      </div>
       </div>);
   }
 }

@@ -10,7 +10,7 @@ module.exports = {
 
   'FACEBOOK_APP_ID': '108067029894668',
   'FACEBOOK_APP_SECRET': 'bb6a3db7dfa5bcefd376695fda4e17c8',
-  'FACEBOOK_CALLBACKURL': 'http://localhost:5000/auth/facebook/callback',
+  'FACEBOOK_CALLBACKURL': 'https://sarahbb.herokuapp.com/auth/facebook/callback',
 
   'PublishableKey': 'pk_test_EDg9wB7ruLGgGai4R6fAO0WT',
   'SecretKey': 'sk_test_yFU0LpusthkM1dFCoznns8wh',

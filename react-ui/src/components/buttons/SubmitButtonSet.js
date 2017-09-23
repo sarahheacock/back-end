@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 //   LoginButton,
 // } = FBSDK;
 
-import { initialMessage, initialEdit, initialUser, messages } from '../../../../data/data';
+import { initial, messages } from '../../../../data/data';
 
 import AlertMessage from './AlertMessage';
 import EditButton from './EditButton';
@@ -27,15 +27,16 @@ class SubmitButtonSet extends React.Component {
   pop = (e) => {
     e.preventDefault();
     this.props.updateState({
-      edit: initialEdit,
-      message: initialMessage
+      edit: initial.edit,
+      message: initial.message
     });
   }
 
   submit = (e) => {
     e.preventDefault();
+    const names = ["Delete Reservation", "Send Reminder", "Charge Client", "Check-In"];
 
-    if(this.props.edit.modalTitle.includes("Delete Reservation")){
+    if(names.includes(this.props.edit.modalTitle)){
       const arr = this.props.edit.dataObj.reservations.map((r) => r._id.toString());
       console.log(this.props.edit.url, {reservations: arr});
       this.props.editData(this.props.edit.url, {reservations: arr});
@@ -61,23 +62,29 @@ class SubmitButtonSet extends React.Component {
   // }
 
   getClass = (n) => {
-    let style = "";
-    if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Update") || n.includes("Cart")) style = "yellowButton";
-    else if(n.includes("Edit") || n.includes("Check") || n.includes("Update")  || n.includes("Confirm")) style = "orangeButton";
-    else if(n.includes("Add") || n.includes("Login") || n.includes("Send")) style = "blueButton";
+    let style = "buttonLarge ";
+    if(n.includes("Delete") || n.includes("Charge") ||  n.includes("Remove") ||  n.includes("Update") || n.includes("Cart")) style += "yellowButton";
+    else if(n.includes("Edit") || n.includes("Check")  || n.includes("Confirm")) style += "orangeButton";
+    else style += "blueButton";
 
-    if(n === "Login" || n.includes("Sign Up")) style += " button"
-    else style += " linkButton smallLink"
     return style;
   }
 
   getIcon = (n) => {
     if(n.includes("Send")) return "fa fa-paper-plane";
     if(n.includes("Delete") || n.includes("Remove")) return "fa fa-trash";
-    if(n.includes("Check")) return "fa fa-check";
-    if(n.includes("Charge")) return "fa fa-usd";
     if(n.includes("Add to Cart")) return "fa fa-shopping-cart";
     if(n.includes("Confirm")) return "fa fa-flag-checkered";
+    if(n.includes("Check")) return "fa fa-check";
+    if(n.includes("Charge")) return "fa fa-usd";
+    if(n.includes("Credit")) return "fa fa-credit-card";
+    if(n.includes("Billing")) return "fa fa-address-card-o";
+    if(n.includes("Email")) return "fa fa-envelope-o";
+    if(n.includes("Edit")) return "fa fa-pencil";
+    if(n.includes("Add")) return "fa fa-plus-circle";
+    if(n.includes("Logout")) return "fa fa-sign-out";
+    if(n.includes("Login")) return "fa fa-sign-in";
+    if(n.includes("Sign Up")) return "fa fa-user-plus";
     return "";
   }
 
@@ -112,7 +119,7 @@ class SubmitButtonSet extends React.Component {
                   />
                   <br />
                   <br />
-                  <button className="linkButton facebook"><a href="http://localhost:5000/auth/facebook" className="face"><i className="fa fa-facebook"></i> Login with Facebook</a></button>
+                  <a href="https://sarahbb.herokuapp.com/auth/facebook" className="btn btn-primary"><i className="fa fa-facebook"></i> Login with Facebook</a>
                 </span>:
                 <div></div>}
             </div> :
@@ -132,22 +139,3 @@ class SubmitButtonSet extends React.Component {
 
 
 export default SubmitButtonSet;
-
-// <button className="btn btn-primary" onClick={(e) => {
-//   e.preventDefault();
-//   this.props.getData("/login/facebook");
-// }}>Facebook</button>
-
-// {names.map((n) => (
-// <div key={n}>
-//   <button className={this.getClass(n)}>
-//     {n}<i className={this.getIcon(n)} aria-hidden="true"></i>
-//   </button>
-// </div>
-// ))}
-// <EditButton
-//   user={this.props.user}
-//   updateState={this.props.updateState}
-//   dataObj={edit.dataObj}
-//   title="Delete Reservation"
-// />

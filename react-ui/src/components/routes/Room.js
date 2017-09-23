@@ -8,7 +8,7 @@ import { cloudName } from '../../../../data/data';
 import EditButton from '../buttons/EditButton.js';
 
 const link = (cat) => {
-  return cat.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s/g, "-");
+  return cat.toLowerCase().trim().replace(/\W/g,"").replace(/\s/g, "-");
 }
 
 const Room = (props) => {
@@ -56,16 +56,18 @@ const Room = (props) => {
 
       <div className="home">
         <div className="content">
-          <h3 className="pretty">{data.title}</h3>
+          <h3 className="pretty text-center">{data.title}</h3>
           <p className="paragraph"><b>{data.b}</b></p>
           <p className="paragraph">{data.p1}</p>
           <br />
           <div className="text-center">
             <h4 className="paragraph"><big>$</big>{`${data.cost}.`}<sup>00</sup><sub> per night</sub></h4>
             <h4 className="paragraph"><big>{data["maximum-occupancy"]}</big><sub> person max</sub></h4>
-            <NavLink to="/book">
-              <button className="button blueButton">Book Now</button>
-            </NavLink>
+            <div>
+              <NavLink to="/book">
+                <button className="buttonLarge orangeButton">Check Availability <i className="fa fa-calendar-check-o" aria-hidden="true"></i></button>
+              </NavLink>
+            </div>
           </div>
           <div className="text-center">
             <EditButton

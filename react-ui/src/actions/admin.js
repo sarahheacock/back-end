@@ -49,9 +49,8 @@ export const getData = (url) => {
 };
 
 export const putData = (url, newData) => {
-  console.log(url);
   return (dispatch) => {
-    console.log(url);
+    console.log(url, newData);
     return axios.put(url, newData)
     .then(response => {
       console.log("response", response.data);

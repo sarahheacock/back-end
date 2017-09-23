@@ -11,7 +11,7 @@ const ConfirmForm = (props) => {
     <div>
       <Cart
         user={props.user}
-        cart={props.reservations || props.user.cart}
+        cart={props.reservations}
         remove={false}
       />
       <hr />
@@ -44,9 +44,9 @@ const ConfirmForm = (props) => {
           <h4><b>Total: </b></h4>
         </Col>
         <Col sm={6} className="columns">
-          <h4 className="text-center"><big>$</big>{props.user.cart.reduce((a, b) => {
+          <h4 className="text-center"><big>$</big>{props.reservations.reduce((a, b) => {
             return a + b.cost;
-          }, 0)}<sup>{".00"}</sup><br />{props.user.cart.reduce((a, b) => {
+          }, 0)}<sup>{".00"}</sup><br />{props.reservations.reduce((a, b) => {
             return a + b.guests;
           }, 0)}<sub> guest(s)</sub></h4>
         </Col>
@@ -61,6 +61,6 @@ const ConfirmForm = (props) => {
 export default ConfirmForm;
 
 ConfirmForm.propTypes = {
-  //title: PropTypes.string.isRequired,
-  user: PropTypes.object.isRequired
+  user: PropTypes.object.isRequired,
+  reservations: PropTypes.array.isRequired
 }

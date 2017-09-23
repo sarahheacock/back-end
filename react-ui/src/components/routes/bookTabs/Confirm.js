@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { PageHeader } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
+// import { PageHeader } from 'react-bootstrap';
+// import { NavLink } from 'react-router-dom';
 import { Row, Col } from 'react-bootstrap';
 
 import Cart from '../reservation/Cart';
 import PersonalInfo from '../reservation/PersonalInfo';
-import EditButton from '../../buttons/EditButton.js';
-import { blogID, initial } from '../../../../../data/data';
+// import EditButton from '../../buttons/EditButton.js';
+// import { blogID, initial } from '../../../../../data/data';
 
 
 class Confirm extends React.Component {
@@ -34,7 +34,7 @@ class Confirm extends React.Component {
 
     return(
       <div className="main-content">
-        <h3 className="pretty text-center">Shopping Cart <i className="fa fa-shopping-cart"></i> {this.props.user.cart.length}</h3>
+        <h3 className="pretty text-center">Shopping Cart <i className="fa fa-shopping-cart"></i>{` ${this.props.user.cart.length}`}</h3>
         {(this.props.user.cart.length > 0) ?
           <Cart
             updateState={this.props.updateState}
